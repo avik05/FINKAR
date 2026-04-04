@@ -48,78 +48,82 @@ export function AppSidebar() {
   const { isLoggedIn } = useAuthStore();
 
   return (
-    <Sidebar 
-      collapsible="icon"
-      className="sticky top-0 h-screen border-r border-border/5 bg-sidebar/30 backdrop-blur-3xl shadow-[20px_0_50px_rgba(0,0,0,0.1)] transition-all duration-500 ease-in-out"
-    >
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-border/10 overflow-hidden">
-        {/* Placeholder for header alignment — Branding is now in the top bar */}
-        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center group-data-[collapsible=icon]:scale-90 transition-transform">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="px-2">
-        <SidebarMenu>
+    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/5 bg-sidebar/30 backdrop-blur-3xl shadow-[20px_0_50px_rgba(0,0,0,0.1)] z-50 flex flex-col transition-all duration-300">
+      {/* Branding Header */}
+      <div className="h-20 flex items-center px-6 border-b border-border/10 shrink-0">
+        <Link href="/" className="flex items-center gap-0.5 group scale-105 hover:scale-110 transition-all duration-300">
+          <span className="text-2xl font-sans font-bold text-foreground">Fin</span>
+          <span className="text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
+        </Link>
+      </div>
+
+      {/* Navigation Content */}
+      <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-hide">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const isActive = pathname === item.url || pathname?.startsWith(`${item.url}/`);
             return (
-              <SidebarMenuItem key={item.name} className="py-0.5 flex justify-center">
-                <SidebarMenuButton 
-                  render={<Link href={item.url} className="flex items-center justify-start group-data-[collapsible=icon]:justify-center w-full" />}
-                  isActive={isActive}
-                  className={`relative flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3 px-3 py-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:mx-auto rounded-2xl transition-all duration-300 group
+              <div key={item.name} className="relative group px-1">
+                <Link
+                  href={item.url}
+                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group
                     ${isActive 
                       ? "bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(0,255,156,0.05)] border border-primary/20" 
                       : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                     }`}
                 >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  <span className="font-semibold text-sm tracking-wide group-data-[collapsible=icon]:hidden ml-3">{item.name}</span>
+                  <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
+                  <span className="font-bold text-sm tracking-wide">{item.name}</span>
                   {isActive && (
                     <motion.div 
                       layoutId="sidebar-active"
-                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(0,255,156,0.6)] group-data-[collapsible=icon]:hidden"
+                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(0,255,156,0.6)]"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                </Link>
+              </div>
             );
           })}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter className="p-4 space-y-4">
-        <SidebarMenu className="gap-2">
-          <SidebarMenuItem className="flex justify-center">
-            <Link href="https://finkar.substack.com/" target="_blank" rel="noopener noreferrer" className="block p-4 group-data-[collapsible=icon]:p-3 group-data-[collapsible=icon]:w-11 rounded-3xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors group/newsletter overflow-hidden">
-              <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3">
-                <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />
-                <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                  <span className="text-xs font-bold text-foreground block truncate">Finkar Newsletter</span>
-                  <span className="text-[10px] text-muted-foreground block truncate">on Substack</span>
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover/newsletter:text-primary group-hover/newsletter:translate-x-1 group-hover/newsletter:-translate-y-1 transition-all group-data-[collapsible=icon]:hidden" />
-              </div>
-            </Link>
-          </SidebarMenuItem>
+        </nav>
+      </div>
 
-          <SidebarMenuItem className="flex justify-center">
-            <div className="p-4 group-data-[collapsible=icon]:p-3 group-data-[collapsible=icon]:w-11 rounded-3xl bg-sidebar-accent/50 border border-border/40 group/market overflow-hidden">
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3">
-                  <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-bold text-muted-foreground group-data-[collapsible=icon]:hidden">Market Status</span>
-                </div>
-                <div className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden">
-                  <MarketStatusIndicator />
-                </div>
-              </div>
+      {/* Sidebar Footer */}
+      <div className="p-4 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
+        <Link 
+          href="https://finkar.substack.com/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="block p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all group/newsletter overflow-hidden"
+        >
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-foreground block truncate">Finkar Newsletter</span>
+              <span className="text-[10px] text-muted-foreground block truncate uppercase tracking-tighter">on Substack</span>
             </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover/newsletter:text-primary group-hover/newsletter:translate-x-1 group-hover/newsletter:-translate-y-1 transition-all" />
+          </div>
+        </Link>
+
+        <div className="p-4 rounded-2xl bg-sidebar-accent/10 border border-border/40 group/market flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Market Status</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <MarketStatusIndicator />
+          </div>
+        </div>
+
+        {/* Guest Mode Badge if needed */}
+        {!isLoggedIn && (
+           <div className="py-2 px-4 rounded-xl bg-muted/50 border border-border/20 text-center">
+             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Guest Mode</span>
+           </div>
+        )}
+      </div>
+    </aside>
   );
 }
 

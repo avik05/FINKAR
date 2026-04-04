@@ -65,7 +65,7 @@ const MagneticCard = ({ children, className = "" }: { children: React.ReactNode;
 
 const ScrollReveal = ({ children, direction = "up", delay = 0 }: { children: React.ReactNode; direction?: "up" | "down" | "left" | "right"; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: false, margin: "-20%" });
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
   
   const variants = {
     hidden: { 
