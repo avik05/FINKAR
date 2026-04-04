@@ -33,7 +33,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result.success) {
-      router.push("/");
+      router.push("/dashboard");
     } else {
       setError(result.error || "Something went wrong.");
     }
@@ -143,8 +143,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-6 space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
@@ -153,6 +153,19 @@ export default function LoginPage() {
               {mode === "login" ? "Sign up" : "Sign in"}
             </button>
           </p>
+
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-border/50"></div>
+            <span className="flex-shrink mx-4 text-[10px] text-muted-foreground/60 uppercase tracking-widest">or</span>
+            <div className="flex-grow border-t border-border/50"></div>
+          </div>
+
+          <button
+            onClick={() => router.push("/")}
+            className="w-full h-11 flex items-center justify-center gap-2 bg-foreground/5 text-foreground hover:bg-foreground/10 border border-border/50 rounded-xl font-medium transition-all"
+          >
+            Browse as Guest
+          </button>
         </div>
 
         {/* Data privacy note */}

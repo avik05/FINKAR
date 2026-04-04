@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/stores/auth-store";
+import { ExternalLink } from "lucide-react";
 import {
   LayoutDashboard,
   Landmark,
@@ -12,6 +14,7 @@ import {
   BarChart3,
   Target,
   Settings,
+  Info,
 } from "lucide-react";
 
 import {
@@ -26,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const navItems = [
-  { name: "Overview", url: "/", icon: LayoutDashboard },
+  { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
   { name: "Banks", url: "/banks", icon: Landmark },
   { name: "Stocks", url: "/stocks", icon: TrendingUp },
   { name: "Mutual Funds", url: "/mutual-funds", icon: PieChart },
@@ -34,17 +37,19 @@ const navItems = [
   { name: "Analytics", url: "/analytics", icon: BarChart3 },
   { name: "Goals", url: "/goals", icon: Target },
   { name: "Settings", url: "/settings", icon: Settings },
+  { name: "About", url: "/", icon: Info },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isLoggedIn } = useAuthStore();
 
   return (
     <Sidebar className="border-r-border bg-sidebar/50 backdrop-blur-md">
       <SidebarHeader className="py-6 px-4">
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex items-center justify-center translate-x-1">
-            <span className="text-4xl font-sans font-bold text-white">Fin</span>
+            <span className="text-4xl font-sans font-bold text-foreground">Fin</span>
             <span className="text-4xl font-sans font-bold text-primary">कर</span>
           </div>
         </Link>
@@ -75,7 +80,26 @@ export function AppSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-4">
+        {/* Guest Indicator */}
+        {!isLoggedIn && (
+          <div className="px-4 py-2 rounded-lg bg-foreground/5 border border-dashed border-border/50 text-[10px] text-muted-foreground font-medium text-center tracking-wider uppercase">
+            Guest Mode
+          </div>
+        )}
+        {/* Substack Link */}
+        <Link
+          href="https://finkar.substack.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/40 transition-all duration-200 group"
+        >
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-primary">Finkar Newsletter</span>
+            <span className="text-[10px] text-muted-foreground">on Substack</span>
+          </div>
+          <ExternalLink size={14} className="text-primary/60 group-hover:text-primary transition-colors flex-shrink-0" />
+        </Link>
         <MarketStatusIndicator />
       </SidebarFooter>
       <SidebarRail />
@@ -105,6 +129,26 @@ function MarketStatusIndicator() {
   );
 }
 
+// NSE/BSE market holidays (YYYY-MM-DD format) — updated for 2025
+const NSE_HOLIDAYS_2025 = new Set([
+  "2025-01-26", // Republic Day
+  "2025-02-26", // Mahashivratri
+  "2025-03-14", // Holi
+  "2025-03-31", // Id-Ul-Fitr (Ramzan Id)
+  "2025-04-10", // Shri Ram Navami
+  "2025-04-14", // Dr. Baba Saheb Ambedkar Jayanti
+  "2025-04-18", // Good Friday
+  "2025-05-01", // Maharashtra Day
+  "2025-08-15", // Independence Day
+  "2025-08-27", // Ganesh Chaturthi
+  "2025-10-02", // Mahatma Gandhi Jayanti
+  "2025-10-02", // Dussehra
+  "2025-10-20", // Diwali (Laxmi Puja)
+  "2025-10-21", // Diwali (Balipratipada)
+  "2025-11-05", // Prakash Gurpurb Sri Guru Nanak Dev Ji
+  "2025-12-25", // Christmas
+]);
+
 function getMarketStatus(): { isOpen: boolean; label: string; nextOpen?: string } {
   const now = new Date();
   // Convert to IST (UTC+5:30)
@@ -113,21 +157,29 @@ function getMarketStatus(): { isOpen: boolean; label: string; nextOpen?: string 
   const istMinutes = utcMinutes + istOffset;
   const istHour = Math.floor((istMinutes % 1440) / 60);
   const istMin = Math.floor(istMinutes % 60);
-  const istDay = now.getUTCDay(); // Adjust day if IST crosses midnight
+  const istDay = now.getUTCDay();
   const adjustedDay = istMinutes >= 1440 ? (istDay + 1) % 7 : istDay;
+
+  // Get current IST date as YYYY-MM-DD
+  const istDate = new Date(now.getTime() + (istOffset * 60 * 1000));
+  const istDateStr = istDate.toISOString().split("T")[0];
 
   const marketOpen = 9 * 60 + 15;  // 9:15 AM IST
   const marketClose = 15 * 60 + 30; // 3:30 PM IST
   const currentIST = istHour * 60 + istMin;
 
   const isWeekday = adjustedDay >= 1 && adjustedDay <= 5;
+  const isHoliday = NSE_HOLIDAYS_2025.has(istDateStr);
   const isDuringHours = currentIST >= marketOpen && currentIST < marketClose;
+
+  if (isHoliday) {
+    return { isOpen: false, label: "Market Holiday", nextOpen: "NSE/BSE holiday today" };
+  }
 
   if (isWeekday && isDuringHours) {
     return { isOpen: true, label: "Markets Open" };
   }
 
-  // Calculate next open
   if (isWeekday && currentIST < marketOpen) {
     return { isOpen: false, label: "Markets Closed", nextOpen: "Opens today at 9:15 AM" };
   }
