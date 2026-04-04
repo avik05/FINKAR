@@ -224,7 +224,11 @@ export default function AboutPage() {
         </motion.section>
 
         <motion.section 
-          style={{ y: contentY, opacity: contentOpacity }}
+          style={{ 
+            y: contentY, 
+            opacity: contentOpacity,
+            pointerEvents: isHeroInteractive ? "none" : "auto"
+          }}
           className="relative z-20 px-6 container mx-auto mt-40 rounded-[3rem] bg-background/80 backdrop-blur-3xl shadow-2xl"
         >
           <ScrollReveal direction="up">
