@@ -53,7 +53,7 @@ export default function RootLayout({
         <AuthGuard>
           <StoreHydrator />
           <SidebarProvider>
-            <div className="flex min-h-screen w-full bg-background bg-[url('/bg-noise.png')] bg-repeat bg-fixed relative">
+            <div className="flex min-h-screen w-full bg-background bg-[url('/bg-noise.png')] bg-repeat bg-fixed relative overflow-x-hidden">
               {/* Dot Grid Pattern — more visible in light mode */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0" 
                 style={{ 

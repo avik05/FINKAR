@@ -235,9 +235,9 @@ export function Header() {
 
       {/* --- Center Column: Logo --- */}
       <div className="flex-shrink-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-10 transition-all">
-        <Link href="/" className="flex items-center gap-0.5 group scale-90 sm:scale-105 hover:scale-110 transition-all duration-300">
-          <span className="text-xl sm:text-2xl font-sans font-bold text-foreground">Fin</span>
-          <span className="text-xl sm:text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
+        <Link href="/" className="flex items-center gap-0.5 group scale-75 sm:scale-105 hover:scale-110 transition-all duration-300">
+          <span className="text-lg sm:text-2xl font-sans font-bold text-foreground">Fin</span>
+          <span className="text-lg sm:text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
         </Link>
       </div>
 

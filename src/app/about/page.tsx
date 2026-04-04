@@ -199,11 +199,11 @@ export default function AboutPage() {
             >
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-3 sm:gap-4 px-6 py-3 sm:px-10 sm:py-5 rounded-full bg-primary text-primary-foreground font-black text-sm sm:text-lg hover:brightness-110 transition-all shadow-[0_20px_50px_rgba(0,255,156,0.4)] hover:shadow-[0_20px_70px_rgba(0,255,156,0.6)] active:scale-95 group"
+                className="inline-flex items-center gap-2 sm:gap-4 px-4 py-2 sm:px-10 sm:py-5 rounded-full bg-primary text-primary-foreground font-black text-[9px] sm:text-lg hover:brightness-110 transition-all shadow-[0_20px_50px_rgba(0,255,156,0.4)] hover:shadow-[0_20px_70px_rgba(0,255,156,0.6)] active:scale-95 group"
               >
-                <LayoutDashboard size={18} className="sm:w-6 sm:h-6" />
+                <LayoutDashboard size={14} className="sm:w-6 sm:h-6" />
                 EXPLORE DASHBOARD
-                <ArrowUpRight size={16} className="sm:w-5 sm:h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                <ArrowUpRight size={12} className="sm:w-5 sm:h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
 
               <motion.div 
@@ -230,7 +230,7 @@ export default function AboutPage() {
         >
           <ScrollReveal direction="up">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-              <div className="relative aspect-square max-w-sm mx-auto lg:mx-0 order-2 lg:order-1">
+              <div className="relative aspect-square w-full max-w-[280px] sm:max-w-sm mx-auto lg:mx-0 order-2 lg:order-1">
                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-primary/5 to-transparent rounded-[2rem] sm:rounded-[3rem] blur-3xl opacity-50" />
                 <FinanceCard className="relative p-8 sm:p-12 border-primary/20 bg-card/30 backdrop-blur-3xl rounded-[2rem] sm:rounded-[3rem] shadow-2xl h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/40 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(0,255,156,0.15)]">
@@ -377,10 +377,10 @@ export default function AboutPage() {
             <h2 className="text-2xl sm:text-6xl md:text-[8rem] font-heading font-black tracking-tighter mb-12 md:mb-16 opacity-10">THE FUTURE.</h2>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-3 sm:gap-6 px-8 py-4 sm:px-16 sm:py-8 rounded-[1.5rem] sm:rounded-[3.5rem] bg-primary text-primary-foreground font-black text-lg sm:text-3xl hover:scale-110 active:scale-95 transition-all shadow-[0_45px_100px_rgba(0,255,156,0.3)] hover:shadow-primary/50"
+              className="inline-flex items-center gap-3 sm:gap-6 px-6 py-3 sm:px-16 sm:py-8 rounded-[1rem] sm:rounded-[3.5rem] bg-primary text-primary-foreground font-black text-[11px] sm:text-3xl hover:scale-110 active:scale-95 transition-all shadow-[0_45px_100px_rgba(0,255,156,0.3)] hover:shadow-primary/50"
             >
               LAUNCH DASHBOARD
-              <Rocket size={24} className="sm:w-10 sm:h-10" />
+              <Rocket size={16} className="sm:w-10 sm:h-10" />
             </Link>
             <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-[9px] sm:text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar at GLIM Chennai</p>
           </ScrollReveal>
