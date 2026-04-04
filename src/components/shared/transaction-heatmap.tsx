@@ -73,8 +73,8 @@ export function TransactionHeatmap() {
           {monthLabels.map(({ colIndex, label }) => (
             <span
               key={label}
-              className="absolute text-[10px] text-muted-foreground/60 leading-none pointer-events-none"
-              style={{ left: colIndex * (CELL + GAP) }}
+              className="absolute text-[10px] font-medium text-muted-foreground leading-none pointer-events-none -translate-x-1/2"
+              style={{ left: colIndex * (CELL + GAP) + (CELL / 2) }}
             >
               {label}
             </span>

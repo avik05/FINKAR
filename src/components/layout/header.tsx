@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Search, Calendar, ChevronDown, CheckCircle2, Sun, Moon, Download } from "lucide-react";
@@ -21,6 +22,7 @@ import { useTransactionsStore } from "@/stores/transactions-store";
 import { useStocksStore } from "@/stores/stocks-store";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { useGoalsStore } from "@/stores/goals-store";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useAuthStore } from "@/stores/auth-store";
 
 const DATE_RANGES = [
@@ -37,7 +39,20 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  
+
+  // Auto-hide header state
+  const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    if (latest > previous && latest > 150) {
+      setHidden(true);
+    } else {
+      setHidden(false);
+    }
+  });
+
   // Local state to hide notifications marked as read
   const [clearedInsights, setClearedInsights] = useState<Record<string, boolean>>({});
 
@@ -160,9 +175,17 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex h-14 w-[95%] max-w-6xl shrink-0 items-center gap-4 rounded-full border border-border/40 bg-background/40 px-6 backdrop-blur-md shadow-lg transition-all duration-500 hover:bg-background/50 hover:shadow-xl hover:border-primary/20">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1 h-8 w-8 hover:bg-foreground/10 data-[state=open]:bg-foreground/10 transition-all rounded-full" />
+    <motion.header 
+      variants={{
+        visible: { y: 0 },
+        hidden: { y: "-100%" },
+      }}
+      animate={hidden ? "hidden" : "visible"}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+      className="fixed top-0 left-0 right-0 z-50 flex h-16 w-full shrink-0 items-center justify-between px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
+    >
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="h-9 w-9 hover:bg-foreground/10 data-[state=open]:bg-foreground/10 transition-all rounded-full" />
         <div className="hidden md:flex items-center">
           <div className="relative group" ref={searchContainerRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -175,12 +198,11 @@ export function Header() {
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
-              className="w-[180px] lg:w-[320px] h-9 pl-10 bg-black/5 dark:bg-white/5 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:bg-background rounded-full transition-all duration-300"
+              className="w-[180px] lg:w-[280px] h-9 pl-10 bg-black/5 dark:bg-white/5 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:bg-background rounded-xl transition-all duration-300"
             />
-            
             {/* Search Dropdown overlay */}
             {isSearchOpen && searchQuery.trim() !== "" && (
-              <div className="absolute top-full left-0 mt-3 w-full bg-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden z-50">
+              <div className="absolute top-full left-0 mt-3 w-full bg-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden z-[100]">
                 {searchResults.length > 0 ? (
                   <ul className="max-h-[300px] overflow-y-auto p-1">
                     {searchResults.map((res, idx) => (
@@ -210,7 +232,15 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-2 md:gap-3">
+      {/* Centered Logo */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        <Link href="/" className="flex items-center gap-0.5 group scale-90 sm:scale-110 hover:scale-105 sm:hover:scale-115 active:scale-95 transition-all duration-300">
+          <span className="text-2xl font-sans font-bold text-foreground">Fin</span>
+          <span className="text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-2 md:gap-3">
         
         {/* Theme Toggle */}
         <button 
@@ -355,6 +385,6 @@ export function Header() {
           </button>
         )}
       </div>
-    </header>
+    </motion.header>
   );
 }

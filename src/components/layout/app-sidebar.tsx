@@ -3,8 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuthStore } from "@/stores/auth-store";
-import { ExternalLink } from "lucide-react";
 import {
   LayoutDashboard,
   Landmark,
@@ -15,6 +15,9 @@ import {
   Target,
   Settings,
   Info,
+  ArrowUpRight,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 
 import {
@@ -37,7 +40,7 @@ const navItems = [
   { name: "Analytics", url: "/analytics", icon: BarChart3 },
   { name: "Goals", url: "/goals", icon: Target },
   { name: "Settings", url: "/settings", icon: Settings },
-  { name: "About", url: "/", icon: Info },
+  { name: "About", url: "/about", icon: Info },
 ];
 
 export function AppSidebar() {
@@ -45,34 +48,39 @@ export function AppSidebar() {
   const { isLoggedIn } = useAuthStore();
 
   return (
-    <Sidebar className="border-r-border bg-sidebar/50 backdrop-blur-md">
-      <SidebarHeader className="py-6 px-4">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex items-center justify-center translate-x-1">
-            <span className="text-4xl font-sans font-bold text-foreground">Fin</span>
-            <span className="text-4xl font-sans font-bold text-primary">कर</span>
-          </div>
-        </Link>
+    <Sidebar 
+      collapsible="icon"
+      className="sticky top-0 h-screen border-r border-border/5 bg-sidebar/30 backdrop-blur-3xl shadow-[20px_0_50px_rgba(0,0,0,0.1)] transition-all duration-500 ease-in-out"
+    >
+      <SidebarHeader className="h-16 flex items-center justify-center border-b border-border/10 overflow-hidden">
+        {/* Placeholder for header alignment — Branding is now in the top bar */}
+        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center group-data-[collapsible=icon]:scale-90 transition-transform">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+        </div>
       </SidebarHeader>
       <SidebarContent className="px-2">
         <SidebarMenu>
           {navItems.map((item) => {
             const isActive = pathname === item.url || pathname?.startsWith(`${item.url}/`);
             return (
-              <SidebarMenuItem key={item.name} className="py-1">
+              <SidebarMenuItem key={item.name} className="py-0.5 flex justify-center">
                 <SidebarMenuButton 
-                  render={<Link href={item.url} />}
+                  render={<Link href={item.url} className="flex items-center justify-start group-data-[collapsible=icon]:justify-center w-full" />}
                   isActive={isActive}
-                  className={`relative flex items-center gap-3 px-4 py-6 rounded-xl transition-all duration-300 group
+                  className={`relative flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3 px-3 py-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:mx-auto rounded-2xl transition-all duration-300 group
                     ${isActive 
-                      ? "bg-primary/10 text-primary hover:bg-primary/20 shadow-[0_4px_20px_rgba(0,255,156,0.05)] translate-x-1" 
-                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground hover:translate-x-1"
+                      ? "bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(0,255,156,0.05)] border border-primary/20" 
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                     }`}
                 >
-                  <item.icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? "scale-110 drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]" : "group-hover:scale-110"}`} />
-                  <span className="font-medium text-sm">{item.name}</span>
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <span className="font-semibold text-sm tracking-wide group-data-[collapsible=icon]:hidden ml-3">{item.name}</span>
                   {isActive && (
-                    <span className="absolute left-0 w-1 h-8 bg-primary rounded-r-md blur-[1px] animate-pulse" />
+                    <motion.div 
+                      layoutId="sidebar-active"
+                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(0,255,156,0.6)] group-data-[collapsible=icon]:hidden"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -81,26 +89,34 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4 space-y-4">
-        {/* Guest Indicator */}
-        {!isLoggedIn && (
-          <div className="px-4 py-2 rounded-lg bg-foreground/5 border border-dashed border-border/50 text-[10px] text-muted-foreground font-medium text-center tracking-wider uppercase">
-            Guest Mode
-          </div>
-        )}
-        {/* Substack Link */}
-        <Link
-          href="https://finkar.substack.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/40 transition-all duration-200 group"
-        >
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-primary">Finkar Newsletter</span>
-            <span className="text-[10px] text-muted-foreground">on Substack</span>
-          </div>
-          <ExternalLink size={14} className="text-primary/60 group-hover:text-primary transition-colors flex-shrink-0" />
-        </Link>
-        <MarketStatusIndicator />
+        <SidebarMenu className="gap-2">
+          <SidebarMenuItem className="flex justify-center">
+            <Link href="https://finkar.substack.com/" target="_blank" rel="noopener noreferrer" className="block p-4 group-data-[collapsible=icon]:p-3 group-data-[collapsible=icon]:w-11 rounded-3xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors group/newsletter overflow-hidden">
+              <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3">
+                <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                  <span className="text-xs font-bold text-foreground block truncate">Finkar Newsletter</span>
+                  <span className="text-[10px] text-muted-foreground block truncate">on Substack</span>
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover/newsletter:text-primary group-hover/newsletter:translate-x-1 group-hover/newsletter:-translate-y-1 transition-all group-data-[collapsible=icon]:hidden" />
+              </div>
+            </Link>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem className="flex justify-center">
+            <div className="p-4 group-data-[collapsible=icon]:p-3 group-data-[collapsible=icon]:w-11 rounded-3xl bg-sidebar-accent/50 border border-border/40 group/market overflow-hidden">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center gap-3">
+                  <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-xs font-bold text-muted-foreground group-data-[collapsible=icon]:hidden">Market Status</span>
+                </div>
+                <div className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden">
+                  <MarketStatusIndicator />
+                </div>
+              </div>
+            </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
@@ -116,16 +132,15 @@ function MarketStatusIndicator() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-1 px-4 py-3 rounded-xl bg-card border border-border/50 shadow-sm backdrop-blur-sm">
-      <span className="text-xs text-muted-foreground">Market Status</span>
-      <span className={`text-sm font-semibold flex items-center gap-1.5 ${status.isOpen ? 'text-primary' : 'text-muted-foreground'}`}>
-        <span className={`w-2 h-2 rounded-full ${status.isOpen ? 'bg-primary shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse' : 'bg-muted-foreground'}`} />
-        {status.label}
-      </span>
+    <>
+      <div className="flex items-center gap-2">
+        <div className={`w-2 h-2 rounded-full ${status.isOpen ? 'bg-primary shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse' : 'bg-muted-foreground'}`} />
+        <span className="text-sm font-black text-foreground">{status.label}</span>
+      </div>
       {!status.isOpen && status.nextOpen && (
-        <span className="text-[10px] text-muted-foreground mt-0.5">{status.nextOpen}</span>
+        <p className="text-[10px] text-muted-foreground font-medium">{status.nextOpen}</p>
       )}
-    </div>
+    </>
   );
 }
 
@@ -176,21 +191,17 @@ function getMarketStatus(): { isOpen: boolean; label: string; nextOpen?: string 
     return { isOpen: false, label: "Market Holiday", nextOpen: "NSE/BSE holiday today" };
   }
 
-  if (isWeekday && isDuringHours) {
+  if (adjustedDay === 0 || adjustedDay === 6) {
+    return { isOpen: false, label: "Weekend", nextOpen: "Opens Monday 9:15 AM" };
+  }
+
+  if (currentIST >= marketOpen && currentIST < marketClose) {
     return { isOpen: true, label: "Markets Open" };
   }
 
-  if (isWeekday && currentIST < marketOpen) {
-    return { isOpen: false, label: "Markets Closed", nextOpen: "Opens today at 9:15 AM" };
+  if (currentIST < marketOpen) {
+    return { isOpen: false, label: "Opening Soon", nextOpen: "Today 9:15 AM" };
   }
-  if (adjustedDay === 5 && currentIST >= marketClose) {
-    return { isOpen: false, label: "Markets Closed", nextOpen: "Opens Monday 9:15 AM" };
-  }
-  if (adjustedDay === 6) {
-    return { isOpen: false, label: "Weekend", nextOpen: "Opens Monday 9:15 AM" };
-  }
-  if (adjustedDay === 0) {
-    return { isOpen: false, label: "Weekend", nextOpen: "Opens tomorrow 9:15 AM" };
-  }
-  return { isOpen: false, label: "Markets Closed", nextOpen: "Opens tomorrow 9:15 AM" };
+
+  return { isOpen: false, label: "Market Closed", nextOpen: "Tomorrow 9:15 AM" };
 }

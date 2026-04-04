@@ -156,15 +156,15 @@ export default function StocksPage() {
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={plData} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="name" tick={{ fill: '#BFC3C9', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: '#BFC3C9', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
+                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(18, 18, 26, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.5)', borderRadius: '8px', fontSize: '12px' }}
                         formatter={((value: number, name: string) => [formatINR(value), value >= 0 ? 'Gain' : 'Loss']) as never}
-                        labelStyle={{ color: '#fff' }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                       />
-                      <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
+                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} />
                       <Bar dataKey="pl">
                         {plData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.pl >= 0 ? "#00FF9C" : "#FF4D4D"} radius={entry.pl >= 0 ? [4, 4, 0, 0] as any : [0, 0, 4, 4] as any} />

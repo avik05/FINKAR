@@ -182,13 +182,13 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.15; filter: blur(100px) scale(1); }
-  50% { opacity: 0.3; filter: blur(120px) scale(1.05); }
+  0%, 100% { opacity: 0.4; filter: blur(100px) scale(1); }
+  50% { opacity: 0.6; filter: blur(120px) scale(1.05); }
 }
 
 @keyframes pulse-glow-dark {
-  0%, 100% { opacity: 0.4; filter: blur(120px) scale(1); }
-  50% { opacity: 0.7; filter: blur(140px) scale(1.1); }
+  0%, 100% { opacity: 0.5; filter: blur(120px) scale(1); }
+  50% { opacity: 0.8; filter: blur(140px) scale(1.1); }
 }
 
 .ambient-blob {

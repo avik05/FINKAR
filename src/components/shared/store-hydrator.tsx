@@ -35,7 +35,7 @@ export function StoreHydrator() {
     const hasFunds = fundsStore.funds.length > 0;
 
     if (!hasAccounts && !hasTransactions && !hasStocks && !hasFunds) {
-      console.log("Hydrating store with sample data for demonstration...");
+      
       
       // Mark as seeded IMMEDIATELY so React Strict Mode second render doesn't double-seed
       localStorage.setItem("finkar-seeded-v3", "true");

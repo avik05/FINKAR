@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Target, Trash2 } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ReferenceLine } from "recharts";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
@@ -82,18 +82,18 @@ export default function MutualFundsPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20">
-                <span className="text-sm font-medium text-blue-300">Total Invested</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-blue-100">{formatINR(totalInvested)}</h2>
+              <FinanceCard className="p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 shadow-sm shadow-blue-500/5">
+                <span className="text-sm font-medium text-blue-600 dark:text-blue-300">Total Invested</span>
+                <h2 className="text-2xl font-heading font-bold mt-1 text-blue-950 dark:text-blue-100">{formatINR(totalInvested)}</h2>
               </FinanceCard>
             </motion.div>
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6 bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
-                <span className="text-sm font-medium text-primary">Current Value</span>
+              <FinanceCard className="p-6 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 shadow-sm shadow-primary/5">
+                <span className="text-sm font-medium text-emerald-600 dark:text-primary">Current Value</span>
                 <div className="flex items-center gap-2 mt-1">
                   <h2 className="text-2xl font-heading font-bold text-foreground">{formatINR(totalValue)}</h2>
                   {totalInvested > 0 && (
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${totalGain >= 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${totalGain >= 0 ? 'bg-primary/20 text-emerald-700 dark:text-primary' : 'bg-destructive/20 text-destructive'}`}>
                       {totalGain >= 0 ? '+' : ''}{((totalGain / totalInvested) * 100).toFixed(1)}%
                     </span>
                   )}
@@ -161,16 +161,16 @@ export default function MutualFundsPage() {
                 <h2 className="text-lg font-heading font-semibold mb-4">Invested vs Current Value</h2>
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={comparisonData} barGap={2} barCategoryGap="20%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="name" tick={{ fill: '#BFC3C9', fontSize: 10 }} axisLine={false} tickLine={false} interval={0} angle={-20} textAnchor="end" height={50} />
-                      <YAxis tick={{ fill: '#BFC3C9', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
+                    <BarChart data={comparisonData} barGap={4}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
+                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(18, 18, 26, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.5)', borderRadius: '8px', fontSize: '12px' }}
                         formatter={((value: number, name: string) => [formatINR(value), name]) as never}
-                        labelStyle={{ color: '#fff' }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                       />
-                      <Legend wrapperStyle={{ fontSize: '11px' }} />
+                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} />
                       <Bar dataKey="Invested" fill="#3ABEFF" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Current">
                         {comparisonData.map((entry, index) => (
@@ -204,7 +204,7 @@ export default function MutualFundsPage() {
                       <div className="flex justify-between items-start mb-2 pr-8">
                         <div>
                           <h4 className="font-bold text-sm leading-tight text-foreground">{mf.fund}</h4>
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground bg-black/20 px-1.5 py-0.5 rounded mt-1 inline-block">{mf.category}</span>
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground bg-foreground/10 px-1.5 py-0.5 rounded mt-1 inline-block">{mf.category}</span>
                         </div>
                         <div className="text-right">
                           <span className={`text-xs font-semibold ${gain >= 0 ? 'text-primary' : 'text-destructive'}`}>

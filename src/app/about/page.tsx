@@ -22,6 +22,7 @@ import {
   Lightbulb,
   Globe,
   LayoutDashboard,
+  MousePointer2,
 } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 
@@ -123,7 +124,7 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default function AboutPage() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll();
 
@@ -138,9 +139,11 @@ export default function HomePage() {
   const isHeroVisible = useTransform(scrollYProgress, [0, 0.035], [1, 0]);
 
   return (
-    <div ref={containerRef} className="relative min-h-full scroll-smooth bg-background">
+    <div ref={containerRef} className="relative min-h-full scroll-smooth bg-transparent">
       {/* ── Fixed Hero Backdrop (Glassmorphic) ── */}
       <div className="relative min-h-[450vh] pt-12 pb-24 overflow-x-hidden">
+        {/* Soft blend for the top bar/sidebar area */}
+        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-0" />
         
         {/* --- HERO SECTION --- */}
         <motion.section 

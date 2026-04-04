@@ -48,7 +48,7 @@ export function CursorGlow() {
   return (
     <>
       {/* 1. Magnetic Background Grid (Subtle) */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-[0.15] dark:opacity-[0.08]">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-[0.25] dark:opacity-[0.1]">
         <div 
           className="absolute inset-0"
           style={{
