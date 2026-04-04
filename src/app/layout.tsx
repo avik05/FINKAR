@@ -26,6 +26,7 @@ import { StoreHydrator } from "@/components/shared/store-hydrator";
 import { AiChatbotPanel } from "@/components/shared/ai-chatbot-panel";
 import { AuthGuard } from "@/components/shared/auth-guard";
 import { CursorGlow } from "@/components/shared/cursor-glow";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
   children,
@@ -78,6 +79,7 @@ export default function RootLayout({
           </SidebarProvider>
           <AiChatbotPanel />
         </AuthGuard>
+        <SpeedInsights />
       </body>
     </html>
   );
