@@ -135,8 +135,8 @@ export default function AboutPage() {
   const contentY = useTransform(scrollYProgress, [0.02, 0.12], [300, 0]);
   const contentOpacity = useTransform(scrollYProgress, [0.02, 0.06], [0, 1]);
 
-  // Hard unmount threshold to prevent 'ghosting'
-  const isHeroVisible = useTransform(scrollYProgress, [0, 0.035], [1, 0]);
+  // Use a derived motion value to ensure pointerEvents is a valid CSS string
+  const pointerEvents = useTransform(scrollYProgress, [0, 0.035], ["auto", "none"]);
 
   return (
     <div ref={containerRef} className="relative min-h-full bg-transparent overflow-x-hidden">
@@ -147,7 +147,7 @@ export default function AboutPage() {
         
         {/* --- HERO SECTION --- */}
         <motion.section 
-          style={{ y: heroY, opacity: heroOpacity, scale: heroScale, pointerEvents: isHeroVisible }}
+          style={{ y: heroY, opacity: heroOpacity, scale: heroScale, pointerEvents }}
           className="fixed inset-x-0 md:left-64 top-20 sm:top-32 flex flex-col items-center text-center px-6 z-0 pointer-events-none transition-all duration-300 ease-in-out"
         >
           <div className="pointer-events-auto">

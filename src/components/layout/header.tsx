@@ -23,8 +23,9 @@ import {
   Sun,
   Moon,
   Download,
+  Menu,
+  X,
 } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -44,6 +45,7 @@ import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { useGoalsStore } from "@/stores/goals-store";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useAuthStore } from "@/stores/auth-store";
+import { useLayoutStore } from "@/stores/layout-store";
 
 const DATE_RANGES = [
   { label: "This Week", days: 7 },
@@ -55,7 +57,8 @@ const DATE_RANGES = [
 
 export function Header() {
   const router = useRouter();
-  const [dateRange, setDateRange] = useState("This Month");
+  const { toggleMobileMenu } = useLayoutStore();
+  const [dateRange, setDateRange] = useState<string>("This Month");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -132,40 +135,41 @@ export function Header() {
     
     accounts.forEach(a => {
       if (a.name.toLowerCase().includes(q) || a.type.toLowerCase().includes(q)) {
-        results.push({ label: `${a.name} (${a.type})`, type: "Account", href: "/banks" });
+        results.push({ label: a.name, type: "Bank Account", href: "/banks" });
       }
     });
+    
     holdings.forEach(h => {
-      if (h.symbol.toLowerCase().includes(q) || h.name.toLowerCase().includes(q)) {
-        results.push({ label: `${h.name} (${h.symbol})`, type: "Stock", href: "/stocks" });
+      if (h.symbol.toLowerCase().includes(q)) {
+        results.push({ label: h.symbol, type: "Stock", href: "/stocks" });
       }
     });
+
     funds.forEach(f => {
-      if (f.fund.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)) {
+      if (f.fund.toLowerCase().includes(q)) {
         results.push({ label: f.fund, type: "Mutual Fund", href: "/mutual-funds" });
       }
     });
+
     goals.forEach(g => {
       if (g.name.toLowerCase().includes(q)) {
         results.push({ label: g.name, type: "Goal", href: "/goals" });
       }
     });
-    return results.slice(0, 5); // Limit to top 5
+
+    return results;
   }, [searchQuery, accounts, holdings, funds, goals]);
 
-  const rawInsights: Insight[] = useMemo(() => {
-    const now = new Date();
-    const thisMonthExpenses = transactions.filter((t) => {
-      if (t.amount >= 0) return false;
-      const d = new Date(t.date);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    });
-    const monthlyExpense = thisMonthExpenses.reduce((s, t) => s + Math.abs(t.amount), 0);
-    const totalCash = accounts.reduce((s, a) => s + a.balance, 0);
-    const stockValue = holdings.reduce((s, h) => s + h.quantity * h.currentPrice, 0);
-    const stockInvested = holdings.reduce((s, h) => s + h.quantity * h.avgBuyPrice, 0);
-    const fundValue = funds.reduce((s, f) => s + f.current, 0);
-    const fundInvested = funds.reduce((s, f) => s + f.invested, 0);
+  const rawInsights = useMemo(() => {
+    const totalCash = accounts.reduce((acc, curr) => acc + curr.balance, 0);
+    const dateLimit = new Date();
+    dateLimit.setDate(1); 
+    const thisMonthExpenses = transactions.filter((t) => t.amount < 0 && new Date(t.date) >= dateLimit);
+    const monthlyExpense = Math.abs(thisMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0));
+    const stockValue = holdings.reduce((acc, curr) => acc + (curr.quantity * curr.currentPrice), 0);
+    const stockInvested = holdings.reduce((acc, curr) => acc + (curr.quantity * curr.avgBuyPrice), 0);
+    const fundValue = funds.reduce((acc, curr) => acc + curr.current, 0);
+    const fundInvested = funds.reduce((acc, curr) => acc + curr.invested, 0);
     const goalsNearComplete = goals
       .filter((g) => g.targetAmount > 0 && g.currentAmount / g.targetAmount >= 0.75 && g.currentAmount < g.targetAmount)
       .map((g) => g.name);
@@ -196,11 +200,19 @@ export function Header() {
 
   return (
     <header 
-      className="fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
+      className={`fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
+      {/* Mobile Menu Trigger */}
+      <button 
+        onClick={toggleMobileMenu}
+        className="mr-4 p-2 text-muted-foreground hover:text-foreground md:hidden rounded-full hover:bg-foreground/5 transition-colors"
+      >
+        <Menu size={24} />
+      </button>
+
       {/* --- Left Column: Search --- */}
       <div className="flex-1 flex items-center gap-2 sm:gap-4">
-        <div className="hidden md:flex items-center">
+        <div className="hidden sm:flex items-center">
           <div className="relative group" ref={searchContainerRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
@@ -246,152 +258,142 @@ export function Header() {
         </div>
       </div>
 
-
       {/* --- Right Column: Actions --- */}
-      <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-3">
-        
-        {/* Theme Toggle */}
-        <button 
-          onClick={toggleTheme}
-          className="p-2 h-9 w-9 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-all group outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          title="Toggle Theme"
-        >
-          {isDark ? (
-            <Sun className="h-4 w-4 text-muted-foreground group-hover:text-yellow-400 group-hover:scale-110 transition-all" />
-          ) : (
-            <Moon className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 group-hover:scale-110 transition-all" />
-          )}
-        </button>
-
+      <div className="flex items-center gap-1 sm:gap-3">
         {/* Date Range Selector */}
         <DropdownMenu>
-          <DropdownMenuTrigger render={<button className="hidden md:flex items-center gap-2 px-4 py-1.5 h-9 rounded-full border border-transparent bg-foreground/5 hover:bg-foreground/10 cursor-pointer transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs font-semibold text-foreground">{dateRange}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50" />
+          <DropdownMenuTrigger className="hidden sm:flex items-center gap-2 px-3 py-1.5 h-9 rounded-xl hover:bg-foreground/5 transition-all text-xs font-bold text-muted-foreground outline-none">
+            <Calendar size={14} />
+            <span>{dateRange}</span>
+            <ChevronDown size={14} className="ml-1" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-card/90 border-border/50 backdrop-blur-xl rounded-2xl p-1 shadow-2xl">
-            {DATE_RANGES.map((range) => (
-              <DropdownMenuItem
-                key={range.label}
-                className={`cursor-pointer rounded-xl px-3 py-2 text-xs ${dateRange === range.label ? "bg-primary/10 text-primary font-bold" : "focus:bg-primary/5 focus:text-foreground"}`}
-                onClick={() => setDateRange(range.label)}
-              >
-                {range.label}
-                {dateRange === range.label && <span className="ml-auto text-primary">✓</span>}
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent align="end" className="w-48 p-1 rounded-2xl border-border/50 backdrop-blur-xl">
+             <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-3 py-2">Select Range</DropdownMenuLabel>
+             <DropdownMenuSeparator className="bg-border/50" />
+             <DropdownMenuGroup>
+               {DATE_RANGES.map((r) => (
+                 <DropdownMenuItem 
+                   key={r.label}
+                   onClick={() => setDateRange(r.label)}
+                   className="flex items-center justify-between rounded-xl px-3 py-2.5 cursor-pointer focus:bg-primary/10 group"
+                 >
+                   <span className="text-sm font-medium">{r.label}</span>
+                   {dateRange === r.label && <CheckCircle2 size={14} className="text-primary" />}
+                 </DropdownMenuItem>
+               ))}
+             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Notifications — real data-driven insights */}
+        {/* Theme Toggle */}
+        <button 
+          onClick={toggleTheme}
+          className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all"
+        >
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
+        {/* Export Button */}
+        <button className="hidden sm:flex items-center gap-2 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all">
+          <Download size={18} />
+        </button>
+
+        <div className="h-4 w-[1px] bg-border/50 mx-2 hidden sm:block" />
+
+        {/* Notifications */}
         <DropdownMenu>
-          <DropdownMenuTrigger render={<button className="relative p-2 h-9 w-9 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-all group outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
-            <Bell className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all" />
+          <DropdownMenuTrigger className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all outline-none">
+            <Bell size={18} />
             {insights.length > 0 && (
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse" />
             )}
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 mt-2 bg-card/95 border-border/50 backdrop-blur-xl p-0 overflow-hidden shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-foreground/5 bg-foreground/5">
-              <span className="font-bold text-sm tracking-tight">Insights & Alerts</span>
-              {insights.length > 0 ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markAllAsRead();
-                  }}
-                  className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+          <DropdownMenuContent align="end" className="w-[320px] sm:w-[380px] p-2 rounded-3xl border-border/50 backdrop-blur-2xl shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black tracking-tight uppercase">Intelligence</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">{insights.length}</span>
+              </div>
+              {insights.length > 0 && (
+                <button 
+                  onClick={markAllAsRead}
+                  className="text-[10px] font-bold text-primary hover:underline transition-all"
                 >
-                  <CheckCircle2 size={10} /> Mark read
+                  Clear All
                 </button>
-              ) : null}
+              )}
             </div>
-            <div className="max-h-[350px] overflow-y-auto no-scrollbar p-1">
-              {insights.length === 0 ? (
-                <div className="p-10 text-center flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <CheckCircle2 className="text-primary/40" size={20} />
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium">You're all caught up!</span>
+            <div className="max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
+              {insights.length > 0 ? (
+                <div className="space-y-2">
+                  {insights.map((insight) => (
+                    <motion.div 
+                      key={insight.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="p-4 rounded-2xl bg-foreground/[0.03] border border-border/40 hover:border-primary/20 transition-all group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-xl bg-background border border-border/50 text-foreground group-hover:text-primary transition-colors`}>
+                          {insight.severity === 'positive' ? <CheckCircle2 size={16} /> : <Info size={16} />}
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-xs font-bold leading-tight">{insight.title}</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">{insight.description}</p>
+                        </div>
+                        <button 
+                          onClick={() => setClearedInsights(prev => ({ ...prev, [insight.id]: true }))}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-all"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               ) : (
-                insights.map((insight) => (
-                  <div key={insight.id} className="p-4 rounded-xl border border-transparent hover:border-foreground/5 hover:bg-foreground/5 transition-all cursor-default group/insight mb-1">
-                    <div className="flex justify-between items-start mb-1.5">
-                      <h4 className={`text-xs font-bold leading-tight ${insight.severity === 'warning' ? 'text-destructive' : insight.severity === 'positive' ? 'text-primary' : 'text-blue-400'}`}>
-                        {insight.title}
-                      </h4>
-                      <span className="text-[9px] font-medium text-muted-foreground opacity-60 tracking-tight">{insight.timestamp}</span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground/80 leading-relaxed group-hover/insight:text-muted-foreground transition-colors line-clamp-2">
-                      {insight.description}
-                    </p>
-                    {insight.actionable && insight.actionHref && (
-                      <button
-                        onClick={() => router.push(insight.actionHref!)}
-                        className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-all"
-                      >
-                        {insight.actionLabel}
-                      </button>
-                    )}
+                <div className="py-12 flex flex-col items-center justify-center text-center opacity-40 italic">
+                  <div className="p-4 rounded-full bg-foreground/5 mb-4">
+                    <CheckCircle2 size={32} className="text-muted-foreground" />
                   </div>
-                ))
+                  <p className="text-sm">Everything is optimized.</p>
+                </div>
               )}
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Profile / Auth */}
-        {user ? (
-          // Logged-in profile dropdown
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-background transition-transform hover:scale-105 active:scale-95" />}>
-              <Avatar className="h-8 w-8 border border-primary/30 shadow-[0_0_12px_rgba(0,255,156,0.15)]">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{userInitials}</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 mt-2 bg-card/95 border-border/50 backdrop-blur-xl rounded-2xl p-1 shadow-2xl">
-              <div className="px-4 py-4 border-b border-border/50 flex items-center gap-3">
-                <Avatar className="h-9 w-9 border-2 border-primary/20">
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">{userInitials}</AvatarFallback>
-                </Avatar>
-                <div className="overflow-hidden">
-                  <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate opacity-70 tracking-tight">{user.email}</p>
-                </div>
-              </div>
-              <div className="p-1">
-                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/settings")}>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/goals")}>
-                  Goals
-                </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/analytics")}>
-                  Analytics
-                </DropdownMenuItem>
-              </div>
-              <DropdownMenuSeparator className="bg-border/50 mx-2" />
-              <div className="p-1">
-                <DropdownMenuItem
-                  className="rounded-xl px-4 py-2.5 text-xs font-bold text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer transition-colors"
-                  onClick={handleLogout}
-                >
-                  Log out
-                </DropdownMenuItem>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          // Guest — show Sign In button
-          <button
-            onClick={() => router.push("/login")}
-            className="flex items-center gap-2 px-5 py-1.5 h-9 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-[0_8px_16px_rgba(0,255,156,0.2)]"
-          >
-            Sign In
-          </button>
-        )}
+        {/* User Profile */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="h-9 w-9 border-2 border-border/50 hover:border-primary/50 transition-all cursor-pointer ring-offset-2 ring-offset-background hover:ring-2 hover:ring-primary/20 rounded-full overflow-hidden outline-none">
+            <Avatar className="h-full w-full">
+              <AvatarImage src={undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
+                {userInitials}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-border/50 backdrop-blur-xl">
+            <div className="px-3 py-3 space-y-1">
+              <p className="text-sm font-black text-foreground truncate">{user?.name || 'Guest User'}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{user?.email || 'Public Session'}</p>
+            </div>
+            <DropdownMenuSeparator className="bg-border/50" />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5">
+                <Settings size={16} className="text-muted-foreground" />
+                <span className="text-sm font-bold">Preferences</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-destructive/10 text-destructive group"
+              >
+                <Download size={16} className="group-hover:rotate-180 transition-transform" />
+                <span className="text-sm font-bold">Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

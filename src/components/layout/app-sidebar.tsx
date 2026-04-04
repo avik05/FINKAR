@@ -31,6 +31,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
+import { Menu, X } from "lucide-react";
+import { useLayoutStore } from "@/stores/layout-store";
+
 const navItems = [
   { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
   { name: "Banks", url: "/banks", icon: Landmark },
@@ -46,19 +49,37 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { isLoggedIn } = useAuthStore();
+  const { isMobileMenuOpen, setMobileMenuOpen } = useLayoutStore();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/5 bg-sidebar/30 backdrop-blur-3xl shadow-[20px_0_50px_rgba(0,0,0,0.1)] z-50 flex flex-col transition-all duration-300">
-      {/* Branding Header */}
-      <div className="h-24 flex items-center px-8 border-b border-border/10 shrink-0">
-        <Link href="/" className="flex items-center gap-0 group hover:scale-[1.02] transition-all duration-300">
-          <span className="text-3xl font-sans font-bold text-foreground">Fin</span>
-          <div className="flex items-center -ml-0.5">
-            <span className="text-3xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,255,156,0.5)] transition-all">क</span>
-            <span className="text-3xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,255,156,0.5)] transition-all relative -ml-[1px]">₹</span>
-          </div>
-        </Link>
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden transition-opacity duration-300"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside 
+        className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-border/10 bg-sidebar flex flex-col transition-transform duration-500 ease-in-out
+        ${isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}>
+        
+        {/* Branding Header */}
+        <div className="h-32 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
+          <Link href="/" className="flex items-center gap-0 group hover:scale-[1.02] transition-all duration-300">
+            <span className="text-5xl font-sans font-bold text-foreground tracking-tighter">Fin</span>
+            <span className="text-5xl font-sans font-bold text-primary tracking-tighter ml-1">कर</span>
+          </Link>
+
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-3 -mr-2 text-muted-foreground hover:text-foreground md:hidden rounded-full hover:bg-foreground/10 transition-colors"
+          >
+            <X size={28} />
+          </button>
+        </div>
 
       {/* Navigation Content */}
       <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-hide">
@@ -127,6 +148,7 @@ export function AppSidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }
 

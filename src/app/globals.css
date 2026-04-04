@@ -127,7 +127,8 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans;
+    /* Removed scroll-smooth to prevent conflicts with Framer Motion scroll listeners */
   }
   
   /* Custom sleek scrollbar */
