@@ -72,10 +72,6 @@ export function Header() {
     setIsDark(!isDark);
   };
   
-  const handleExport = () => {
-    window.print();
-  };
-
   const accounts = useAccountsStore((s) => s.accounts);
   const transactions = useTransactionsStore((s) => s.transactions);
   const holdings = useStocksStore((s) => s.holdings);
@@ -164,47 +160,47 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-20 shrink-0 w-full items-center gap-4 border-b border-border/40 bg-background/60 px-6 backdrop-blur-xl transition-all duration-300">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex h-14 w-[95%] max-w-6xl shrink-0 items-center gap-4 rounded-full border border-border/40 bg-background/40 px-6 backdrop-blur-md shadow-lg transition-all duration-500 hover:bg-background/50 hover:shadow-xl hover:border-primary/20">
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-2 hover:bg-foreground/5 data-[state=open]:bg-foreground/5 transition-colors" />
+        <SidebarTrigger className="-ml-1 h-8 w-8 hover:bg-foreground/10 data-[state=open]:bg-foreground/10 transition-all rounded-full" />
         <div className="hidden md:flex items-center">
           <div className="relative group" ref={searchContainerRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
-              placeholder="Search accounts, stocks, or goals..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
-              className="w-[300px] lg:w-[400px] pl-10 bg-card/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-full transition-all duration-300"
+              className="w-[180px] lg:w-[320px] h-9 pl-10 bg-black/5 dark:bg-white/5 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:bg-background rounded-full transition-all duration-300"
             />
             
             {/* Search Dropdown overlay */}
             {isSearchOpen && searchQuery.trim() !== "" && (
-              <div className="absolute top-full left-0 mt-2 w-full bg-card/95 border border-border/50 rounded-xl shadow-xl backdrop-blur-md overflow-hidden z-50">
+              <div className="absolute top-full left-0 mt-3 w-full bg-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden z-50">
                 {searchResults.length > 0 ? (
-                  <ul className="max-h-[300px] overflow-y-auto">
+                  <ul className="max-h-[300px] overflow-y-auto p-1">
                     {searchResults.map((res, idx) => (
                       <li key={idx}>
                         <button
-                          className="w-full text-left px-4 py-3 hover:bg-foreground/5 flex flex-col items-start transition-colors"
+                          className="w-full text-left px-4 py-3 hover:bg-primary/10 rounded-xl flex flex-col items-start transition-colors group/res"
                           onClick={() => {
                             setSearchQuery("");
                             setIsSearchOpen(false);
                             router.push(res.href);
                           }}
                         >
-                          <span className="font-medium text-sm text-foreground">{res.label}</span>
-                          <span className="text-xs text-muted-foreground mt-0.5">{res.type}</span>
+                          <span className="font-medium text-sm text-foreground group-hover/res:text-primary transition-colors">{res.label}</span>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">{res.type}</span>
                         </button>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="px-4 py-6 text-center text-muted-foreground text-sm">
+                  <div className="px-4 py-8 text-center text-muted-foreground text-sm">
                     No results found for "{searchQuery}"
                   </div>
                 )}
@@ -214,42 +210,33 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
+      <div className="flex flex-1 items-center justify-end gap-2 md:gap-3">
         
-        {/* Export / Print Report */}
-        <button 
-          onClick={handleExport}
-          className="p-2 rounded-full hover:bg-foreground/10 transition-colors group outline-none focus-visible:ring-2 focus-visible:ring-primary hidden sm:block tooltip-trigger"
-          title="Export Report"
-        >
-          <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-        </button>
-
         {/* Theme Toggle */}
         <button 
           onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-foreground/10 transition-colors group outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="p-2 h-9 w-9 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-all group outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title="Toggle Theme"
         >
           {isDark ? (
-            <Sun className="h-5 w-5 text-muted-foreground group-hover:text-yellow-400 transition-colors" />
+            <Sun className="h-4 w-4 text-muted-foreground group-hover:text-yellow-400 group-hover:scale-110 transition-all" />
           ) : (
-            <Moon className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+            <Moon className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 group-hover:scale-110 transition-all" />
           )}
         </button>
 
         {/* Date Range Selector */}
         <DropdownMenu>
-          <DropdownMenuTrigger render={<button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border border-border/50 bg-card/50 hover:bg-card/80 cursor-pointer transition-colors backdrop-blur-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{dateRange}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <DropdownMenuTrigger render={<button className="hidden md:flex items-center gap-2 px-4 py-1.5 h-9 rounded-full border border-transparent bg-foreground/5 hover:bg-foreground/10 cursor-pointer transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground">{dateRange}</span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-card border-border/50 backdrop-blur-xl">
+          <DropdownMenuContent align="end" className="w-48 bg-card/90 border-border/50 backdrop-blur-xl rounded-2xl p-1 shadow-2xl">
             {DATE_RANGES.map((range) => (
               <DropdownMenuItem
                 key={range.label}
-                className={`cursor-pointer ${dateRange === range.label ? "text-primary font-semibold" : "focus:bg-foreground/5 focus:text-foreground"}`}
+                className={`cursor-pointer rounded-xl px-3 py-2 text-xs ${dateRange === range.label ? "bg-primary/10 text-primary font-bold" : "focus:bg-primary/5 focus:text-foreground"}`}
                 onClick={() => setDateRange(range.label)}
               >
                 {range.label}
@@ -261,48 +248,51 @@ export function Header() {
 
         {/* Notifications — real data-driven insights */}
         <DropdownMenu>
-          <DropdownMenuTrigger render={<button className="relative p-2 rounded-full hover:bg-foreground/10 transition-colors group outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
-            <Bell className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <DropdownMenuTrigger render={<button className="relative p-2 h-9 w-9 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-all group outline-none focus-visible:ring-2 focus-visible:ring-primary" />}>
+            <Bell className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all" />
             {insights.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(0,255,156,0.8)] animate-pulse" />
             )}
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 bg-card/90 border-border/50 backdrop-blur-xl p-0 overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-foreground/5 bg-black/20">
-              <span className="font-semibold font-heading">Insights & Alerts</span>
+          <DropdownMenuContent align="end" className="w-80 mt-2 bg-card/95 border-border/50 backdrop-blur-xl p-0 overflow-hidden shadow-2xl rounded-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-foreground/5 bg-foreground/5">
+              <span className="font-bold text-sm tracking-tight">Insights & Alerts</span>
               {insights.length > 0 ? (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     markAllAsRead();
                   }}
-                  className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <CheckCircle2 size={12} /> Mark read
+                  <CheckCircle2 size={10} /> Mark read
                 </button>
               ) : null}
             </div>
-            <div className="max-h-[350px] overflow-y-auto no-scrollbar">
+            <div className="max-h-[350px] overflow-y-auto no-scrollbar p-1">
               {insights.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground text-sm">
-                  You're all caught up!
+                <div className="p-10 text-center flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <CheckCircle2 className="text-primary/40" size={20} />
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">You're all caught up!</span>
                 </div>
               ) : (
                 insights.map((insight) => (
-                  <div key={insight.id} className="p-4 border-b border-foreground/5 hover:bg-foreground/5 transition-colors cursor-default group/insight">
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className={`text-sm font-semibold flex items-center gap-2 ${insight.severity === 'warning' ? 'text-destructive' : insight.severity === 'positive' ? 'text-primary' : 'text-blue-400'}`}>
+                  <div key={insight.id} className="p-4 rounded-xl border border-transparent hover:border-foreground/5 hover:bg-foreground/5 transition-all cursor-default group/insight mb-1">
+                    <div className="flex justify-between items-start mb-1.5">
+                      <h4 className={`text-xs font-bold leading-tight ${insight.severity === 'warning' ? 'text-destructive' : insight.severity === 'positive' ? 'text-primary' : 'text-blue-400'}`}>
                         {insight.title}
                       </h4>
-                      <span className="text-[10px] text-muted-foreground">{insight.timestamp}</span>
+                      <span className="text-[9px] font-medium text-muted-foreground opacity-60 tracking-tight">{insight.timestamp}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground/80 leading-relaxed group-hover/insight:text-muted-foreground transition-colors">
+                    <p className="text-[11px] text-muted-foreground/80 leading-relaxed group-hover/insight:text-muted-foreground transition-colors line-clamp-2">
                       {insight.description}
                     </p>
                     {insight.actionable && insight.actionHref && (
                       <button
                         onClick={() => router.push(insight.actionHref!)}
-                        className="mt-3 text-xs font-medium text-foreground bg-foreground/5 hover:bg-foreground/10 px-3 py-1.5 rounded-lg border border-foreground/10 transition-colors"
+                        className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-all"
                       >
                         {insight.actionLabel}
                       </button>
@@ -319,39 +309,47 @@ export function Header() {
           // Logged-in profile dropdown
           <DropdownMenu>
             <DropdownMenuTrigger render={<button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-background transition-transform hover:scale-105 active:scale-95" />}>
-              <Avatar className="h-9 w-9 border border-primary/30 shadow-[0_0_12px_rgba(0,255,156,0.2)]">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">{userInitials}</AvatarFallback>
+              <Avatar className="h-8 w-8 border border-primary/30 shadow-[0_0_12px_rgba(0,255,156,0.15)]">
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{userInitials}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-card border-border/50 backdrop-blur-xl">
-              <div className="px-4 py-3 border-b border-border/50">
-                <p className="text-sm font-semibold text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <DropdownMenuContent align="end" className="w-64 mt-2 bg-card/95 border-border/50 backdrop-blur-xl rounded-2xl p-1 shadow-2xl">
+              <div className="px-4 py-4 border-b border-border/50 flex items-center gap-3">
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">{userInitials}</AvatarFallback>
+                </Avatar>
+                <div className="overflow-hidden">
+                  <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate opacity-70 tracking-tight">{user.email}</p>
+                </div>
               </div>
-              <DropdownMenuSeparator className="bg-border/50" />
-              <DropdownMenuItem className="focus:bg-foreground/5 focus:text-foreground cursor-pointer" onClick={() => router.push("/settings")}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-foreground/5 focus:text-foreground cursor-pointer" onClick={() => router.push("/goals")}>
-                Goals
-              </DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-foreground/5 focus:text-foreground cursor-pointer" onClick={() => router.push("/analytics")}>
-                Analytics
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border/50" />
-              <DropdownMenuItem
-                className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                onClick={handleLogout}
-              >
-                Log out
-              </DropdownMenuItem>
+              <div className="p-1">
+                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/settings")}>
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/goals")}>
+                  Goals
+                </DropdownMenuItem>
+                <DropdownMenuItem className="rounded-xl px-4 py-2.5 text-xs font-semibold focus:bg-primary/10 focus:text-primary cursor-pointer transition-colors" onClick={() => router.push("/analytics")}>
+                  Analytics
+                </DropdownMenuItem>
+              </div>
+              <DropdownMenuSeparator className="bg-border/50 mx-2" />
+              <div className="p-1">
+                <DropdownMenuItem
+                  className="rounded-xl px-4 py-2.5 text-xs font-bold text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer transition-colors"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           // Guest — show Sign In button
           <button
             onClick={() => router.push("/login")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 hover:border-primary/50 transition-all shadow-[0_0_12px_rgba(0,255,156,0.15)] hover:shadow-[0_0_20px_rgba(0,255,156,0.3)]"
+            className="flex items-center gap-2 px-5 py-1.5 h-9 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-[0_8px_16px_rgba(0,255,156,0.2)]"
           >
             Sign In
           </button>

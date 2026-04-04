@@ -65,7 +65,7 @@ export default function RootLayout({
               <AppSidebar />
               <div className="flex flex-col flex-1 overflow-hidden z-10 w-full relative">
                 <Header />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth transition-all duration-300">
+                <main className="flex-1 overflow-y-auto pt-24 p-4 md:p-6 lg:p-8 scroll-smooth transition-all duration-300">
                   <div className="mx-auto max-w-7xl min-h-full flex flex-col pb-6">
                     <div className="flex-1">
                       {children}
