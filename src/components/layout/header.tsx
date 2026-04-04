@@ -182,10 +182,11 @@ export function Header() {
       }}
       animate={hidden ? "hidden" : "visible"}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-0 left-0 right-0 z-50 flex h-16 w-full shrink-0 items-center justify-between px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 flex h-16 w-full shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
     >
-      <div className="flex items-center gap-4">
-        <SidebarTrigger className="h-9 w-9 hover:bg-foreground/10 data-[state=open]:bg-foreground/10 transition-all rounded-full" />
+      {/* --- Left Column: Sidebar & Search --- */}
+      <div className="flex-1 flex items-center gap-2 sm:gap-4">
+        <SidebarTrigger className="h-9 w-9 hover:bg-foreground/10 data-[state=open]:bg-foreground/10 transition-all rounded-full shrink-0" />
         <div className="hidden md:flex items-center">
           <div className="relative group" ref={searchContainerRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -232,15 +233,16 @@ export function Header() {
         </div>
       </div>
 
-      {/* Centered Logo */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <Link href="/" className="flex items-center gap-0.5 group scale-90 sm:scale-110 hover:scale-105 sm:hover:scale-115 active:scale-95 transition-all duration-300">
-          <span className="text-2xl font-sans font-bold text-foreground">Fin</span>
-          <span className="text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
+      {/* --- Center Column: Logo --- */}
+      <div className="flex-shrink-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-10 transition-all">
+        <Link href="/" className="flex items-center gap-0.5 group scale-90 sm:scale-105 hover:scale-110 transition-all duration-300">
+          <span className="text-xl sm:text-2xl font-sans font-bold text-foreground">Fin</span>
+          <span className="text-xl sm:text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3">
+      {/* --- Right Column: Actions --- */}
+      <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-3">
         
         {/* Theme Toggle */}
         <button 

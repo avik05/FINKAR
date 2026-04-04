@@ -148,7 +148,7 @@ export default function AboutPage() {
         {/* --- HERO SECTION --- */}
         <motion.section 
           style={{ y: heroY, opacity: heroOpacity, scale: heroScale, pointerEvents: isHeroVisible }}
-          className="fixed left-0 right-0 md:left-[var(--sidebar-width)] top-32 flex flex-col items-center text-center px-6 z-0 pointer-events-none transition-[left] duration-300 ease-in-out group-has-[[data-state=collapsed]]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)]"
+          className="fixed left-0 right-0 md:left-[var(--sidebar-width)] top-20 sm:top-32 flex flex-col items-center text-center px-6 z-0 pointer-events-none transition-[left] duration-300 ease-in-out group-has-[[data-state=collapsed]]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)]"
         >
           <div className="pointer-events-auto">
             <motion.div 
@@ -165,7 +165,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 leading-[0.9]"
+              className="text-4xl sm:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 leading-[0.9]"
             >
               Finkar.<br />
               <span className="text-primary italic">Finance Simplified.</span>
@@ -195,7 +195,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col items-center gap-12"
+              className="flex flex-col items-center gap-8 sm:gap-12"
             >
               <Link
                 href="/dashboard"
@@ -226,13 +226,13 @@ export default function AboutPage() {
 
         <motion.section 
           style={{ y: contentY, opacity: contentOpacity }}
-          className="relative z-20 px-6 container mx-auto mt-40 rounded-[3rem] bg-background/80 backdrop-blur-3xl shadow-[0_-50px_100px_rgba(0,0,0,0.2)]"
+          className="relative z-20 px-6 container mx-auto mt-20 md:mt-40 rounded-[2rem] sm:rounded-[3rem] bg-background/80 backdrop-blur-3xl shadow-[0_-50px_100px_rgba(0,0,0,0.2)]"
         >
           <ScrollReveal direction="up">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div className="relative aspect-square max-w-sm mx-auto lg:mx-0 order-2 lg:order-1">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-primary/5 to-transparent rounded-[3rem] blur-3xl opacity-50" />
-                <FinanceCard className="relative p-12 border-primary/20 bg-card/30 backdrop-blur-3xl rounded-[3rem] shadow-2xl h-full flex flex-col items-center justify-center text-center">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-primary/5 to-transparent rounded-[2rem] sm:rounded-[3rem] blur-3xl opacity-50" />
+                <FinanceCard className="relative p-8 sm:p-12 border-primary/20 bg-card/30 backdrop-blur-3xl rounded-[2rem] sm:rounded-[3rem] shadow-2xl h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/40 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(0,255,156,0.15)]">
                     <GraduationCap size={48} className="text-primary" />
                   </div>
