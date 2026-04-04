@@ -139,7 +139,7 @@ export default function AboutPage() {
   const isHeroVisible = useTransform(scrollYProgress, [0, 0.035], [1, 0]);
 
   return (
-    <div ref={containerRef} className="relative min-h-full scroll-smooth bg-transparent">
+    <div ref={containerRef} className="relative min-h-full bg-transparent overflow-x-hidden">
       {/* ── Fixed Hero Backdrop (Glassmorphic) ── */}
       <div className="relative min-h-[450vh] pt-12 pb-24 overflow-x-hidden">
         {/* Soft blend for the top bar/sidebar area */}
@@ -148,7 +148,7 @@ export default function AboutPage() {
         {/* --- HERO SECTION --- */}
         <motion.section 
           style={{ y: heroY, opacity: heroOpacity, scale: heroScale, pointerEvents: isHeroVisible }}
-          className="fixed left-0 right-0 md:left-[var(--sidebar-width)] top-20 sm:top-32 flex flex-col items-center text-center px-6 z-0 pointer-events-none transition-[left] duration-300 ease-in-out group-has-[[data-state=collapsed]]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)]"
+          className="fixed inset-x-0 md:left-64 top-20 sm:top-32 flex flex-col items-center text-center px-6 z-0 pointer-events-none transition-all duration-300 ease-in-out"
         >
           <div className="pointer-events-auto">
             <motion.div 

@@ -50,10 +50,13 @@ export function AppSidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/5 bg-sidebar/30 backdrop-blur-3xl shadow-[20px_0_50px_rgba(0,0,0,0.1)] z-50 flex flex-col transition-all duration-300">
       {/* Branding Header */}
-      <div className="h-20 flex items-center px-6 border-b border-border/10 shrink-0">
-        <Link href="/" className="flex items-center gap-0.5 group scale-105 hover:scale-110 transition-all duration-300">
-          <span className="text-2xl font-sans font-bold text-foreground">Fin</span>
-          <span className="text-2xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.3)] transition-all">कर</span>
+      <div className="h-24 flex items-center px-8 border-b border-border/10 shrink-0">
+        <Link href="/" className="flex items-center gap-0 group hover:scale-[1.02] transition-all duration-300">
+          <span className="text-3xl font-sans font-bold text-foreground">Fin</span>
+          <div className="flex items-center -ml-0.5">
+            <span className="text-3xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,255,156,0.5)] transition-all">क</span>
+            <span className="text-3xl font-sans font-bold text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,255,156,0.5)] transition-all relative -ml-[1px]">₹</span>
+          </div>
         </Link>
       </div>
 
