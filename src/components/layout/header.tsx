@@ -293,11 +293,6 @@ export function Header() {
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        {/* Export Button */}
-        <button className="hidden sm:flex items-center gap-2 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all">
-          <Download size={18} />
-        </button>
-
         <div className="h-4 w-[1px] bg-border/50 mx-2 hidden sm:block" />
 
         {/* Notifications */}

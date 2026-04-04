@@ -90,7 +90,7 @@ export function AppSidebar() {
               <div key={item.name} className="relative group px-1">
                 <Link
                   href={item.url}
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group
+                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-[background-color,color,border-color,box-shadow] duration-300 group
                     ${isActive 
                       ? "bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(0,255,156,0.05)] border border-primary/20" 
                       : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
@@ -101,7 +101,7 @@ export function AppSidebar() {
                   {isActive && (
                     <motion.div 
                       layoutId="sidebar-active"
-                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(0,255,156,0.6)]"
+                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(0,255,156,0.6)] will-change-transform"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -118,7 +118,7 @@ export function AppSidebar() {
           href="https://finkar.substack.com/" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="block p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all group/newsletter overflow-hidden"
+          className="block p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-[background-color] duration-300 group/newsletter overflow-hidden"
         >
           <div className="flex items-center gap-3">
             <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />

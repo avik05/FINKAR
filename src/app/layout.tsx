@@ -41,45 +41,49 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${poppins.variable} h-full antialiased`}
     >
-      <head>
-        <script
+      <body className="min-h-full bg-background text-foreground">
+        {/* Theme Script - Optimized with next/script */}
+        <Script
+          id="theme-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('finkar-theme');if(t==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`,
           }}
         />
-      </head>
-      <body className="min-h-full bg-background text-foreground">
+        
         <CursorGlow />
         <AuthGuard>
           <StoreHydrator />
-          <div className="flex min-h-screen w-full bg-background bg-[url('/bg-noise.png')] bg-repeat bg-fixed relative overflow-x-hidden">
-            {/* Dot Grid Pattern — more visible in light mode */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0" 
-              style={{ 
-                backgroundImage: `radial-gradient(circle at 1.5px 1.5px, currentColor 1px, transparent 0)`,
-                backgroundSize: "24px 24px"
-              }} 
-            />
-            <BackgroundGlows />
-            
-            <AppSidebar />
-            
-            {/* Main content area - Shifted by sidebar width on desktop */}
-            <div className="flex flex-col flex-1 z-10 w-full relative md:pl-64 transition-all duration-300">
-              <Header />
-              <main className="flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-visible">
-                {/* Physical Header Spacer — Guaranteed Clearance */}
-                <div className="h-16 md:h-20 w-full shrink-0" />
-                
-                <div className="mx-auto max-w-7xl px-4 md:px-8 min-h-full flex flex-col pb-6">
-                  <div className="flex-1">
-                    {children}
+          <SidebarProvider defaultOpen={true}>
+            <div className="flex min-h-screen w-full bg-background bg-repeat bg-fixed relative overflow-x-hidden">
+              {/* Dot Grid Pattern — more visible in light mode */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0" 
+                style={{ 
+                  backgroundImage: `radial-gradient(circle at 1.5px 1.5px, currentColor 1px, transparent 0)`,
+                  backgroundSize: "24px 24px"
+                }} 
+              />
+              <BackgroundGlows />
+              
+              <AppSidebar />
+              
+              {/* Main content area - Shifted by sidebar width on desktop */}
+              <div className="flex flex-col flex-1 z-10 w-full relative md:pl-64 transition-[padding] duration-300 group-has-data-[sidebar=sidebar-wrapper][data-state=collapsed]:md:pl-20">
+                <Header />
+                <main className="flex-1 p-4 md:p-6 lg:p-8 transition-[padding] duration-300 overflow-visible">
+                  {/* Physical Header Spacer — Guaranteed Clearance */}
+                  <div className="h-16 md:h-20 w-full shrink-0" />
+                  
+                  <div className="mx-auto max-w-7xl px-4 md:px-8 min-h-full flex flex-col pb-6">
+                    <div className="flex-1">
+                      {children}
+                    </div>
+                    <Footer />
                   </div>
-                  <Footer />
-                </div>
-              </main>
+                </main>
+              </div>
             </div>
-          </div>
+          </SidebarProvider>
           <AiChatbotPanel />
         </AuthGuard>
       </body>

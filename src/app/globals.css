@@ -183,19 +183,21 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; filter: blur(100px) scale(1); }
-  50% { opacity: 0.6; filter: blur(120px) scale(1.05); }
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
 }
 
 @keyframes pulse-glow-dark {
-  0%, 100% { opacity: 0.5; filter: blur(120px) scale(1); }
-  50% { opacity: 0.8; filter: blur(140px) scale(1.1); }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
 .ambient-blob {
+  @apply blur-[100px] will-change-[transform,opacity];
   animation: pulse-glow 10s ease-in-out infinite alternate;
 }
 
 .dark .ambient-blob {
+  @apply blur-[120px] will-change-[transform,opacity];
   animation: pulse-glow-dark 10s ease-in-out infinite alternate;
 }
