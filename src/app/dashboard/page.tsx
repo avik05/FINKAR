@@ -232,11 +232,11 @@ export default function DashboardPage() {
                       {tx.amount > 0 ? <TrendingUp size={20} /> : <CreditCard size={20} />}
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors">{tx.merchant}</h4>
+                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">{tx.merchant}</h4>
                       <p className="text-xs text-muted-foreground flex gap-2 mt-0.5">
                         <span>{formatDate(tx.date)}</span>
-                        <span className="w-1 h-1 rounded-full bg-border self-center" />
-                        <span>{tx.accountName}</span>
+                        <span className="hidden sm:inline w-1 h-1 rounded-full bg-border self-center" />
+                        <span className="hidden sm:inline">{tx.accountName}</span>
                       </p>
                     </div>
                   </div>

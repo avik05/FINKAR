@@ -199,11 +199,11 @@ export default function AboutPage() {
             >
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-4 px-10 py-5 rounded-full bg-primary text-primary-foreground font-black text-lg hover:brightness-110 transition-all shadow-[0_20px_50px_rgba(0,255,156,0.4)] hover:shadow-[0_20px_70px_rgba(0,255,156,0.6)] active:scale-95 group"
+                className="inline-flex items-center gap-3 sm:gap-4 px-6 py-3 sm:px-10 sm:py-5 rounded-full bg-primary text-primary-foreground font-black text-sm sm:text-lg hover:brightness-110 transition-all shadow-[0_20px_50px_rgba(0,255,156,0.4)] hover:shadow-[0_20px_70px_rgba(0,255,156,0.6)] active:scale-95 group"
               >
-                <LayoutDashboard size={24} />
+                <LayoutDashboard size={18} className="sm:w-6 sm:h-6" />
                 EXPLORE DASHBOARD
-                <ArrowUpRight size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                <ArrowUpRight size={16} className="sm:w-5 sm:h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
 
               <motion.div 
@@ -337,16 +337,16 @@ export default function AboutPage() {
         </section>
 
         {/* --- WHO IT'S FOR --- */}
-        <section className="relative z-20 px-6 container mx-auto mt-40">
+        <section className="relative z-20 px-6 container mx-auto mt-20 md:mt-40">
           <ScrollReveal direction="up">
-            <FinanceCard className="p-12 md:p-20 bg-foreground/5 border-border/40 rounded-[4rem] overflow-hidden relative group">
+            <FinanceCard className="p-8 sm:p-12 md:p-20 bg-foreground/5 border-border/40 rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden relative group">
               <div className="relative flex flex-col lg:flex-row items-center gap-16">
                 <div className="lg:w-1/2 space-y-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest">
                     <Users size={12} /> Target Audience
                   </div>
-                  <h2 className="text-4xl md:text-7xl font-heading font-black leading-[1] text-foreground">Who is Finkar Built For?</h2>
-                  <p className="text-xl text-muted-foreground font-medium leading-relaxed">
+                  <h2 className="text-3xl sm:text-5xl md:text-7xl font-heading font-black leading-[1.1] text-foreground">Who is Finkar Built For?</h2>
+                  <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed">
                     Built for anyone who wants to stop guessing about their money and start understanding it.
                   </p>
                 </div>
@@ -358,10 +358,10 @@ export default function AboutPage() {
                     { emoji: "📊", label: "Aspiring investors", sub: "Tracking stocks, mutual funds & complex portfolios" },
                   ].map((item, i) => (
                     <div key={item.label} className="p-8 rounded-[2.5rem] bg-background/40 border border-border/40 hover:bg-primary/5 hover:border-primary/20 transition-all flex items-center gap-6 group/item">
-                      <span className="text-5xl group-hover/item:scale-120 transition-transform">{item.emoji}</span>
+                      <span className="text-4xl sm:text-5xl group-hover/item:scale-120 transition-transform">{item.emoji}</span>
                       <div>
-                        <p className="text-xl font-bold text-foreground leading-tight">{item.label}</p>
-                        <p className="text-xs text-muted-foreground mt-1 font-medium">{item.sub}</p>
+                        <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{item.label}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-medium">{item.sub}</p>
                       </div>
                     </div>
                   ))}
@@ -372,17 +372,17 @@ export default function AboutPage() {
         </section>
 
         {/* --- FINAL CTA --- */}
-        <section className="relative z-20 px-6 container mx-auto mt-60 text-center pb-40">
+        <section className="relative z-20 px-6 container mx-auto mt-32 md:mt-60 text-center pb-32 md:pb-40">
           <ScrollReveal>
-            <h2 className="text-6xl md:text-[8rem] font-heading font-black tracking-tighter mb-16 opacity-10">THE FUTURE.</h2>
+            <h2 className="text-2xl sm:text-6xl md:text-[8rem] font-heading font-black tracking-tighter mb-12 md:mb-16 opacity-10">THE FUTURE.</h2>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-6 px-16 py-8 rounded-[3.5rem] bg-primary text-primary-foreground font-black text-3xl hover:scale-110 active:scale-95 transition-all shadow-[0_45px_100px_rgba(0,255,156,0.3)] hover:shadow-primary/50"
+              className="inline-flex items-center gap-3 sm:gap-6 px-8 py-4 sm:px-16 sm:py-8 rounded-[1.5rem] sm:rounded-[3.5rem] bg-primary text-primary-foreground font-black text-lg sm:text-3xl hover:scale-110 active:scale-95 transition-all shadow-[0_45px_100px_rgba(0,255,156,0.3)] hover:shadow-primary/50"
             >
               LAUNCH DASHBOARD
-              <Rocket size={40} />
+              <Rocket size={24} className="sm:w-10 sm:h-10" />
             </Link>
-            <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar at GLIM Chennai</p>
+            <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-[9px] sm:text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar at GLIM Chennai</p>
           </ScrollReveal>
         </section>
       </div>

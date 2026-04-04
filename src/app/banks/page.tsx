@@ -124,10 +124,10 @@ export default function BanksPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border/50 text-xs text-muted-foreground bg-foreground/5">
-                    <th className="px-6 py-4 font-medium uppercase tracking-wider">Date</th>
+                    <th className="hidden sm:table-cell px-6 py-4 font-medium uppercase tracking-wider">Date</th>
                     <th className="px-6 py-4 font-medium uppercase tracking-wider">Merchant / Details</th>
-                    <th className="px-6 py-4 font-medium uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-4 font-medium uppercase tracking-wider">Account</th>
+                    <th className="hidden sm:table-cell px-6 py-4 font-medium uppercase tracking-wider">Category</th>
+                    <th className="hidden sm:table-cell px-6 py-4 font-medium uppercase tracking-wider">Account</th>
                     <th className="px-6 py-4 font-medium uppercase tracking-wider text-right">Amount</th>
                     <th className="px-6 py-4 font-medium uppercase tracking-wider w-10"></th>
                   </tr>
@@ -135,16 +135,17 @@ export default function BanksPage() {
                 <tbody className="divide-y divide-border/30">
                   {filteredTx.map((tx) => (
                     <tr key={tx.id} className="hover:bg-foreground/5 transition-colors group">
-                      <td className="px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">{formatDate(tx.date)}</td>
+                      <td className="hidden sm:table-cell px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">{formatDate(tx.date)}</td>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-sm text-foreground">{tx.merchant}</div>
+                        <div className="font-medium text-sm text-foreground truncate max-w-[150px] sm:max-w-none">{tx.merchant}</div>
+                        <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{formatDate(tx.date)}</div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="hidden sm:table-cell px-6 py-4">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-foreground/5 border border-border/50 text-muted-foreground">
                           <Tag size={12} />{tx.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{tx.accountName}</td>
+                      <td className="hidden sm:table-cell px-6 py-4 text-sm text-muted-foreground">{tx.accountName}</td>
                       <td className={`px-6 py-4 text-sm font-semibold text-right whitespace-nowrap ${tx.amount > 0 ? 'text-primary' : 'text-foreground'}`}>
                         <div className="flex justify-end items-center gap-1">
                           {tx.amount > 0 ? <ArrowUpRight size={14} className="text-primary" /> : <ArrowDownRight size={14} className="text-muted-foreground" />}
