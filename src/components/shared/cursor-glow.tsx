@@ -13,27 +13,11 @@ export function CursorGlow() {
   const cursorX = useSpring(mouseX, springConfig);
   const cursorY = useSpring(mouseY, springConfig);
 
-  // Velocity tracking for scale
-  const [velocity, setVelocity] = useState(0);
-  const lastPos = useRef({ x: 0, y: 0, time: Date.now() });
-
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX, clientY } = e;
       mouseX.set(clientX);
       mouseY.set(clientY);
-      
-      // Calculate velocity
-      const now = Date.now();
-      const dt = now - lastPos.current.time;
-      const dx = clientX - lastPos.current.x;
-      const dy = clientY - lastPos.current.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const v = dt > 0 ? dist / dt : 0;
-      
-      setVelocity(prev => Math.min(v * 2, 8)); // Cap velocity multiplier
-      
-      lastPos.current = { x: clientX, y: clientY, time: now };
       
       // Check if hovering over an interactive element
       const target = e.target as HTMLElement;
@@ -61,7 +45,7 @@ export function CursorGlow() {
 
       {/* 2. Large Interactive Ambient Glow */}
       <motion.div
-        className="pointer-events-none fixed top-0 left-0 z-0 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px] transition-opacity duration-1000"
+        className="pointer-events-none fixed top-0 left-0 z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px] transition-opacity duration-1000"
         style={{
           x: cursorX,
           y: cursorY,
@@ -72,18 +56,17 @@ export function CursorGlow() {
 
       {/* 3. Outer Cursor Ring (Kinetic) */}
       <motion.div
-        className="pointer-events-none fixed top-0 left-0 z-50 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/40 bg-primary/5 hidden md:block"
+        className="pointer-events-none fixed top-0 left-0 z-[100] h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/40 bg-primary/5 hidden md:block"
         style={{
           x: cursorX,
           y: cursorY,
-          scale: (isHovering ? 2 : 1) + (velocity * 0.1),
-          rotate: velocity * 5,
+          scale: isHovering ? 2 : 1,
         }}
       />
 
       {/* 4. Center Dot (Precise) */}
       <motion.div
-        className="pointer-events-none fixed top-0 left-0 z-50 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary hidden md:block"
+        className="pointer-events-none fixed top-0 left-0 z-[100] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary hidden md:block"
         style={{
           x: cursorX,
           y: cursorY,

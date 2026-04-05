@@ -94,32 +94,32 @@ const features = [
   {
     icon: Landmark,
     title: "Bank Account Tracking",
-    desc: "Aggregate all your accounts and get a clear picture of your cash flow and spending patterns.",
+    desc: "Aggregate your accounts and get a clear picture of your total liquidity and cash flow patterns.",
   },
   {
     icon: TrendingUp,
     title: "Stock Portfolio Tracking",
-    desc: "Track your NSE/BSE holdings, monitor real-time P&L, and analyse sector allocation.",
+    desc: "Track your NSE/BSE holdings, monitor real-time P&L, and manage your equity positions in one view.",
   },
   {
     icon: PieChart,
     title: "Mutual Fund Tracking",
-    desc: "Monitor SIPs, compare NAVs, calculate XIRR, and understand your fund performance.",
+    desc: "Monitor SIPs, compare NAVs, and track fund performance with calculated XIRR values.",
   },
   {
     icon: CreditCard,
     title: "Expense Tracking",
-    desc: "Categorise spending, spot patterns, set budgets, and stop financial leaks before they grow.",
+    desc: "Categorise spending, spot patterns across all accounts, and identify leaks in your daily burn rate.",
   },
   {
     icon: BarChart3,
-    title: "Robo Analyser",
-    desc: "AI-assisted portfolio analysis that surfaces risk exposure, diversification gaps, and actionable insights.",
+    title: "Financial Intelligence",
+    desc: "Advanced analysis of your wealth health, including runway calculations and future milestone forecasting.",
   },
   {
     icon: Target,
     title: "Goal Planning",
-    desc: "Set savings goals — be it an emergency fund, a vacation, or an MBA reserve — and track progress visually.",
+    desc: "Set and visualize savings goals — for emergency funds, vacations, or major life milestones.",
   },
 ];
 
@@ -128,18 +128,18 @@ export default function AboutPage() {
   const { scrollYProgress } = useScroll();
   const { state, isMobile } = useSidebar();
 
-  const heroY = useTransform(scrollYProgress, [0, 0.04], [0, -400]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.03], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.03], [1, 0.95]);
+  const heroY = useTransform(scrollYProgress, [0, 0.05], [0, -300]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.04], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.04], [1, 0.95]);
   
-  const contentY = useTransform(scrollYProgress, [0.03, 0.15], [150, 0]);
+  const contentY = useTransform(scrollYProgress, [0.04, 0.12], [150, 0]);
   const contentOpacity = useTransform(scrollYProgress, [0.03, 0.08], [0, 1]);
 
   // Interaction logic
   const [isHeroInteractive, setIsHeroInteractive] = React.useState(true);
   React.useEffect(() => {
     return scrollYProgress.on("change", (latest) => {
-      setIsHeroInteractive(latest < 0.04);
+      setIsHeroInteractive(latest < 0.05);
     });
   }, [scrollYProgress]);
 
@@ -150,18 +150,19 @@ export default function AboutPage() {
   return (
     <div ref={containerRef} className="relative min-h-full bg-background overflow-x-hidden">
       {/* ── Fixed Hero Backdrop (Glassmorphic) ── */}
-      <div className="relative min-h-[450vh] pt-12 pb-24">
+      <div className="relative min-h-[200vh] pt-12 pb-24">
         
         {/* --- HERO SECTION --- */}
         <motion.section 
           style={{ 
             y: heroY, 
-            opacity: heroOpacity, 
+            opacity: heroOpacity,
             scale: heroScale,
             left: sidebarOffset,
-            display: isHeroInteractive ? "flex" : "none" 
+            display: isHeroInteractive ? "flex" : "none",
+            willChange: "transform, opacity"
           }}
-          className="fixed inset-0 flex flex-col items-center justify-center text-center px-6 z-0 pointer-events-auto transition-[left] duration-300 ease-in-out"
+          className="fixed inset-0 flex flex-col items-center justify-center text-center px-6 z-0 transition-[left] duration-300 ease-in-out"
         >
           <div className="will-change-transform">
             <motion.div 
@@ -179,7 +180,7 @@ export default function AboutPage() {
               className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 leading-[0.9]"
             >
               Finkar.<br />
-              <span className="text-primary italic">Finance Simplified.</span>
+              <span className="text-primary italic">Finance, Simplified.</span>
             </motion.h1>
 
             <motion.div
@@ -189,7 +190,7 @@ export default function AboutPage() {
               className="flex items-center justify-center gap-3 mb-10"
             >
               <div className="h-[1px] w-8 bg-border" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Founded by Avik Majumdar</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">By Avik Majumdar</span>
               <div className="h-[1px] w-8 bg-border" />
             </motion.div>
 
@@ -205,11 +206,11 @@ export default function AboutPage() {
             <motion.div className="flex flex-col items-center gap-12">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-4 px-10 py-5 rounded-full bg-primary text-primary-foreground font-black text-lg hover:brightness-110 shadow-lg active:scale-95 group transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 shadow-lg active:scale-95 group transition-all"
               >
-                <LayoutDashboard size={24} />
+                <LayoutDashboard size={18} />
                 EXPLORE DASHBOARD
-                <ArrowUpRight size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
 
               <motion.div 
@@ -241,7 +242,7 @@ export default function AboutPage() {
                   <h2 className="text-3xl font-black mb-1">Avik Majumdar</h2>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6">Founder & Architect</p>
                   <p className="text-sm text-muted-foreground italic font-medium leading-relaxed max-w-xs">
-                    &quot;Finkar started as an undergraduate itch to solve my own financial confusion. Today, it&apos;s a mission.&quot;
+                    &quot;Finkar started as an undergraduate itch to solve my own financial confusion. Today, it&apos;s a mission to bring that same clarity to everyone.&quot;
                   </p>
                   <div className="flex gap-4 mt-8">
                     <Link href="https://www.linkedin.com/in/avik0508" target="_blank" className="w-10 h-10 rounded-full bg-foreground/5 flex items-center justify-center text-muted-foreground hover:bg-[#0A66C2] hover:text-white transition-all">
@@ -262,10 +263,13 @@ export default function AboutPage() {
                   <h2 className="text-5xl md:text-7xl font-heading font-black leading-[0.9] mb-8">The Story of <span className="text-primary">Finkar.</span></h2>
                   <div className="space-y-6 text-xl text-muted-foreground font-medium leading-relaxed">
                     <p>
-                      Finkar started during my <strong className="text-foreground">second year of undergrad</strong>. Today, as I pursue my MBA at <strong className="text-primary tracking-tight italic">Great Lakes, Chennai</strong>, the mission has evolved into a global vision for financial clarity.
+                      Finkar was born during my <strong className="text-foreground">second year of undergrad in 2022</strong>. I was tired of complicated spreadsheets and finance apps that were just billboards for credit cards.
                     </p>
                     <p>
-                      I wanted something for us — students and young professionals — who need <em className="text-foreground font-bold italic underline decoration-primary/40 decoration-4 underline-offset-4">clarity without the noise.</em>
+                      Now, as I pursue my MBA at <strong className="text-primary tracking-tight font-black italic">Great Lakes, Chennai</strong>, the vision remains the same: to build a clean, powerful source of truth for your money.
+                    </p>
+                    <p>
+                      We don&apos;t sell your data, and we don&apos;t push loans. We just give you the <em className="text-foreground font-bold italic underline decoration-primary/40 decoration-4 underline-offset-4">clarity you deserve.</em>
                     </p>
                   </div>
                 </ScrollReveal>
@@ -282,7 +286,7 @@ export default function AboutPage() {
                 <Rocket size={48} className="text-primary mb-10" />
                 <h3 className="text-4xl font-heading font-black mb-6 uppercase tracking-tighter italic text-primary">Our Mission</h3>
                 <p className="text-xl text-muted-foreground leading-relaxed font-bold">
-                  Make personal finance tracking <strong className="text-foreground">simple, accessible, and insightful</strong> for every individual.
+                  To provide <strong className="text-foreground">radical financial clarity</strong> for every individual through simple, insightful data.
                 </p>
               </FinanceCard>
             </ScrollReveal>
@@ -291,7 +295,7 @@ export default function AboutPage() {
                 <Globe size={48} className="text-blue-400 mb-10" />
                 <h3 className="text-4xl font-heading font-black mb-6 uppercase tracking-tighter italic text-blue-400">Our Vision</h3>
                 <p className="text-xl text-muted-foreground leading-relaxed font-bold">
-                  Build Finkar into a <strong className="text-foreground">comprehensive financial ecosystem</strong> — from expense tracking to deep portfolio analytics.
+                  To become India&apos;s <strong className="text-foreground">most trusted</strong> personal finance dashboard for the next generation of investors.
                 </p>
               </FinanceCard>
             </ScrollReveal>
@@ -344,9 +348,9 @@ export default function AboutPage() {
                 
                 <div className="lg:w-1/2 grid grid-cols-1 gap-6 w-full">
                   {[
-                    { emoji: "🎓", label: "Students & freshers", sub: "Building financial habits early in life" },
-                    { emoji: "💼", label: "Young professionals", sub: "Managing salary, savings & investments" },
-                    { emoji: "📊", label: "Aspiring investors", sub: "Tracking stocks & mutual funds" },
+                    { emoji: "🎓", label: "Students & Freshers", sub: "Building smart financial habits early in life." },
+                    { emoji: "💼", label: "Young Professionals", sub: "Managing salary, savings, and investments in one place." },
+                    { emoji: "📊", label: "Individual Investors", sub: "Tracking stocks and mutual funds with total clarity." },
                   ].map((item) => (
                     <div key={item.label} className="p-6 rounded-[2rem] bg-background/40 border border-border/40 flex items-center gap-6 group hover:bg-primary/5 transition-colors">
                       <span className="text-4xl group-hover:scale-110 transition-transform">{item.emoji}</span>
@@ -368,10 +372,10 @@ export default function AboutPage() {
             <h2 className="text-6xl md:text-[8rem] font-heading font-black tracking-tighter mb-16 opacity-10 uppercase">The Future.</h2>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-6 px-16 py-8 rounded-[3.5rem] bg-primary text-primary-foreground font-black text-3xl hover:scale-105 active:scale-95 transition-transform shadow-xl shadow-primary/20"
+              className="inline-flex items-center gap-4 px-10 py-5 rounded-full bg-primary text-primary-foreground font-bold text-xl hover:scale-105 active:scale-95 transition-transform shadow-xl shadow-primary/20"
             >
               LAUNCH DASHBOARD
-              <Rocket size={40} />
+              <Rocket size={24} />
             </Link>
             <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar</p>
           </ScrollReveal>

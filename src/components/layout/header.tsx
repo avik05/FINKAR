@@ -57,8 +57,7 @@ const DATE_RANGES = [
 
 export function Header() {
   const router = useRouter();
-  const { toggleMobileMenu } = useLayoutStore();
-  const [dateRange, setDateRange] = useState<string>("This Month");
+  const { toggleMobileMenu, dateRange, setDateRange } = useLayoutStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -268,9 +267,9 @@ export function Header() {
             <ChevronDown size={14} className="ml-1" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 p-1 rounded-2xl border-border/50 backdrop-blur-xl">
-             <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-3 py-2">Select Range</DropdownMenuLabel>
-             <DropdownMenuSeparator className="bg-border/50" />
              <DropdownMenuGroup>
+               <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-3 py-2">Select Range</DropdownMenuLabel>
+               <DropdownMenuSeparator className="bg-border/50" />
                {DATE_RANGES.map((r) => (
                  <DropdownMenuItem 
                    key={r.label}
@@ -359,36 +358,54 @@ export function Header() {
         </DropdownMenu>
 
         {/* User Profile */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="h-9 w-9 border-2 border-border/50 hover:border-primary/50 transition-all cursor-pointer ring-offset-2 ring-offset-background hover:ring-2 hover:ring-primary/20 rounded-full overflow-hidden outline-none">
-            <Avatar className="h-full w-full">
-              <AvatarImage src={undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-border/50 backdrop-blur-xl">
-            <div className="px-3 py-3 space-y-1">
-              <p className="text-sm font-black text-foreground truncate">{user?.name || 'Guest User'}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{user?.email || 'Public Session'}</p>
-            </div>
-            <DropdownMenuSeparator className="bg-border/50" />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5">
-                <Settings size={16} className="text-muted-foreground" />
-                <span className="text-sm font-bold">Preferences</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-destructive/10 text-destructive group"
-              >
-                <Download size={16} className="group-hover:rotate-180 transition-transform" />
-                <span className="text-sm font-bold">Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          {!user && (
+            <Link href="/login" className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(0,255,156,0.2)]">
+              Login
+            </Link>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="h-9 w-9 border-2 border-border/50 hover:border-primary/50 transition-all cursor-pointer ring-offset-2 ring-offset-background hover:ring-2 hover:ring-primary/20 rounded-full overflow-hidden outline-none">
+              <Avatar className="h-full w-full">
+                <AvatarImage src={undefined} />
+                <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-border/50 backdrop-blur-xl">
+              <div className="px-3 py-3 space-y-1">
+                <p className="text-sm font-black text-foreground truncate">{user?.name || 'Guest User'}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{user?.email || 'Public Session'}</p>
+              </div>
+              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuGroup>
+                <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5">
+                  <Settings size={16} className="text-muted-foreground" />
+                  <span className="text-sm font-bold">Preferences</span>
+                </DropdownMenuItem>
+                
+                {user ? (
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-destructive/10 text-destructive group"
+                  >
+                    <Download size={16} className="group-hover:rotate-180 transition-transform" />
+                    <span className="text-sm font-bold">Logout</span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem 
+                    onClick={() => router.push("/login")}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-primary/10 text-primary group"
+                  >
+                    <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-sm font-bold">Login / Sign Up</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

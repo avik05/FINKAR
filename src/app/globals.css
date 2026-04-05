@@ -123,12 +123,13 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
-    /* Removed scroll-smooth to prevent conflicts with Framer Motion scroll listeners */
+    @apply font-sans h-full scroll-smooth;
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground min-h-full;
+    overflow-x: hidden;
   }
   
   /* Custom sleek scrollbar */

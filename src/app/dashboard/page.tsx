@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Landmark, Activity, CreditCard, Plus } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
@@ -13,13 +13,15 @@ import { AddTransactionDialog } from "@/components/dialogs/add-transaction-dialo
 import { EditTransactionDialog } from "@/components/dialogs/edit-transaction-dialog";
 import { TransactionHeatmap } from "@/components/shared/transaction-heatmap";
 import { useAuthStore } from "@/stores/auth-store";
+import { useLayoutStore } from "@/stores/layout-store";
+import { FinancialPulse } from "@/components/dashboard/financial-pulse";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 150, damping: 20 } },
 };
 
 export default function DashboardPage() {
@@ -28,6 +30,7 @@ export default function DashboardPage() {
   const transactions = useTransactionsStore((s) => s.transactions);
   const stocks = useStocksStore((s) => s.holdings);
   const funds = useMutualFundsStore((s) => s.funds);
+  const { dateRange } = useLayoutStore();
 
   // Computed KPIs
   const cashBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
@@ -39,12 +42,31 @@ export default function DashboardPage() {
   const investedAssets = stockValue + mfValue;
 
   const now = new Date();
-  const thisMonth = transactions.filter((t) => {
-    const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-  const monthlyExpense = thisMonth.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
-  const monthlyIncome = thisMonth.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const d = new Date(t.date);
+      if (dateRange === "This Week") {
+        const weekAgo = new Date();
+        weekAgo.setDate(now.getDate() - 7);
+        return d >= weekAgo;
+      }
+      if (dateRange === "This Month") {
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }
+      if (dateRange === "Last 3 Months") {
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setDate(now.getDate() - 90);
+        return d >= threeMonthsAgo;
+      }
+      if (dateRange === "This Year") {
+        return d.getFullYear() === now.getFullYear();
+      }
+      return true; // All Time
+    });
+  }, [transactions, dateRange, now]);
+
+  const monthlyExpense = filteredTransactions.filter((t: any) => t.amount < 0).reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+  const monthlyIncome = filteredTransactions.filter((t: any) => t.amount > 0).reduce((s: number, t: any) => s + t.amount, 0);
 
   // Asset allocation for donut
   const allocation = [
@@ -71,7 +93,7 @@ export default function DashboardPage() {
   const isEmpty = accounts.length === 0 && stocks.length === 0 && funds.length === 0;
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.15 } } }} className="space-y-8 pb-10">
+    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }} className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2">
         <div className="animate-float">
           <h1 className="text-3xl lg:text-4xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -136,7 +158,7 @@ export default function DashboardPage() {
           <FinanceCard className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Spent This Month</p>
+                <p className="text-sm font-medium text-muted-foreground">Flow ({dateRange})</p>
                 <h3 className="text-xl md:text-2xl font-heading font-bold mt-1 text-foreground truncate">{formatINR(monthlyExpense)}</h3>
               </div>
               <div className="p-2 bg-foreground/5 rounded-xl border border-border/50"><Activity className="w-5 h-5 text-destructive" /></div>
@@ -182,17 +204,17 @@ export default function DashboardPage() {
             </FinanceCard>
           </motion.div>
 
-          {/* Quick Stats */}
+          {/* Financial Pulse */}
           <motion.div variants={FADE_UP} className="flex flex-col gap-6">
-            <FinanceCard className="p-6 flex-1">
-              <h3 className="font-heading font-semibold mb-4">Quick Stats</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Bank Accounts</span><span className="font-semibold">{accounts.length}</span></div>
-                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Stock Holdings</span><span className="font-semibold">{stocks.length}</span></div>
-                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Mutual Funds</span><span className="font-semibold">{funds.length}</span></div>
-                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Transactions</span><span className="font-semibold">{transactions.length}</span></div>
-              </div>
-            </FinanceCard>
+            <FinancialPulse 
+              cashBalance={cashBalance}
+              investedAssets={investedAssets}
+              totalGain={stockValue + mfValue - stockInvested - mfInvested}
+              gainPct={stockInvested + mfInvested > 0 ? ((stockValue + mfValue - stockInvested - mfInvested) / (stockInvested + mfInvested) * 100) : 0}
+              monthlyExpense={monthlyExpense}
+              monthlyIncome={monthlyIncome}
+              transactionCount={filteredTransactions.length}
+            />
           </motion.div>
         </div>
       )}

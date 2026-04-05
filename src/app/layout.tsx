@@ -41,7 +41,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${poppins.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
+      <body className="min-h-full bg-background text-foreground overscroll-none">
         {/* Theme Script - Optimized with next/script */}
         <Script
           id="theme-script"
@@ -55,7 +55,7 @@ export default function RootLayout({
         <AuthGuard>
           <StoreHydrator />
           <SidebarProvider defaultOpen={true}>
-            <div className="flex min-h-screen w-full bg-background bg-repeat bg-fixed relative overflow-x-hidden">
+            <div className="flex min-h-screen w-full bg-background bg-repeat bg-fixed relative">
               {/* Dot Grid Pattern — more visible in light mode */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0" 
                 style={{ 

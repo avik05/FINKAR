@@ -1,115 +1,159 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
   createdAt: string;
+  avatarUrl?: string;
 }
 
 interface AuthState {
   user: AuthUser | null;
   isLoggedIn: boolean;
+  isLoading: boolean;
+  
   // Sign up: creates account & logs in
-  signup: (name: string, email: string, password: string) => { success: boolean; error?: string };
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   // Login: verifies password and logs in
-  login: (email: string, password: string) => { success: boolean; error?: string };
-  logout: () => void;
-}
-
-// We store a separate registry of all accounts (email -> hashed password) in localStorage.
-// This simulates a backend credentials store purely client-side.
-const ACCOUNTS_KEY = 'finkar_accounts_registry';
-
-function getRegistry(): Record<string, { name: string; passwordHash: string }> {
-  try {
-    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-// Simple deterministic hash (not cryptographic, fine for demo localStorage auth)
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return hash.toString(36);
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  // Social Login: Google
+  loginWithGoogle: () => Promise<void>;
+  // Logout
+  logout: () => Promise<void>;
+  // Initialize: Recover session
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isLoggedIn: false,
+      isLoading: true,
 
-      signup: (name, email, password) => {
-        if (!name.trim() || !email.trim() || !password.trim()) {
-          return { success: false, error: 'All fields are required.' };
+      initialize: async () => {
+        set({ isLoading: true });
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          set({
+            user: {
+              id: session.user.id,
+              name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+              email: session.user.email!,
+              createdAt: session.user.created_at,
+              avatarUrl: session.user.user_metadata?.avatar_url,
+            },
+            isLoggedIn: true,
+            isLoading: false,
+          });
+        } else {
+          set({ user: null, isLoggedIn: false, isLoading: false });
         }
-        if (password.length < 6) {
-          return { success: false, error: 'Password must be at least 6 characters.' };
-        }
 
-        const registry = getRegistry();
-        const normalizedEmail = email.toLowerCase().trim();
-
-        if (registry[normalizedEmail]) {
-          return { success: false, error: 'An account with this email already exists. Please log in.' };
-        }
-
-        const passwordHash = simpleHash(password);
-        registry[normalizedEmail] = { name: name.trim(), passwordHash };
-        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(registry));
-
-        const newUser: AuthUser = {
-          id: `user_${Date.now()}`,
-          name: name.trim(),
-          email: normalizedEmail,
-          createdAt: new Date().toISOString(),
-        };
-
-        set({ user: newUser, isLoggedIn: true });
-        return { success: true };
+        // Listen for auth changes
+        supabase.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            set({
+              user: {
+                id: session.user.id,
+                name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                email: session.user.email!,
+                createdAt: session.user.created_at,
+                avatarUrl: session.user.user_metadata?.avatar_url,
+              },
+              isLoggedIn: true,
+            });
+          } else {
+            set({ user: null, isLoggedIn: false });
+          }
+        });
       },
 
-      login: (email, password) => {
-        if (!email.trim() || !password.trim()) {
-          return { success: false, error: 'Email and password are required.' };
+      signup: async (name, email, password) => {
+        set({ isLoading: true });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name }
+          }
+        });
+
+        if (error) {
+          set({ isLoading: false });
+          return { success: false, error: error.message };
         }
 
-        const registry = getRegistry();
-        const normalizedEmail = email.toLowerCase().trim();
-        const record = registry[normalizedEmail];
-
-        if (!record) {
-          return { success: false, error: 'No account found with this email. Please sign up.' };
+        if (data.user) {
+          set({
+            user: {
+              id: data.user.id,
+              name: name,
+              email: email,
+              createdAt: data.user.created_at,
+            },
+            isLoggedIn: true,
+            isLoading: false,
+          });
+          return { success: true };
         }
 
-        const passwordHash = simpleHash(password);
-        if (record.passwordHash !== passwordHash) {
-          return { success: false, error: 'Incorrect password. Please try again.' };
-        }
-
-        const loggedInUser: AuthUser = {
-          id: `user_${simpleHash(normalizedEmail)}`,
-          name: record.name,
-          email: normalizedEmail,
-          createdAt: new Date().toISOString(),
-        };
-
-        set({ user: loggedInUser, isLoggedIn: true });
-        return { success: true };
+        set({ isLoading: false });
+        return { success: false, error: 'Signup failed. Please try again.' };
       },
 
-      logout: () => {
+      login: async (email, password) => {
+        set({ isLoading: true });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          set({ isLoading: false });
+          return { success: false, error: error.message };
+        }
+
+        if (data.user) {
+          set({
+            user: {
+              id: data.user.id,
+              name: data.user.user_metadata?.full_name || email.split('@')[0],
+              email: email,
+              createdAt: data.user.created_at,
+            },
+            isLoggedIn: true,
+            isLoading: false,
+          });
+          return { success: true };
+        }
+
+        set({ isLoading: false });
+        return { success: false, error: 'Login failed. Please try again.' };
+      },
+
+      loginWithGoogle: async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/dashboard',
+          },
+        });
+      },
+
+      logout: async () => {
+        await supabase.auth.signOut();
         set({ user: null, isLoggedIn: false });
       },
     }),
-    { name: 'finkar-auth' }
+    { 
+      name: 'finkar-auth-v2',
+      // We only persist a small part to avoid stale sessions vs Supabase's reliable session
+      partialize: (state) => ({ isLoggedIn: state.isLoggedIn }),
+    }
   )
 );
