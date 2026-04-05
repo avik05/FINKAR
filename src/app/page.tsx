@@ -148,7 +148,7 @@ export default function HomePage() {
   const sidebarOffset = isMobile ? 0 : (state === "expanded" ? 256 : 48);
 
   return (
-    <div ref={containerRef} className="relative min-h-full bg-background overflow-x-hidden">
+    <div ref={containerRef} className="relative bg-background">
       {/* ── Fixed Hero Backdrop (Glassmorphic) ── */}
       <div className="relative min-h-[200vh] pt-12 pb-24">
         

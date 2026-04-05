@@ -124,11 +124,10 @@
     @apply border-border outline-ring/50;
   }
   html {
-    @apply font-sans h-full scroll-smooth;
-    overflow-x: hidden;
+    @apply font-sans scroll-smooth;
   }
   body {
-    @apply bg-background text-foreground min-h-full;
+    @apply bg-background text-foreground;
     overflow-x: hidden;
   }
   

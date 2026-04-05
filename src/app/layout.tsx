@@ -39,9 +39,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${poppins.variable} h-full antialiased`}
+      className={`${inter.variable} ${poppins.variable} antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground overscroll-none">
+      <body className="bg-background text-foreground overscroll-none">
         {/* Theme Script - Optimized with next/script */}
         <Script
           id="theme-script"
