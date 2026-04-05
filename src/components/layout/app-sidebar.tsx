@@ -36,11 +36,11 @@ import { useLayoutStore } from "@/stores/layout-store";
 
 const navItems = [
   { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
+  { name: "Analytics", url: "/analytics", icon: BarChart3 },
   { name: "Banks", url: "/banks", icon: Landmark },
   { name: "Stocks", url: "/stocks", icon: TrendingUp },
   { name: "Mutual Funds", url: "/mutual-funds", icon: PieChart },
   { name: "Expenses", url: "/expenses", icon: CreditCard },
-  { name: "Analytics", url: "/analytics", icon: BarChart3 },
   { name: "Goals", url: "/goals", icon: Target },
   { name: "Settings", url: "/settings", icon: Settings },
   { name: "About", url: "/about", icon: Info },
@@ -66,7 +66,7 @@ export function AppSidebar() {
         ${isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}>
         
         {/* Branding Header */}
-        <div className="h-32 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
+        <div className="h-24 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
           <Link href="/" className="flex items-center gap-0 group hover:scale-[1.02] transition-all duration-300">
             <span className="text-5xl font-sans font-bold text-foreground tracking-tighter">Fin</span>
             <span className="text-5xl font-sans font-bold text-primary tracking-tighter ml-1">कर</span>
