@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { Transaction } from '@/types/finance';
 import { useAuthStore } from './auth-store';
+import { useAccountsStore } from './accounts-store';
 
 export const CATEGORIES = [
   'Food & Dining',
@@ -155,6 +156,8 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
       set((state) => ({
         transactions: [newTx, ...state.transactions],
       }));
+      // RE-FETCH ACCOUNTS: To update balances
+      useAccountsStore.getState().fetchAccounts(userId);
     }
   },
 
@@ -188,6 +191,9 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
     set((state) => ({
       transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...data } : t)),
     }));
+
+    // RE-FETCH ACCOUNTS: To update balances
+    useAccountsStore.getState().fetchAccounts(userId);
   },
 
   deleteTransaction: async (id) => {
@@ -210,5 +216,8 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
     set((state) => ({
       transactions: state.transactions.filter((t) => t.id !== id),
     }));
+
+    // RE-FETCH ACCOUNTS: To update balances
+    useAccountsStore.getState().fetchAccounts(userId);
   },
 }));
