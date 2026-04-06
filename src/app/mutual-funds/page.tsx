@@ -150,15 +150,17 @@ export default function MutualFundsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={70}
-                        outerRadius={110}
-                        paddingAngle={3}
-                        dataKey="value"
-                        nameKey="name"
-                        stroke="none"
+                        {...({
+                          data: categoryData,
+                          cx: "50%",
+                          cy: "50%",
+                          innerRadius: 70,
+                          outerRadius: 110,
+                          paddingAngle: 3,
+                          dataKey: "value",
+                          nameKey: "name",
+                          stroke: "none"
+                        } as any)}
                       >
                         {categoryData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />

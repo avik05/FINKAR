@@ -141,15 +141,17 @@ export default function StocksPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={allocationData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={70}
-                        outerRadius={110}
-                        paddingAngle={3}
-                        dataKey="value"
-                        nameKey="name"
-                        stroke="none"
+                        {...({
+                          data: allocationData,
+                          cx: "50%",
+                          cy: "50%",
+                          innerRadius: 70,
+                          outerRadius: 110,
+                          paddingAngle: 3,
+                          dataKey: "value",
+                          nameKey: "name",
+                          stroke: "none"
+                        } as any)}
                       >
                         {allocationData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />

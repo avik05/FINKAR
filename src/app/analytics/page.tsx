@@ -228,26 +228,28 @@ function InsightsTab({ stats }: { stats: any }) {
                      <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
                    </linearGradient>
                  </defs>
-                 <Pie
-                    activeIndex={activeIndex ?? undefined}
-                    activeShape={renderActiveShape}
-                    data={allocationData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={75}
-                    outerRadius={100}
-                    dataKey="value"
-                    onMouseEnter={(_, index) => setActiveIndex(index)}
-                    onMouseLeave={() => setActiveIndex(null)}
-                    stroke="none"
-                    paddingAngle={5}
-                    animationBegin={0}
-                    animationDuration={1500}
-                 >
-                   {allocationData.map((entry, index) => (
-                     <Cell key={`cell-${index}`} fill={entry.gradient} />
-                   ))}
-                 </Pie>
+                  <Pie
+                    {...({
+                      activeIndex: activeIndex !== null ? activeIndex : undefined,
+                      activeShape: renderActiveShape,
+                      data: allocationData,
+                      cx: "50%",
+                      cy: "50%",
+                      innerRadius: 75,
+                      outerRadius: 100,
+                      dataKey: "value",
+                      onMouseEnter: (_: any, index: number) => setActiveIndex(index),
+                      onMouseLeave: () => setActiveIndex(null),
+                      stroke: "none",
+                      paddingAngle: 5,
+                      animationBegin: 0,
+                      animationDuration: 1500
+                    } as any)}
+                  >
+                    {allocationData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.gradient} />
+                    ))}
+                  </Pie>
                </PieChart>
              </ResponsiveContainer>
              
@@ -319,12 +321,14 @@ function SpendingTab({ stats }: { stats: any }) {
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
-              data={stats.spendingCategories}
-              innerRadius={80}
-              outerRadius={110}
-              paddingAngle={5}
-              dataKey="value"
-              animationDuration={1000}
+              {...({
+                data: stats.spendingCategories,
+                innerRadius: 80,
+                outerRadius: 110,
+                paddingAngle: 5,
+                dataKey: "value",
+                animationDuration: 1000
+              } as any)}
             >
               {stats.spendingCategories.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
