@@ -11,6 +11,8 @@ export default function VerifyPage() {
   const router = useRouter();
   const { user, logout, refreshUser, isLoggedIn } = useAuthStore();
   const [checking, setChecking] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState("");
 
   // Auto-redirect if verified
@@ -38,6 +40,35 @@ export default function VerifyPage() {
     await logout();
     router.replace("/login");
   };
+
+  const handleResend = async () => {
+    if (!user?.email || cooldown > 0) return;
+    
+    setResending(true);
+    setMessage("");
+    
+    try {
+      const { success, error } = await useAuthStore.getState().resendVerification(user.email);
+      if (success) {
+        setMessage("Verification email resent! Please check your inbox.");
+        setCooldown(60); // 1 minute cooldown
+      } else {
+        setMessage(error || "Failed to resend. Please try again later.");
+      }
+    } catch (err) {
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   if (!isLoggedIn) {
     return null; // AuthGuard will handle redirection to login
@@ -115,13 +146,24 @@ export default function VerifyPage() {
                 </button>
               </div>
 
-              <button 
-                onClick={() => router.push("/login")}
-                className="flex items-center justify-center gap-2 w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-2 font-medium"
-              >
-                <ArrowLeft size={14} />
-                Try another account
-              </button>
+              <div className="flex flex-col gap-2 pt-2">
+                <button 
+                  onClick={handleResend}
+                  disabled={resending || cooldown > 0}
+                  className="text-xs font-bold text-primary hover:text-primary/80 transition-colors py-2 uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {resending ? <RefreshCw size={12} className="animate-spin" /> : null}
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend Verification Email"}
+                </button>
+
+                <button 
+                  onClick={() => router.push("/login")}
+                  className="flex items-center justify-center gap-1 w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1 font-medium"
+                >
+                  <ArrowLeft size={12} />
+                  Try another account
+                </button>
+              </div>
             </div>
           </div>
         </FinanceCard>

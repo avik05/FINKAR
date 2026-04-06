@@ -29,6 +29,8 @@ interface AuthState {
   deleteAccount: () => Promise<void>;
   // Refresh user data (useful for verification check)
   refreshUser: () => Promise<void>;
+  // Resend verification email
+  resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -102,7 +104,8 @@ export const useAuthStore = create<AuthState>()(
           email,
           password,
           options: {
-            data: { full_name: name }
+            data: { full_name: name },
+            emailRedirectTo: `${window.location.origin}/auth/verify`
           }
         });
 
@@ -183,6 +186,21 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         await supabase.auth.signOut();
         set({ user: null, isLoggedIn: false });
+      },
+
+      resendVerification: async (email: string) => {
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email: email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/verify`
+          }
+        });
+
+        if (error) {
+          return { success: false, error: error.message };
+        }
+        return { success: true };
       },
     }),
     { 
