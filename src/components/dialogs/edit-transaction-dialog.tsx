@@ -136,9 +136,11 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
             {accounts.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="edit-tx-account">Account</Label>
-                <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
+                <Select value={accountId} onValueChange={(val) => setAccountId(val || "none")}>
                   <SelectTrigger className="w-full bg-foreground/5 border-border/50 h-10">
-                    <SelectValue placeholder="Select Account" />
+                    <SelectValue placeholder="Select Account">
+                      {accounts.find(a => a.id === accountId)?.name || (accountId === "none" ? "Unlinked" : "Select Account")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border/50">
                     <SelectItem value="none">Unlinked</SelectItem>
