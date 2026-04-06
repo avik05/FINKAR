@@ -138,6 +138,7 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
 
     if (error) {
       console.error('Error adding transaction:', error);
+      alert(`Database Error: ${error.message}\n\nPlease ensure you have run the latest SQL in Supabase.`);
       return;
     }
 
