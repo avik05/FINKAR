@@ -11,6 +11,7 @@ import { Transaction } from "@/types/finance";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function EditTransactionDialog({ transaction, children }: { transaction: Transaction, children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -114,11 +115,16 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-tx-category">Category</Label>
-                <select id="edit-tx-category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-md bg-foreground/5 border border-border/50 px-3 py-2 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary">
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <Select value={category} onValueChange={(val) => setCategory(val || CATEGORIES[0])}>
+                  <SelectTrigger className="w-full bg-foreground/5 border-border/50 h-10">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border/50">
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             {category === "Other" && (
@@ -130,12 +136,17 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
             {accounts.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="edit-tx-account">Account</Label>
-                <select id="edit-tx-account" value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-md bg-foreground/5 border border-border/50 px-3 py-2 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary">
-                  <option value="">Unlinked</option>
-                  {accounts.map((a) => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
+                <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
+                  <SelectTrigger className="w-full bg-foreground/5 border-border/50 h-10">
+                    <SelectValue placeholder="Select Account" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border/50">
+                    <SelectItem value="none">Unlinked</SelectItem>
+                    {accounts.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">

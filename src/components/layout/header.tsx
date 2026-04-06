@@ -380,7 +380,10 @@ export function Header() {
               </div>
               <DropdownMenuSeparator className="bg-border/50" />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5">
+                <DropdownMenuItem 
+                  onClick={() => router.push("/settings")}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5"
+                >
                   <Settings size={16} className="text-muted-foreground" />
                   <span className="text-sm font-bold">Preferences</span>
                 </DropdownMenuItem>

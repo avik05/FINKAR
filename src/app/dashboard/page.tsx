@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Landmark, Activity, CreditCard, Plus } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Landmark, Activity, Plus } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR, formatINRCompact } from "@/lib/format";
 import { useAccountsStore } from "@/stores/accounts-store";
@@ -10,13 +10,12 @@ import { useTransactionsStore } from "@/stores/transactions-store";
 import { useStocksStore } from "@/stores/stocks-store";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { AddTransactionDialog } from "@/components/dialogs/add-transaction-dialog";
-import { EditTransactionDialog } from "@/components/dialogs/edit-transaction-dialog";
 import { TransactionHeatmap } from "@/components/shared/transaction-heatmap";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLayoutStore } from "@/stores/layout-store";
 import { FinancialPulse } from "@/components/dashboard/financial-pulse";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Sector
 } from "recharts";
 
 const FADE_UP = {
@@ -25,6 +24,7 @@ const FADE_UP = {
 };
 
 export default function DashboardPage() {
+  const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   const { user } = useAuthStore();
   const accounts = useAccountsStore((s) => s.accounts);
   const transactions = useTransactionsStore((s) => s.transactions);
@@ -70,24 +70,36 @@ export default function DashboardPage() {
 
   // Asset allocation for donut
   const allocation = [
-    { name: "Cash (Banks)", value: Math.max(0, cashBalance), fill: "var(--chart-4)" },
-    { name: "Stocks", value: stockValue, fill: "var(--chart-1)" },
-    { name: "Mutual Funds", value: mfValue, fill: "var(--chart-2)" },
+    { name: "Cash (Banks)", value: Math.max(0, cashBalance), color: "var(--primary)", gradient: "url(#cashGrad)" },
+    { name: "Stocks", value: stockValue, color: "#60A5FA", gradient: "url(#equityGrad)" },
+    { name: "Mutual Funds", value: mfValue, color: "#A855F7", gradient: "url(#mfGrad)" },
   ].filter((a) => a.value > 0);
 
-  // Recent 10 transactions
-  const recentTx = transactions.slice(0, 10);
-
-  const formatDate = (d: string) => {
-    try {
-      const date = new Date(d);
-      const today = new Date();
-      if (date.toDateString() === today.toDateString()) return "Today";
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
-      if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-      return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-    } catch { return d; }
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          style={{ filter: `drop-shadow(0 0 8px ${fill})` }}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          innerRadius={outerRadius + 12}
+          outerRadius={outerRadius + 14}
+          fill={fill}
+        />
+      </g>
+    );
   };
 
   const isEmpty = accounts.length === 0 && stocks.length === 0 && funds.length === 0;
@@ -175,29 +187,87 @@ export default function DashboardPage() {
 
       {/* Asset Allocation */}
       {allocation.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-foreground">
           <motion.div variants={FADE_UP} className="lg:col-span-2">
-            <FinanceCard className="p-6 h-[350px] flex flex-col items-center justify-center">
-              <h2 className="text-lg font-heading font-semibold mb-4 self-start">Asset Allocation</h2>
-              <div className="flex-1 w-full relative min-h-[200px]">
+            <FinanceCard className="p-6 h-[400px] flex flex-col items-center justify-center relative overflow-hidden group">
+              <div className="flex justify-between items-start w-full mb-4">
+                <div>
+                  <h2 className="text-lg font-heading font-semibold">Asset Allocation</h2>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Portfolio Pulse</p>
+                </div>
+                {activeIndex !== null && (
+                  <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-right">
+                    <p className="text-[10px] font-black text-primary uppercase">{allocation[activeIndex].name}</p>
+                    <p className="text-sm font-bold">{((allocation[activeIndex].value / netWorth) * 100).toFixed(1)}%</p>
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="flex-1 w-full relative min-h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip contentStyle={{ backgroundColor: "rgba(18, 18, 26, 0.8)", backdropFilter: "blur(12px)", borderColor: "rgba(255,255,255,0.1)", borderRadius: "12px" }} itemStyle={{ color: "var(--foreground)" }} formatter={(value: any) => [formatINR(value)]} />
-                    <Pie data={allocation} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" stroke="none" animationDuration={1500}>
-                      {allocation.map((item, index) => (<Cell key={`cell-${index}`} fill={item.fill} />))}
+                    <defs>
+                      <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                      </linearGradient>
+                      <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#60A5FA" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#2563EB" stopOpacity={1}/>
+                      </linearGradient>
+                      <linearGradient id="mfGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#A855F7" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
+                      </linearGradient>
+                    </defs>
+                    <Pie 
+                      activeIndex={activeIndex ?? undefined}
+                      activeShape={renderActiveShape}
+                      data={allocation} 
+                      cx="50%" 
+                      cy="50%" 
+                      innerRadius={70} 
+                      outerRadius={95} 
+                      paddingAngle={5} 
+                      dataKey="value" 
+                      stroke="none" 
+                      onMouseEnter={(_, index) => setActiveIndex(index)}
+                      onMouseLeave={() => setActiveIndex(null)}
+                      animationDuration={1500}
+                    >
+                      {allocation.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.gradient} />
+                      ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-sm text-muted-foreground">Net Worth</span>
-                  <span className="text-xl font-heading font-bold">{formatINRCompact(netWorth)}</span>
+                
+                {/* Central Content */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                  <motion.div
+                    animate={{ scale: activeIndex !== null ? 1.05 : 1 }}
+                    className="space-y-0.5"
+                  >
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                      {activeIndex !== null ? allocation[activeIndex].name : "Net Worth"}
+                    </p>
+                    <h4 className="text-xl md:text-2xl font-black text-foreground">
+                      {activeIndex !== null ? formatINRCompact(allocation[activeIndex].value) : formatINRCompact(netWorth)}
+                    </h4>
+                  </motion.div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 mt-4 w-full">
-                {allocation.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2 text-xs">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }} />
-                    <span className="text-muted-foreground truncate">{item.name}</span>
+
+              <div className="flex justify-center gap-6 mt-4 w-full">
+                {allocation.map((item, i) => (
+                  <div 
+                    key={item.name} 
+                    className={`flex items-center gap-2 cursor-pointer transition-all ${activeIndex === i ? 'scale-110 opacity-100' : 'opacity-60 hover:opacity-100'}`}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    onMouseLeave={() => setActiveIndex(null)}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{item.name}</span>
                   </div>
                 ))}
               </div>
@@ -228,53 +298,6 @@ export default function DashboardPage() {
           </div>
           <p className="text-xs text-muted-foreground mb-4">Your daily financial transaction density</p>
           <TransactionHeatmap />
-        </FinanceCard>
-      </motion.div>
-
-      {/* Recent Transactions */}
-      <motion.div variants={FADE_UP}>
-        <FinanceCard className="p-6 glass-card">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-heading font-semibold">Recent Transactions</h2>
-            <AddTransactionDialog>
-              <button className="text-sm text-primary hover:underline underline-offset-4">+ Add</button>
-            </AddTransactionDialog>
-          </div>
-          {recentTx.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">No transactions yet. Start by adding one!</p>
-              <AddTransactionDialog />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {recentTx.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/30 group">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${tx.amount > 0 ? "from-chart-1/20 to-chart-1/5 text-chart-1" : "from-secondary to-background border border-border/50 text-foreground"}`}>
-                      {tx.amount > 0 ? <TrendingUp size={20} /> : <CreditCard size={20} />}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">{tx.merchant}</h4>
-                      <p className="text-xs text-muted-foreground flex gap-2 mt-0.5">
-                        <span>{formatDate(tx.date)}</span>
-                        <span className="hidden sm:inline w-1 h-1 rounded-full bg-border self-center" />
-                        <span className="hidden sm:inline">{tx.accountName}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className={`font-semibold text-sm ${tx.amount > 0 ? "text-chart-1" : "text-foreground"}`}>
-                        {tx.amount > 0 ? "+" : ""}{formatINR(tx.amount)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{tx.category}</p>
-                    </div>
-                    <EditTransactionDialog transaction={tx} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </FinanceCard>
       </motion.div>
     </motion.div>

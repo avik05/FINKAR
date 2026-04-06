@@ -10,6 +10,7 @@ import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddFundDialog } from "@/components/dialogs/add-fund-dialog";
+import { EditFundDialog } from "@/components/dialogs/edit-fund-dialog";
 import { MutualFund } from "@/types/finance";
 
 const FADE_UP = {
@@ -25,12 +26,24 @@ const CATEGORY_COLORS: Record<string, string> = {
   ELSS: "#F472B6",
 };
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) {
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card/95 border border-border/50 rounded-lg px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
-      <p className="font-semibold text-foreground">{payload[0].name}</p>
-      <p className="text-muted-foreground">{formatINR(payload[0].value)}</p>
+    <div className="bg-background/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 shadow-2xl min-w-[180px] animate-in fade-in zoom-in duration-200">
+      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 truncate max-w-[200px]">{label}</p>
+      <div className="space-y-2">
+        {payload.map((p, i) => (
+          <div key={i} className="flex justify-between items-center gap-4 text-[11px] font-bold">
+            <span className="text-muted-foreground uppercase tracking-tighter">{p.name}</span>
+            <span className={p.name === 'Current' ? (p.value >= (payload[0]?.value || 0) ? 'text-primary' : 'text-destructive') : 'text-foreground'}>
+              {formatINR(p.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+        <div className="h-full bg-primary" style={{ width: `${Math.min(100, (payload[1]?.value / (payload[0]?.value || 1)) * 100)}%`, opacity: 0.3 }} />
+      </div>
     </div>
   );
 }
@@ -171,22 +184,41 @@ export default function MutualFundsPage() {
                 <h2 className="text-lg font-heading font-semibold mb-4 text-foreground">Invested vs Current Value</h2>
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={comparisonData} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
-                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 10, opacity: 0.7 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: 'currentColor', fontSize: 10, opacity: 0.7 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
+                    <BarChart data={comparisonData} barGap={6} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.05} />
+                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700, opacity: 0.5 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700, opacity: 0.5 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.5)', borderRadius: '12px', fontSize: '12px' }}
-                        formatter={((value: number, name: string) => [formatINR(value), name]) as never}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        content={<CustomTooltip />}
+                        cursor={{ fill: 'currentColor', opacity: 0.05 }}
+                        isAnimationActive={false}
                       />
-                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} />
-                      <Bar dataKey="Invested" fill="#3ABEFF" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Current">
+                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} strokeDasharray="3 3" />
+                      <Bar dataKey="Invested" fill="url(#investedGrad)" radius={[6, 6, 0, 0]} animationDuration={1000} />
+                      <Bar dataKey="Current" animationDuration={1200}>
                         {comparisonData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.Current >= entry.Invested ? "#00FF9C" : "#FF4D4D"} radius={[4, 4, 0, 0] as any} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.Current >= entry.Invested ? "url(#profitGrad)" : "url(#lossGrad)"} 
+                            radius={[6, 6, 0, 0] as any} 
+                            className="transition-all duration-300 hover:brightness-125 hover:filter hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]"
+                          />
                         ))}
                       </Bar>
+                      <defs>
+                        <linearGradient id="investedGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3ABEFF" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#2563EB" stopOpacity={1} />
+                        </linearGradient>
+                        <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#00FF9C" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#059669" stopOpacity={1} />
+                        </linearGradient>
+                        <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FF4D4D" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
+                        </linearGradient>
+                      </defs>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -204,17 +236,20 @@ export default function MutualFundsPage() {
                 {funds.map((mf) => {
                   const gain = mf.current - mf.invested;
                   return (
-                    <div key={mf.id} className="p-5 rounded-2xl border border-border/50 bg-foreground/5 hover:bg-foreground/10 transition-all group relative overflow-hidden h-full">
-                      <button onClick={() => handleDelete(mf.id)} className="absolute top-3 right-3 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete fund">
-                        <Trash2 size={14} />
-                      </button>
-                      <div className="flex justify-between items-start mb-4 pr-8">
-                        <div>
-                          <h4 className="font-bold text-sm leading-tight text-foreground">{mf.fund}</h4>
+                    <div key={mf.id} className="p-5 rounded-2xl border border-border/50 bg-foreground/5 hover:bg-foreground/10 transition-all group relative overflow-hidden h-full flex flex-col">
+                      <div className="flex justify-between items-start mb-4 gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm leading-tight text-foreground truncate" title={mf.fund}>{mf.fund}</h4>
                           <span className="text-[10px] uppercase font-bold text-muted-foreground bg-foreground/10 px-1.5 py-0.5 rounded mt-1.5 inline-block border border-border/10 tracking-widest">{mf.category}</span>
                         </div>
-                        <div className="text-right">
-                          <span className={`text-xs font-bold px-2 py-1 rounded-full ${mf.xirr > 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                            <EditFundDialog fund={mf} />
+                            <button onClick={() => handleDelete(mf.id)} className="flex items-center justify-center p-1.5 rounded-lg hover:bg-destructive/20 text-destructive transition-all" title="Delete fund">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-full whitespace-nowrap ${mf.xirr > 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
                             {mf.xirr > 0 ? `${mf.xirr}% XIRR` : `${gain >= 0 ? '+' : ''}${((gain / (mf.invested || 1)) * 100).toFixed(1)}%`}
                           </span>
                         </div>

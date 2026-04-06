@@ -10,6 +10,7 @@ import { useStocksStore } from "@/stores/stocks-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddStockDialog } from "@/components/dialogs/add-stock-dialog";
+import { EditStockDialog } from "@/components/dialogs/edit-stock-dialog";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -18,12 +19,21 @@ const FADE_UP = {
 
 const CHART_COLORS = ["#00FF9C", "#3ABEFF", "#FF6B6B", "#FFBE0B", "#A78BFA", "#F472B6", "#34D399", "#FB923C"];
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; payload?: { fill?: string } }> }) {
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
   if (!active || !payload?.length) return null;
+  const value = payload[0].value;
   return (
-    <div className="bg-card/95 border border-border/50 rounded-lg px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
-      <p className="font-semibold text-foreground">{payload[0].name}</p>
-      <p className="text-muted-foreground">{formatINR(payload[0].value)}</p>
+    <div className="bg-background/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 shadow-2xl min-w-[160px] animate-in fade-in zoom-in duration-200">
+      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{label}</p>
+      <div className="flex justify-between items-end gap-4">
+        <h4 className={`text-sm font-bold ${value >= 0 ? 'text-primary' : 'text-destructive'}`}>
+          {value >= 0 ? '+' : ''}{formatINR(value)}
+        </h4>
+        <span className="text-[10px] text-muted-foreground font-medium uppercase">{value >= 0 ? 'Gain' : 'Loss'}</span>
+      </div>
+      <div className="mt-2 h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+        <div className={`h-full ${value >= 0 ? 'bg-primary' : 'bg-destructive'}`} style={{ width: '100%', opacity: 0.3 }} />
+      </div>
     </div>
   );
 }
@@ -165,21 +175,36 @@ export default function StocksPage() {
                 <h2 className="text-lg font-heading font-semibold mb-4 text-foreground">Profit & Loss per Stock</h2>
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={plData} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
-                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: 'currentColor', fontSize: 11, opacity: 0.7 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
+                    <BarChart data={plData} barGap={4} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.05} />
+                      <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700, opacity: 0.5 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700, opacity: 0.5 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}K`} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.5)', borderRadius: '12px', fontSize: '12px' }}
-                        formatter={((value: number, name: string) => [formatINR(value), value >= 0 ? 'Gain' : 'Loss']) as never}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        content={<CustomTooltip />}
+                        cursor={{ fill: 'currentColor', opacity: 0.05 }}
+                        isAnimationActive={false}
                       />
-                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} />
-                      <Bar dataKey="pl">
+                      <ReferenceLine y={0} stroke="currentColor" opacity={0.2} strokeDasharray="3 3" />
+                      <Bar dataKey="pl" animationDuration={1000}>
                         {plData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.pl >= 0 ? "#00FF9C" : "#FF4D4D"} radius={entry.pl >= 0 ? [4, 4, 0, 0] as any : [0, 0, 4, 4] as any} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.pl >= 0 ? "url(#profitGrad)" : "url(#lossGrad)"} 
+                            radius={entry.pl >= 0 ? [6, 6, 0, 0] as any : [0, 0, 6, 6] as any} 
+                            className="transition-all duration-300 hover:brightness-125 hover:filter hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]"
+                          />
                         ))}
                       </Bar>
+                      <defs>
+                        <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#00FF9C" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#059669" stopOpacity={1} />
+                        </linearGradient>
+                        <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FF4D4D" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
+                        </linearGradient>
+                      </defs>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -222,9 +247,12 @@ export default function StocksPage() {
                             <span className="text-[10px] block font-bold">{pl >= 0 ? '+' : ''}{plPct.toFixed(1)}%</span>
                           </td>
                           <td className="px-6 py-4">
-                            <button onClick={() => handleDelete(h.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete">
-                              <Trash2 size={14} />
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <EditStockDialog holding={h} />
+                              <button onClick={() => handleDelete(h.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

@@ -10,6 +10,7 @@ import { useAccountsStore } from "@/stores/accounts-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { BankAccount } from "@/types/finance";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function AddAccountDialog({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -61,12 +62,18 @@ export function AddAccountDialog({ children }: { children?: React.ReactNode }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="acc-type">Account Type</Label>
-              <select id="acc-type" value={type} onChange={(e) => setType(e.target.value as BankAccount["type"])} className="w-full rounded-md bg-foreground/5 border border-border/50 px-3 py-2 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary">
-                <option value="Savings">Savings</option>
-                <option value="Checking">Checking</option>
-                <option value="Credit">Credit Card</option>
-                <option value="Wallet">Wallet</option>
-              </select>
+              <Select value={type} onValueChange={(val) => setType(val as BankAccount["type"])}>
+                <SelectTrigger className="w-full bg-foreground/5 border-border/50 h-11">
+                  <SelectValue placeholder="Select account type" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border/50">
+                  <SelectItem value="Savings">Savings</SelectItem>
+                  <SelectItem value="Checking">Checking</SelectItem>
+                  <SelectItem value="Salary">Salary Account</SelectItem>
+                  <SelectItem value="Credit">Credit Card</SelectItem>
+                  <SelectItem value="Wallet">Wallet</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="acc-balance">Current Balance (₹)</Label>

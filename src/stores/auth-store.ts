@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   createdAt: string;
   avatarUrl?: string;
+  isEmailVerified: boolean;
 }
 
 interface AuthState {
@@ -19,12 +20,15 @@ interface AuthState {
   signup: (name: string, email: string, password: string) => Promise<{ success: boolean; pending?: boolean; error?: string }>;
   // Login: verifies password and logs in
   login: (email: string, password: string) => Promise<{ success: boolean; pending?: boolean; error?: string }>;
-  // Social Login: Google
-  loginWithGoogle: () => Promise<void>;
+
   // Logout
   logout: () => Promise<void>;
   // Initialize: Recover session
   initialize: () => Promise<void>;
+  // Delete user data and log out
+  deleteAccount: () => Promise<void>;
+  // Refresh user data (useful for verification check)
+  refreshUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -33,6 +37,23 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isLoggedIn: false,
       isLoading: true,
+
+      refreshUser: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          set({
+            user: {
+              id: user.id,
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+              email: user.email!,
+              createdAt: user.created_at,
+              avatarUrl: user.user_metadata?.avatar_url,
+              isEmailVerified: !!user.email_confirmed_at,
+            },
+            isLoggedIn: true,
+          });
+        }
+      },
 
       initialize: async () => {
         set({ isLoading: true });
@@ -46,6 +67,7 @@ export const useAuthStore = create<AuthState>()(
               email: session.user.email!,
               createdAt: session.user.created_at,
               avatarUrl: session.user.user_metadata?.avatar_url,
+              isEmailVerified: !!session.user.email_confirmed_at,
             },
             isLoggedIn: true,
             isLoading: false,
@@ -64,6 +86,7 @@ export const useAuthStore = create<AuthState>()(
                 email: session.user.email!,
                 createdAt: session.user.created_at,
                 avatarUrl: session.user.user_metadata?.avatar_url,
+                isEmailVerified: !!session.user.email_confirmed_at,
               },
               isLoggedIn: true,
             });
@@ -90,16 +113,17 @@ export const useAuthStore = create<AuthState>()(
 
         if (data.user) {
           // If session is null, email confirmation is required
-          const isPending = !data.session;
+          const isPending = !data.session || !data.user.email_confirmed_at;
           
           set({
-            user: isPending ? null : {
+            user: {
               id: data.user.id,
               name: name,
               email: email,
               createdAt: data.user.created_at,
+              isEmailVerified: !!data.user.email_confirmed_at,
             },
-            isLoggedIn: !isPending,
+            isLoggedIn: true, // We allow "logged in" state but AuthGuard will block based on isEmailVerified
             isLoading: false,
           });
           
@@ -129,6 +153,7 @@ export const useAuthStore = create<AuthState>()(
               name: data.user.user_metadata?.full_name || email.split('@')[0],
               email: email,
               createdAt: data.user.created_at,
+              isEmailVerified: !!data.user.email_confirmed_at,
             },
             isLoggedIn: true,
             isLoading: false,
@@ -140,13 +165,19 @@ export const useAuthStore = create<AuthState>()(
         return { success: false, error: 'Login failed. Please try again.' };
       },
 
-      loginWithGoogle: async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin + '/dashboard',
-          },
-        });
+      deleteAccount: async () => {
+        await supabase.auth.signOut();
+        const keysToRemove = [
+          'finkar-accounts-v3',
+          'finkar-transactions-v3',
+          'finkar-stocks-v3',
+          'finkar-mutualfunds-v3',
+          'finkar-seeded-v3',
+          'finkar-auth-v2',
+          'finkar-auth'
+        ];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        set({ user: null, isLoggedIn: false });
       },
 
       logout: async () => {
@@ -155,9 +186,9 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     { 
-      name: 'finkar-auth-v2',
-      // We only persist a small part to avoid stale sessions vs Supabase's reliable session
+      name: 'finkar-auth-v3',
       partialize: (state) => ({ isLoggedIn: state.isLoggedIn }),
     }
   )
 );
+

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useAuthStore } from "@/stores/auth-store";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useTransactionsStore } from "@/stores/transactions-store";
 import { useStocksStore } from "@/stores/stocks-store";
@@ -13,14 +14,25 @@ export function StoreHydrator() {
   const stocksStore = useStocksStore();
   const fundsStore = useMutualFundsStore();
   
+  const { isLoggedIn, user, isLoading: isAuthLoading } = useAuthStore();
+  
   const initialized = useRef(false);
 
   useEffect(() => {
     if (initialized.current) return;
+    if (isAuthLoading) return; // Wait for auth to resolve
     
     // Safety check: Avoid running outside browser
     if (typeof window === "undefined") return;
 
+    // IF LOGGED IN: Stop seeding immediately. 
+    // The AuthGuard will trigger fetchHoldings, fetchTransactions, etc.
+    if (isLoggedIn && user?.isEmailVerified) {
+      initialized.current = true;
+      return;
+    }
+
+    // GUEST MODE: 
     // Check if we already seeded sample data for v3
     const isSeeded = localStorage.getItem("finkar-seeded-v3");
     if (isSeeded) {
@@ -28,36 +40,37 @@ export function StoreHydrator() {
       return;
     }
 
-    // Check if the stores are actually empty.
-    const hasAccounts = accountsStore.accounts.length > 0;
-    const hasTransactions = transactionsStore.transactions.length > 0;
-    const hasStocks = stocksStore.holdings.length > 0;
-    const hasFunds = fundsStore.funds.length > 0;
+    // Only seed if NOT logged in (Actual Guest)
+    if (!isLoggedIn) {
+      // Check if the stores are actually empty.
+      const hasAccounts = accountsStore.accounts.length > 0;
+      const hasTransactions = transactionsStore.transactions.length > 0;
+      const hasStocks = stocksStore.holdings.length > 0;
+      const hasFunds = fundsStore.funds.length > 0;
 
-    if (!hasAccounts && !hasTransactions && !hasStocks && !hasFunds) {
-      
-      
-      // Mark as seeded IMMEDIATELY so React Strict Mode second render doesn't double-seed
-      localStorage.setItem("finkar-seeded-v3", "true");
-      
-      // Add accounts first to get IDs
-      SAMPLE_ACCOUNTS.forEach(acc => accountsStore.addAccount(acc));
-      SAMPLE_STOCKS.forEach(stk => stocksStore.addHolding(stk));
-      SAMPLE_MUTUAL_FUNDS.forEach(fund => fundsStore.addFund(fund));
-      
-      // Delay transactions briefly to allow accounts to be stored
-      setTimeout(() => {
-        const latestAccounts = useAccountsStore.getState().accounts;
-        const accountIds = latestAccounts.map((a: any) => a.id);
-        SAMPLE_TRANSACTIONS(accountIds).forEach(tx => transactionsStore.addTransaction(tx));
+      if (!hasAccounts && !hasTransactions && !hasStocks && !hasFunds) {
+        // Mark as seeded IMMEDIATELY so React Strict Mode second render doesn't double-seed
+        localStorage.setItem("finkar-seeded-v3", "true");
+        
+        // Add accounts first to get IDs
+        SAMPLE_ACCOUNTS.forEach(acc => accountsStore.addAccount(acc));
+        SAMPLE_STOCKS.forEach(stk => stocksStore.addHolding(stk));
+        SAMPLE_MUTUAL_FUNDS.forEach(fund => fundsStore.addFund(fund));
+        
+        // Delay transactions briefly to allow accounts to be stored
+        setTimeout(() => {
+          const latestAccounts = useAccountsStore.getState().accounts;
+          const accountIds = latestAccounts.map((a: any) => a.id);
+          SAMPLE_TRANSACTIONS(accountIds).forEach(tx => transactionsStore.addTransaction(tx));
+          initialized.current = true;
+        }, 100);
+      } else {
+        // Data already exists, mark as seeded
+        localStorage.setItem("finkar-seeded-v3", "true");
         initialized.current = true;
-      }, 100);
-    } else {
-      // Data already exists physically in store, mark as seeded
-      localStorage.setItem("finkar-seeded-v3", "true");
-      initialized.current = true;
+      }
     }
-  }, [accountsStore, transactionsStore, stocksStore, fundsStore]);
+  }, [accountsStore, transactionsStore, stocksStore, fundsStore, isLoggedIn, isAuthLoading, user?.isEmailVerified]);
 
   return null;
 }

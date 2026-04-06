@@ -1,7 +1,7 @@
 export interface BankAccount {
   id: string;
   name: string;
-  type: 'Savings' | 'Checking' | 'Credit' | 'Wallet';
+  type: 'Savings' | 'Checking' | 'Salary' | 'Credit' | 'Wallet';
   balance: number;
 }
 

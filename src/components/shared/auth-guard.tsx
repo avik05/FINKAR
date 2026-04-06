@@ -12,9 +12,11 @@ import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 // Routes that logged-in users should be redirected away from (Auth Wall)
 const AUTH_ROUTES = ["/login"];
 
-// ONLY sensitive routes are strictly protected. 
-// Dashboard, Analytics, etc. are now accessible to guests with sample data.
-const PROTECTED_ROUTES = ["/settings"];
+// Sensitive routes that require a VERIFIED account if logged in
+const SENSITIVE_ROUTES = ["/dashboard", "/banks", "/stocks", "/mutual-funds", "/expenses", "/goals", "/analytics", "/settings"];
+
+// Verification page
+const VERIFY_ROUTE = "/auth/verify";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoggedIn, isLoading, initialize } = useAuthStore();
@@ -36,8 +38,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // If logged in, fetch user's data. If guest, fetchTransactions(null) loads sample data.
-    const userId = isLoggedIn ? user?.id ?? null : null;
+    // If logged in AND verified, fetch user's data. 
+    // If guest (isLoggedIn is false), fetch(null) loads sample data.
+    // If logged in BUT unverified, we don't fetch real data yet (or we fetch null to show sample data as 'preview' - but user asked to block it)
+    const canSeeData = isLoggedIn ? user?.isEmailVerified : false;
+    const userId = canSeeData ? user?.id ?? null : null;
     
     fetchTransactions(userId);
     fetchAccounts(userId);
@@ -45,7 +50,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     fetchHoldings(userId);
     fetchFunds(userId);
 
-  }, [isLoggedIn, isLoading, user?.id, fetchTransactions, fetchAccounts, fetchGoals, fetchHoldings, fetchFunds]);
+  }, [isLoggedIn, isLoading, user?.id, user?.isEmailVerified, fetchTransactions, fetchAccounts, fetchGoals, fetchHoldings, fetchFunds]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -53,17 +58,30 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // 1. Redirect logged-in users away from /login
     if (isLoggedIn && AUTH_ROUTES.includes(pathname)) {
       router.replace("/dashboard");
+      return;
     }
 
-    // 2. Redirect guests away from strictly protected routes (like settings)
-    const isStrictlyProtected = PROTECTED_ROUTES.some(route => 
+    // 2. Strict Verification Check
+    // If logged in but NOT verified, redirect to /auth/verify if on a sensitive route
+    const isSensitive = SENSITIVE_ROUTES.some(route => 
+      pathname === route || pathname?.startsWith(`${route}/`)
+    );
+
+    if (isLoggedIn && !user?.isEmailVerified && isSensitive) {
+      router.replace(VERIFY_ROUTE);
+      return;
+    }
+
+    // 3. Redirect guests away from strictly protected routes (optional, if we want to force login for some)
+    // Currently, guests are allowed in "read-only/sample" mode for most pages except settings.
+    const isStrictlyProtected = ["/settings"].some(route => 
       pathname === route || pathname?.startsWith(`${route}/`)
     );
 
     if (!isLoggedIn && isStrictlyProtected) {
       router.replace("/login");
     }
-  }, [isLoggedIn, isLoading, pathname, router]);
+  }, [isLoggedIn, user?.isEmailVerified, isLoading, pathname, router]);
 
   // Initial session loading state
   if (isLoading) {
@@ -78,7 +96,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // Prevent flash of protected content
-  if (!isLoggedIn && PROTECTED_ROUTES.some(r => pathname?.startsWith(r))) return null;
+  if (isLoggedIn && !user?.isEmailVerified && SENSITIVE_ROUTES.some(r => pathname?.startsWith(r))) return null;
+  if (!isLoggedIn && ["/settings"].some(r => pathname?.startsWith(r))) return null;
   if (isLoggedIn && AUTH_ROUTES.includes(pathname)) return null;
 
   return <>{children}</>;

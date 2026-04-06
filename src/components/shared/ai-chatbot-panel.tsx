@@ -2,12 +2,14 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { X, Send, Sparkles } from "lucide-react";
+import { formatINR } from "@/lib/format";
+import { getFinancialSnapshot, generateSmartResponse, AIResponse } from "@/lib/ai-logic";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useTransactionsStore } from "@/stores/transactions-store";
 import { useStocksStore } from "@/stores/stocks-store";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { useAuthStore } from "@/stores/auth-store";
-import { formatINR } from "@/lib/format";
+import { useGoalsStore } from "@/stores/goals-store";
 
 type ChatMessage = {
   id: string;
@@ -35,6 +37,10 @@ export function AiChatbotPanel() {
   const transactions = useTransactionsStore((s) => s.transactions);
   const stocks = useStocksStore((s) => s.holdings);
   const funds = useMutualFundsStore((s) => s.funds);
+  const goals = useGoalsStore((s) => s.goals);
+
+  const [isThinking, setIsThinking] = useState(false);
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>(["Net worth?", "This month's spend?", "Financial advice?"]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,131 +57,25 @@ export function AiChatbotPanel() {
     ]);
   }, [firstName]);
 
-  const processQuery = (query: string): string => {
-    const q = query.toLowerCase().trim();
-
-    // Derived computations from stores
-    const cashBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
-    const liquidCash = accounts.filter(a => a.balance > 0).reduce((sum, a) => sum + a.balance, 0);
-
-    const stockValue = stocks.reduce((sum, s) => sum + s.currentPrice * s.quantity, 0);
-    const stockInvested = stocks.reduce((sum, s) => sum + s.avgBuyPrice * s.quantity, 0);
-    const stockPnl = stockValue - stockInvested;
-    const stockReturn = stockInvested > 0 ? (stockPnl / stockInvested) * 100 : 0;
-
-    const mfValue = funds.reduce((sum, f) => sum + f.current, 0);
-    const mfInvested = funds.reduce((sum, f) => sum + f.invested, 0);
-    const mfPnl = mfValue - mfInvested;
-
-    const netWorth = liquidCash + stockValue + mfValue;
-    const invested = stockValue + mfValue;
-
-    const now = new Date();
-    const currentMonthTx = transactions.filter((t) => {
-      const d = new Date(t.date);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    });
-    const monthlyExpense = currentMonthTx
-      .filter((t) => t.amount < 0)
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-    const monthlyIncome = currentMonthTx
-      .filter((t) => t.amount > 0)
-      .reduce((sum, t) => sum + t.amount, 0);
-    const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpense) / monthlyIncome * 100) : 0;
-
-    // Top expense category
-    const categoryMap: Record<string, number> = {};
-    transactions.filter(t => t.amount < 0).forEach((t) => {
-      categoryMap[t.category] = (categoryMap[t.category] || 0) + Math.abs(t.amount);
-    });
-    const topCategory = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])[0];
-
-    // Best performing stock
-    const bestStock = stocks.reduce<typeof stocks[0] | null>((best, s) => {
-      const ret = (s.currentPrice - s.avgBuyPrice) / s.avgBuyPrice;
-      if (!best) return s;
-      const bestRet = (best.currentPrice - best.avgBuyPrice) / best.avgBuyPrice;
-      return ret > bestRet ? s : best;
-    }, null);
-
-    // --- Intent matching ---
-    if (q.match(/\b(hi|hello|hey|good morning|good evening|sup)\b/)) {
-      return `Hello! How can I help you manage your finances today, ${firstName}?`;
-    }
-
-    if (q.match(/\bnet worth\b/)) {
-      return `Your total net worth is ${formatINR(netWorth)} — comprising ${formatINR(liquidCash)} in liquid cash and ${formatINR(invested)} in investments.`;
-    }
-
-    if (q.match(/\b(cash|liquid|balance|bank|accounts?)\b/)) {
-      if (accounts.length === 0) return "You haven't added any bank accounts yet. Head to Banks & Cards to add one.";
-      return `You have ${formatINR(liquidCash)} in liquid savings across ${accounts.length} account${accounts.length !== 1 ? "s" : ""}. Your total balance (including credit) is ${formatINR(cashBalance)}.`;
-    }
-
-    if (q.match(/\b(spend|spent|expense|expenses)\b/)) {
-      if (currentMonthTx.length === 0) return "No transactions recorded this month yet.";
-      const resp = `You've spent ${formatINR(monthlyExpense)} this month on ${currentMonthTx.filter(t => t.amount < 0).length} transactions.`;
-      return topCategory
-        ? `${resp} Your biggest expense category is ${topCategory[0]} (${formatINR(topCategory[1])}).`
-        : resp;
-    }
-
-    if (q.match(/\b(income|earn|salary|credited)\b/)) {
-      if (monthlyIncome === 0) return "No income recorded this month. Add a transaction with a positive amount to track earnings.";
-      return `Your total income this month is ${formatINR(monthlyIncome)}. Your savings rate is ${savingsRate.toFixed(1)}%.`;
-    }
-
-    if (q.match(/\b(saving|savings rate)\b/)) {
-      if (monthlyIncome === 0) return "I need at least one income transaction to calculate your savings rate.";
-      return `This month you're saving ${formatINR(monthlyIncome - monthlyExpense)}, which is a ${savingsRate.toFixed(1)}% savings rate. ${savingsRate > 30 ? "Great discipline!" : "Try to aim for 30% or more."}`;
-    }
-
-    if (q.match(/\b(stock|stocks|equity|portfolio|holdings?)\b/)) {
-      if (stocks.length === 0) return "You haven't added any stock holdings yet. Go to Stocks to add them.";
-      const gainLabel = stockPnl >= 0 ? "up" : "down";
-      let reply = `Your stock portfolio is worth ${formatINR(stockValue)} (invested ${formatINR(stockInvested)}), ${gainLabel} ${Math.abs(stockReturn).toFixed(1)}% (${formatINR(Math.abs(stockPnl))}).`;
-      if (bestStock) {
-        const bestRet = ((bestStock.currentPrice - bestStock.avgBuyPrice) / bestStock.avgBuyPrice * 100).toFixed(1);
-        reply += ` Your best performer is ${bestStock.symbol} at +${bestRet}%.`;
-      }
-      return reply;
-    }
-
-    if (q.match(/\b(mutual fund|mf|sip|fund|funds)\b/)) {
-      if (funds.length === 0) return "You haven't added any mutual funds yet. Go to Mutual Funds to add them.";
-      const gainLabel = mfPnl >= 0 ? "up" : "down";
-      return `Your ${funds.length} mutual fund${funds.length !== 1 ? "s" : ""} are currently valued at ${formatINR(mfValue)} (invested ${formatINR(mfInvested)}), ${gainLabel} by ${formatINR(Math.abs(mfPnl))}. Total SIP: ${formatINR(funds.reduce((sum, f) => sum + f.sipAmount, 0))}/month.`;
-    }
-
-    if (q.match(/\b(top|biggest|largest|most) (spend|expens|categor)/)) {
-      if (!topCategory) return "No expense transactions found yet.";
-      return `Your biggest spending category is ${topCategory[0]} at ${formatINR(topCategory[1])}.`;
-    }
-
-    if (q.match(/\b(invest|invested|investments?)\b/)) {
-      return `You have ${formatINR(invested)} invested — ${formatINR(stockValue)} in stocks and ${formatINR(mfValue)} in mutual funds. Total P&L: ${formatINR(stockPnl + mfPnl)}.`;
-    }
-
-    if (q.match(/\bhelp\b/)) {
-      return "I can answer questions like: 'What is my net worth?', 'How much did I spend this month?', 'How is my stock portfolio performing?', 'What are my mutual fund returns?', or 'What is my savings rate?'";
-    }
-
-    return "I'm not sure about that yet! Try asking: 'What is my net worth?', 'How much did I spend this month?', or 'How is my portfolio doing?'";
-  };
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const userMsg: ChatMessage = { id: `msg_${Date.now()}`, sender: "user", text: inputValue };
+  const handleSend = (e?: React.FormEvent, overrideText?: string) => {
+    if (e) e.preventDefault();
+    const text = overrideText || inputValue;
+    if (!text.trim() || isThinking) return;
+  
+    const userMsg: ChatMessage = { id: `msg_${Date.now()}`, sender: "user", text: text };
     setMessages((prev) => [...prev, userMsg]);
     setInputValue("");
-
-    // Simulate brief thinking delay
+    setIsThinking(true);
+  
+    // Small delay to simulate "intelligence"
     setTimeout(() => {
-      const responseText = processQuery(userMsg.text);
-      setMessages((prev) => [...prev, { id: `msg_${Date.now() + 1}`, sender: "ai", text: responseText }]);
-    }, 500);
+      const snapshot = getFinancialSnapshot({ accounts, transactions, stocks, funds, goals });
+      const response: AIResponse = generateSmartResponse(text, snapshot, firstName);
+      
+      setMessages((prev) => [...prev, { id: `msg_${Date.now() + 1}`, sender: "ai", text: response.text }]);
+      if (response.suggestions) setCurrentSuggestions(response.suggestions);
+      setIsThinking(false);
+    }, 800);
   };
 
   return (
@@ -212,42 +112,53 @@ export function AiChatbotPanel() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line ${
                   msg.sender === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-secondary border border-border/50 text-foreground rounded-bl-sm"
+                    ? "bg-primary text-primary-foreground rounded-br-sm shadow-lg shadow-primary/10"
+                    : "bg-secondary border border-border/30 text-foreground rounded-bl-sm shadow-sm"
                 }`}
               >
-                {msg.text}
+                {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) => 
+                  part.startsWith('**') && part.endsWith('**') 
+                    ? <strong key={i} className="text-primary-foreground dark:text-primary brightness-125">{part.slice(2, -2)}</strong> 
+                    : part
+                )}
               </div>
             </div>
           ))}
+          
+          {isThinking && (
+            <div className="flex justify-start">
+              <div className="bg-secondary border border-border/30 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce shadow-[0_0_5px_rgba(0,255,156,0.5)]" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce shadow-[0_0_5px_rgba(0,255,156,0.5)]" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce shadow-[0_0_5px_rgba(0,255,156,0.5)]" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Suggestions */}
-        {messages.length <= 1 && (
-          <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-            {["Net worth?", "This month's spend?", "Stock returns?", "Savings rate?"].map((s) => (
-              <button
-                key={s}
-                onClick={() => {
-                  setInputValue(s);
-                }}
-                className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="px-3 pb-3 flex flex-wrap gap-1.5 justify-end">
+          {currentSuggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => handleSend(undefined, s)}
+              disabled={isThinking}
+              className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
 
         {/* Input */}
         <form onSubmit={handleSend} className="p-3 border-t border-foreground/10 bg-background/30 rounded-b-2xl">

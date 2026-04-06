@@ -2,7 +2,9 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Building2, Link, ShieldCheck, Smartphone, Download } from "lucide-react";
+import { Building2, Link, ShieldCheck, Smartphone, Download, AlertTriangle, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/auth-store";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { Button } from "@/components/ui/button";
 import { useAccountsStore } from "@/stores/accounts-store";
@@ -20,6 +22,8 @@ export default function SettingsPage() {
   const transactions = useTransactionsStore((s) => s.transactions);
   const holdings = useStocksStore((s) => s.holdings);
   const funds = useMutualFundsStore((s) => s.funds);
+  const router = useRouter();
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
 
   const handleExport = () => {
     const data = {
@@ -58,6 +62,13 @@ export default function SettingsPage() {
       localStorage.removeItem("finkar-mutualfunds-v3");
       localStorage.removeItem("finkar-seeded-v3");
       window.location.assign("/"); // Hard reload back to home
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirm("CRITICAL ACTION: This will delete your account and all associated data permanently. This cannot be undone. Proceed?")) {
+      await deleteAccount();
+      router.push("/");
     }
   };
 
@@ -136,6 +147,30 @@ export default function SettingsPage() {
             </div>
           </FinanceCard>
         </div>
+      </motion.div>
+
+      {/* Danger Zone */}
+      <motion.div variants={FADE_UP} className="pt-6">
+        <h2 className="text-lg font-heading font-semibold text-destructive flex items-center gap-2 mb-4">
+          <AlertTriangle size={20} /> Danger Zone
+        </h2>
+        <FinanceCard className="p-6 border-destructive/20 bg-destructive/5">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-foreground">Delete Account</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Permanently remove your account and all your financial data from this device. Please ensure you have an export of your data if you need it.
+              </p>
+            </div>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              className="w-full md:w-auto px-8 shadow-[0_0_20px_rgba(255,0,0,0.1)] hover:shadow-[0_0_30px_rgba(255,0,0,0.2)]"
+            >
+              <Trash2 size={16} className="mr-2" /> Delete Permanently
+            </Button>
+          </div>
+        </FinanceCard>
       </motion.div>
     </motion.div>
   );

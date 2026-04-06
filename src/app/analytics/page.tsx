@@ -20,7 +20,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
-  LineChart, Line, Legend
+  LineChart, Line, Legend, Sector
 } from "recharts";
 
 const FADE_UP = {
@@ -54,6 +54,9 @@ export default function AnalyticsPage() {
     const monthlyIncome = thisMonthTx.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
     const monthlyExpense = thisMonthTx.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
+    const stocksValue = stocks.reduce((sum, s) => sum + s.currentPrice * s.quantity, 0);
+    const fundsValue = funds.reduce((sum, f) => sum + f.current, 0);
+
     return {
       netWorth,
       cash,
@@ -61,6 +64,8 @@ export default function AnalyticsPage() {
       runway: getRunway(cash, burn.monthly),
       savingsRate: calculateSavingsRate(monthlyIncome, monthlyExpense),
       portfolio,
+      stocksValue,
+      fundsValue,
       spendingCategories: getSpendingByCategory(transactions),
       forecasts: getForecast(netWorth, monthlyIncome - monthlyExpense)
     };
@@ -86,21 +91,23 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-1 p-1 bg-foreground/[0.03] border border-border/50 rounded-2xl w-fit overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
-              activeTab === tab.id 
-                ? 'bg-background text-primary shadow-sm border border-border/50' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05]'
-            }`}
-          >
-            <tab.icon size={16} />
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-1 p-1 bg-foreground/[0.03] border border-border/50 rounded-2xl w-full overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="flex items-center gap-1 min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === tab.id 
+                  ? 'bg-background text-primary shadow-sm border border-border/50' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05]'
+              }`}
+            >
+              <tab.icon size={16} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -126,12 +133,47 @@ export default function AnalyticsPage() {
 // --- SUB-COMPONENTS FOR EACH TAB ---
 
 function InsightsTab({ stats }: { stats: any }) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  
   const kpis = [
     { title: "Net Worth", value: formatINR(stats.netWorth), icon: Landmark, color: "text-primary", label: "Assets + Cash" },
     { title: "Financial Runway", value: `${stats.runway.toFixed(1)} Months`, icon: Clock, color: "text-blue-500", label: "Survival based on liquidity" },
     { title: "Monthly Burn", value: formatINR(stats.burn.monthly), icon: Flame, color: "text-orange-500", label: "Avg monthly spending" },
     { title: "Savings Rate", value: `${stats.savingsRate.toFixed(1)}%`, icon: Percent, color: "text-amber-500", label: "This month's efficiency" },
   ];
+
+  const allocationData = [
+    { name: 'Liquid Cash', value: stats.cash, color: 'var(--primary)', gradient: 'url(#cashGrad)' },
+    { name: 'Direct Equity', value: stats.stocksValue, color: '#60A5FA', gradient: 'url(#equityGrad)' },
+    { name: 'Mutual Funds', value: stats.fundsValue, color: '#A855F7', gradient: 'url(#mfGrad)' }
+  ].filter(d => d.value > 0);
+
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          style={{ filter: `drop-shadow(0 0 8px ${fill})` }}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          innerRadius={outerRadius + 12}
+          outerRadius={outerRadius + 14}
+          fill={fill}
+        />
+      </g>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -155,30 +197,92 @@ function InsightsTab({ stats }: { stats: any }) {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <FinanceCard className="lg:col-span-2 p-6 h-[400px]">
-           <h3 className="font-heading font-bold mb-6">Wealth Distribution</h3>
-           <ResponsiveContainer width="100%" height="85%">
-             <AreaChart data={[
-               { name: 'Invested', value: stats.portfolio.totalInvested },
-               { name: 'Portfolio Value', value: stats.portfolio.totalValue },
-               { name: 'Total Wealth', value: stats.netWorth }
-             ]}>
-               <defs>
-                 <linearGradient id="wealthGrad" x1="0" y1="0" x2="0" y2="1">
-                   <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
-                   <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
-                 </linearGradient>
-               </defs>
-               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-               <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={10} axisLine={false} tickLine={false} />
-               <YAxis hide />
-               <Tooltip 
-                contentStyle={{ backgroundColor: "rgba(18, 18, 26, 0.8)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
-                formatter={(val: any) => [formatINR(Number(val))]}
-               />
-               <Area type="monotone" dataKey="value" stroke="var(--primary)" fillOpacity={1} fill="url(#wealthGrad)" strokeWidth={3} />
-             </AreaChart>
-           </ResponsiveContainer>
+        <FinanceCard className="lg:col-span-2 p-6 h-[400px] relative overflow-hidden group">
+           <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="font-heading font-bold">Asset Allocation</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Portfolio breakdown</p>
+              </div>
+              {activeIndex !== null && (
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-right">
+                  <p className="text-[10px] font-black text-primary uppercase">{allocationData[activeIndex].name}</p>
+                  <p className="text-sm font-bold">{((allocationData[activeIndex].value / stats.netWorth) * 100).toFixed(1)}%</p>
+                </motion.div>
+              )}
+           </div>
+
+           <div className="relative h-[280px]">
+             <ResponsiveContainer width="100%" height="100%">
+               <PieChart>
+                 <defs>
+                   <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="0%" stopColor="var(--primary)" stopOpacity={1}/>
+                     <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                   </linearGradient>
+                   <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="0%" stopColor="#60A5FA" stopOpacity={1}/>
+                     <stop offset="100%" stopColor="#2563EB" stopOpacity={1}/>
+                   </linearGradient>
+                   <linearGradient id="mfGrad" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="0%" stopColor="#A855F7" stopOpacity={1}/>
+                     <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
+                   </linearGradient>
+                 </defs>
+                 <Pie
+                    activeIndex={activeIndex ?? undefined}
+                    activeShape={renderActiveShape}
+                    data={allocationData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={75}
+                    outerRadius={100}
+                    dataKey="value"
+                    onMouseEnter={(_, index) => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(null)}
+                    stroke="none"
+                    paddingAngle={5}
+                    animationBegin={0}
+                    animationDuration={1500}
+                 >
+                   {allocationData.map((entry, index) => (
+                     <Cell key={`cell-${index}`} fill={entry.gradient} />
+                   ))}
+                 </Pie>
+               </PieChart>
+             </ResponsiveContainer>
+             
+             {/* Central Content */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+               <motion.div
+                 animate={{ scale: activeIndex !== null ? 1.05 : 1 }}
+                 className="space-y-0.5"
+               >
+                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                   {activeIndex !== null ? allocationData[activeIndex].name : "Net Worth"}
+                 </p>
+                 <h4 className="text-xl md:text-2xl font-black text-foreground">
+                   {activeIndex !== null ? formatINRCompact(allocationData[activeIndex].value) : formatINRCompact(stats.netWorth)}
+                 </h4>
+                 {activeIndex === null && (
+                   <p className="text-[10px] text-primary font-bold">↑ Active Balance</p>
+                 )}
+               </motion.div>
+             </div>
+           </div>
+
+           <div className="flex justify-center gap-6 mt-4">
+             {allocationData.map((item, i) => (
+               <div 
+                key={i} 
+                className={`flex items-center gap-2 cursor-pointer transition-all ${activeIndex === i ? 'scale-110 opacity-100' : 'opacity-60 hover:opacity-100'}`}
+                onMouseEnter={() => setActiveIndex(i)}
+                onMouseLeave={() => setActiveIndex(null)}
+               >
+                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                 <span className="text-[10px] font-bold uppercase tracking-wider">{item.name}</span>
+               </div>
+             ))}
+           </div>
         </FinanceCard>
         
         <FinanceCard className="p-6 h-[400px] bg-gradient-to-br from-primary/[0.02] to-transparent">
@@ -328,13 +432,56 @@ function InvestmentsTab({ stats }: { stats: any }) {
 }
 
 function StrategyTab({ stats }: { stats: any }) {
-  // Logic from original Robo-Advisor, but styled for the tabbed interface
   const [riskProfile, setRiskProfile] = useState('moderate');
   
   const strategyDetails: any = {
-    conservative: { icon: Shield, color: "text-blue-400" },
-    moderate: { icon: Activity, color: "text-primary" },
-    aggressive: { icon: Zap, color: "text-orange-400" }
+    conservative: { 
+      icon: Shield, 
+      color: "text-blue-400",
+      match: 92,
+      advice: "Your portfolio is well-protected. Since you prefer stability, maintain a higher cash buffer and focus on debt instruments or liquid funds.",
+      rebalance: 0.05
+    },
+    moderate: { 
+      icon: Activity, 
+      color: "text-primary",
+      match: 84,
+      advice: "You have a balanced approach. You are slightly over-exposed in Liquid Cash. Consider shifting some funds into diversified equity or index funds.",
+      rebalance: 0.15
+    },
+    aggressive: { 
+      icon: Zap, 
+      color: "text-orange-400",
+      match: 76,
+      advice: "Growth is your priority. You have significant idle cash that could be working harder in high-growth equity or sectoral funds to beat inflation significantly.",
+      rebalance: 0.3
+    }
+  };
+
+  const currentStrategy = strategyDetails[riskProfile];
+
+  const handleDownloadCSV = () => {
+    const csvRows = [
+      ["Finkar Financial Action Plan"],
+      ["Date", new Date().toLocaleDateString()],
+      ["Strategy Profile", riskProfile.toUpperCase()],
+      [""],
+      ["Asset Category", "Current Value", "Target Allocation (%)", "Recommended Action"],
+      ["Liquid Cash", formatINR(stats.cash), riskProfile === 'conservative' ? "30%" : riskProfile === 'moderate' ? "15%" : "5%", "Reduce exposure, move to equity"],
+      ["Stocks/MFs", formatINR(stats.portfolio.totalValue), riskProfile === 'conservative' ? "70%" : riskProfile === 'moderate' ? "85%" : "95%", "Increase holding in index funds"],
+      [""],
+      ["Immediate Priority", `Move ${formatINR(stats.netWorth * currentStrategy.rebalance)} into Equity`],
+      ["Generated by Finkar AI"]
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Finkar_Action_Plan_${riskProfile}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -347,7 +494,7 @@ function StrategyTab({ stats }: { stats: any }) {
             <FinanceCard 
               key={key}
               onClick={() => setRiskProfile(key)}
-              className={`p-5 cursor-pointer border-2 transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-foreground/20 hover:bg-foreground/5'}`}
+              className={`p-5 cursor-pointer border-2 transition-all ${isSelected ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(0,255,156,0.1)]' : 'border-border/50 hover:border-foreground/20 hover:bg-foreground/5'}`}
             >
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-xl bg-foreground/5 ${detail.color}`}>
@@ -372,15 +519,18 @@ function StrategyTab({ stats }: { stats: any }) {
         <div className="space-y-4">
           <div className="flex justify-between items-center p-4 rounded-xl bg-foreground/5 border border-border/50">
             <span className="text-sm font-bold">Current Alignment</span>
-            <span className="text-sm text-muted-foreground">84% Match</span>
+            <span className="text-sm text-muted-foreground">{currentStrategy.match}% Match</span>
           </div>
           <div className="p-5 border-l-4 border-primary bg-primary/[0.03]">
             <p className="text-xs leading-relaxed">
-              Based on your <strong>{riskProfile}</strong> choice, you are currently over-exposed in Liquid Cash and under-exposed in Equity. 
-              Consider shifting <strong>{formatINRCompact(stats.netWorth * 0.1)}</strong> into indexed mutual funds.
+              Based on your <strong>{riskProfile}</strong> choice, {currentStrategy.advice} 
+              Consider shifting <strong>{formatINRCompact(stats.netWorth * currentStrategy.rebalance)}</strong> into high-yield assets.
             </p>
           </div>
-          <button className="w-full mt-4 bg-primary text-primary-foreground font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+          <button 
+            onClick={handleDownloadCSV}
+            className="w-full mt-4 bg-primary text-primary-foreground font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_4px_20px_rgba(0,255,156,0.2)] active:scale-[0.98]"
+          >
             <Download size={18} /> Download Detailed Action Plan (CSV)
           </button>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Github, Twitter, Linkedin, Heart, Eye } from "lucide-react";
+import { Instagram, Twitter, Linkedin, Heart, Eye } from "lucide-react";
 
 export function Footer() {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
@@ -35,11 +35,8 @@ export function Footer() {
         </div>
 
         <div className="flex items-center gap-4 order-last md:order-none">
-          <Link href="https://github.com/avik05" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-secondary/80 transition-all hover:text-primary glow-hover border border-transparent hover:border-primary/20">
-            <Github size={18} />
-          </Link>
           <Link href="https://www.instagram.com/aviiiiiiik" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-secondary/80 transition-all hover:text-primary glow-hover border border-transparent hover:border-primary/20">
-            <Twitter size={18} />
+            <Instagram size={18} />
           </Link>
           <Link href="https://www.linkedin.com/in/avik0508" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-secondary/80 transition-all hover:text-primary glow-hover border border-transparent hover:border-primary/20">
             <Linkedin size={18} />
