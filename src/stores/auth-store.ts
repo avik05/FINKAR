@@ -15,10 +15,10 @@ interface AuthState {
   isLoggedIn: boolean;
   isLoading: boolean;
   
-  // Sign up: creates account & logs in
-  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  // Sign up: creates account & logs in (or waits for confirmation)
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; pending?: boolean; error?: string }>;
   // Login: verifies password and logs in
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; pending?: boolean; error?: string }>;
   // Social Login: Google
   loginWithGoogle: () => Promise<void>;
   // Logout
@@ -89,17 +89,21 @@ export const useAuthStore = create<AuthState>()(
         }
 
         if (data.user) {
+          // If session is null, email confirmation is required
+          const isPending = !data.session;
+          
           set({
-            user: {
+            user: isPending ? null : {
               id: data.user.id,
               name: name,
               email: email,
               createdAt: data.user.created_at,
             },
-            isLoggedIn: true,
+            isLoggedIn: !isPending,
             isLoading: false,
           });
-          return { success: true };
+          
+          return { success: true, pending: isPending };
         }
 
         set({ isLoading: false });
