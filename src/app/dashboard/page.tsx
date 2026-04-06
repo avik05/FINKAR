@@ -221,19 +221,21 @@ export default function DashboardPage() {
                       </linearGradient>
                     </defs>
                     <Pie 
-                      activeIndex={activeIndex ?? undefined}
-                      activeShape={renderActiveShape}
-                      data={allocation} 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={70} 
-                      outerRadius={95} 
-                      paddingAngle={5} 
-                      dataKey="value" 
-                      stroke="none" 
-                      onMouseEnter={(_, index) => setActiveIndex(index)}
-                      onMouseLeave={() => setActiveIndex(null)}
-                      animationDuration={1500}
+                      {...({
+                        activeIndex: activeIndex !== null ? activeIndex : undefined,
+                        activeShape: renderActiveShape,
+                        data: allocation,
+                        cx: "50%",
+                        cy: "50%",
+                        innerRadius: 70,
+                        outerRadius: 95,
+                        paddingAngle: 5,
+                        dataKey: "value",
+                        stroke: "none",
+                        onMouseEnter: (_: any, index: number) => setActiveIndex(index),
+                        onMouseLeave: () => setActiveIndex(null),
+                        animationDuration: 1500
+                      } as any)}
                     >
                       {allocation.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.gradient} />
