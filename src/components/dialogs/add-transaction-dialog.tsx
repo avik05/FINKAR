@@ -25,7 +25,7 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
   const [isExpense, setIsExpense] = useState(true);
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState("");
-  const [accountId, setAccountId] = useState("");
+  const [accountId, setAccountId] = useState("none");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +47,7 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
       merchant: merchant.trim(),
       category: finalCategory,
       amount: finalAmount,
-      accountId: accountId || "none",
+      accountId: accountId === "none" ? null : accountId,
       accountName: selectedAccount?.name || "Unlinked",
     });
 

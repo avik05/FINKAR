@@ -11,7 +11,7 @@ export interface Transaction {
   merchant: string;
   category: string;
   amount: number; // negative = expense, positive = income
-  accountId: string;
+  accountId: string | null;
   accountName: string; // denormalized for display
 }
 

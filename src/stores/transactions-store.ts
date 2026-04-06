@@ -148,8 +148,8 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
         merchant: data[0].merchant,
         category: data[0].category,
         amount: Number(data[0].amount),
-        accountId: data[0].account_id,
-        accountName: data[0].account_name,
+        accountId: data[0].account_id || null,
+        accountName: data[0].account_name || "Unlinked",
       };
       set((state) => ({
         transactions: [newTx, ...state.transactions],
