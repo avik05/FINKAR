@@ -26,7 +26,7 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
   const [isExpense, setIsExpense] = useState(true);
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState("");
-  const [accountId, setAccountId] = useState("");
+  const [accountId, setAccountId] = useState("none");
   const [date, setDate] = useState("");
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
       setMerchant(transaction.merchant);
       setAmount(Math.abs(transaction.amount).toString());
       setIsExpense(transaction.amount < 0);
-      setAccountId(transaction.accountId);
+      setAccountId(transaction.accountId || "none");
       setDate(transaction.date);
       if (CATEGORIES.includes(transaction.category as any)) {
         setCategory(transaction.category);
@@ -64,7 +64,7 @@ export function EditTransactionDialog({ transaction, children }: { transaction: 
       merchant: merchant.trim(),
       category: finalCategory,
       amount: finalAmount,
-      accountId: accountId || "none",
+      accountId: accountId === "none" ? null : accountId,
       accountName: selectedAccount?.name || "Unlinked",
     });
 
