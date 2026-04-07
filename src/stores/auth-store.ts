@@ -256,7 +256,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     { 
       name: 'finkar-auth-v3',
-      partialize: (state) => ({ isLoggedIn: state.isLoggedIn }),
+      partialize: (state) => ({ 
+        isLoggedIn: state.isLoggedIn,
+        user: state.user 
+      }),
     }
   )
 );

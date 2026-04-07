@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { supabase } from "@/lib/supabase";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { Sparkles, Eye, EyeOff, ArrowRight, User, Mail, Lock } from "lucide-react";
 
@@ -16,7 +17,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Handle verified status from redirection
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") === "true") {
+      setSuccess("Account verified successfully! Please sign in.");
+      const verifiedEmail = params.get("email");
+      if (verifiedEmail) setEmail(verifiedEmail);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +89,13 @@ export default function LoginPage() {
               : "Start your financial command centre"}
           </p>
         </div>
+
+        {/* Success banner */}
+        {success && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm animate-in fade-in slide-in-from-top-1 duration-300 font-medium">
+            {success}
+          </div>
+        )}
 
         {/* Error banner */}
         {error && (

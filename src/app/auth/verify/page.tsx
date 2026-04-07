@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { supabase } from "@/lib/supabase";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { Mail, RefreshCw, LogOut, ShieldCheck, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -15,18 +16,30 @@ export default function VerifyPage() {
   const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState("");
 
-  // Auto-redirect if verified
+  // Auto-redirect or prompt login if verified
   useEffect(() => {
     if (isLoggedIn && user?.isEmailVerified) {
-      if (!message.includes("Verified")) {
-        setMessage("Verified! Redirecting to your dashboard...");
-      }
-      const timeout = setTimeout(() => {
-        router.replace("/dashboard");
-      }, 1500);
-      return () => clearTimeout(timeout);
+      const handleRedirect = async () => {
+        // Check if we have a real Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          if (!message.includes("Verified")) {
+            setMessage("Verified! Redirecting to your dashboard...");
+          }
+          setTimeout(() => router.replace("/dashboard"), 1500);
+        } else {
+          // No session (verified on mobile) -> Must re-login to PC
+          setMessage("Verified on mobile! Please sign in on this PC to secure your session.");
+          setTimeout(() => {
+            router.replace(`/login?verified=true&email=${encodeURIComponent(user.email)}`);
+          }, 2000);
+        }
+      };
+
+      handleRedirect();
     }
-  }, [isLoggedIn, user?.isEmailVerified, router, message]);
+  }, [isLoggedIn, user?.isEmailVerified, user?.id, user?.email, router, message]);
 
   // Automatic Background Polling
   useEffect(() => {
