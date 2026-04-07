@@ -38,10 +38,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // If logged in AND verified, fetch user's data. 
+    // If logged in, fetch user's data. 
     // If guest (isLoggedIn is false), fetch(null) loads sample data.
-    // If logged in BUT unverified, we don't fetch real data yet (or we fetch null to show sample data as 'preview' - but user asked to block it)
-    const canSeeData = isLoggedIn ? user?.isEmailVerified : false;
+    const canSeeData = isLoggedIn;
     const userId = canSeeData ? user?.id ?? null : null;
     
     fetchTransactions(userId);
@@ -61,19 +60,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 2. Strict Verification Check
-    // If logged in but NOT verified, redirect to /auth/verify if on a sensitive route
-    const isSensitive = SENSITIVE_ROUTES.some(route => 
-      pathname === route || pathname?.startsWith(`${route}/`)
-    );
+    // 2. We no longer force-redirect unverified users to /auth/verify for Dashboard/Finance.
+    // This allows them to use the app immediately after synchronization.
 
-    if (isLoggedIn && !user?.isEmailVerified && isSensitive) {
-      router.replace(VERIFY_ROUTE);
-      return;
-    }
-
-    // 3. Redirect guests away from strictly protected routes (optional, if we want to force login for some)
-    // Currently, guests are allowed in "read-only/sample" mode for most pages except settings.
+    // 3. Redirect guests away from strictly protected routes
     const isStrictlyProtected = ["/settings"].some(route => 
       pathname === route || pathname?.startsWith(`${route}/`)
     );

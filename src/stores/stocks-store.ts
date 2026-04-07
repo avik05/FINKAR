@@ -187,47 +187,29 @@ export const useStocksStore = create<StocksState>((set, get) => ({
       return;
     }
 
-    // Auth Mode: Selective Upsert
-    // 1. Fetch current DB state to find IDs for existing symbols
-    const { data: dbData, error: fetchError } = await supabase
-      .from('stocks')
-      .select('id, symbol');
-
-    if (fetchError) {
-      console.error('Error fetching for upsert:', fetchError);
-      return;
-    }
-
-    const symbolToIdMap = new Map((dbData || []).map(r => [r.symbol, r.id]));
-
-    // 2. Prepare UPSERT payload
-    const upsertPayload = newHoldings.map(nh => {
-      const existingId = symbolToIdMap.get(nh.symbol);
-      const row: any = {
-        user_id: userId,
-        symbol: nh.symbol,
-        name: nh.name,
-        quantity: nh.quantity,
-        avg_buy_price: nh.avgBuyPrice,
-        current_price: nh.currentPrice,
-        sector: nh.sector || 'Others',
-        exchange: nh.exchange || 'NSE',
-        purchased_at: nh.purchasedAt || new Date().toISOString().split('T')[0],
-      };
-      if (existingId) row.id = existingId;
-      return row;
-    });
+    // Auth Mode: Native UPSERT with user_id, symbol conflict resolution
+    const upsertPayload = newHoldings.map(nh => ({
+      user_id: userId,
+      symbol: nh.symbol,
+      name: nh.name,
+      quantity: nh.quantity,
+      avg_buy_price: nh.avgBuyPrice,
+      current_price: nh.currentPrice,
+      sector: nh.sector || 'Others',
+      exchange: nh.exchange || 'NSE',
+      purchased_at: nh.purchasedAt || new Date().toISOString().split('T')[0],
+    }));
 
     const { error: upsertError } = await supabase
       .from('stocks')
-      .upsert(upsertPayload, { onConflict: 'id' });
+      .upsert(upsertPayload, { onConflict: 'user_id, symbol' });
 
     if (upsertError) {
       console.error('Error during bulk upsert:', upsertError);
       return;
     }
 
-    // 3. Refresh local state
+    // Refresh local state
     await get().fetchHoldings(userId);
   },
 }));

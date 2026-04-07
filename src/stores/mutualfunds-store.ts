@@ -228,57 +228,32 @@ export const useMutualFundsStore = create<MutualFundsState>((set, get) => ({
       return;
     }
 
-    // Auth Mode: Fetch existing to map Names to IDs
-    const { data: dbData, error: fetchError } = await supabase
-      .from('mutual_funds')
-      .select('id, fund');
-
-    if (fetchError) {
-      console.error('Error fetching for upsert:', fetchError);
-      return;
-    }
-
-    const nameToIdMap = new Map((dbData || []).map(r => [r.fund.toLowerCase(), r.id]));
-
-    // Prepare payload
+    // Auth Mode: Native UPSERT with user_id, fund conflict resolution
     const upsertPayload = newFunds.map(nf => {
-      const existingId = nameToIdMap.get(nf.fund.toLowerCase());
-      const row: any = {
+      // Try to preserve existing SIP settings from local state if it's an update
+      const existing = currentFunds.find(f => f.fund.toLowerCase() === nf.fund.toLowerCase());
+      
+      return {
         user_id: userId,
         fund: nf.fund,
         category: nf.category,
         invested: nf.invested,
         current: nf.current,
-        sip_amount: nf.sipAmount || 0,
-        xirr: nf.xirr || 0,
         units: nf.units,
         amc: nf.amc,
         sub_category: nf.subCategory,
-        // For new imports, we don't necessarily have SIP info, but we keep existing if present
-        // Actually, upsert will overwrite. If we want to preserve SIP info, we'd need to merge here.
+        // Preserve or set defaults for SIP fields
+        sip_amount: nf.sipAmount || existing?.sipAmount || 0,
+        sip_day: existing?.sipDay,
+        sip_account_id: existing?.sipAccountId,
+        xirr: nf.xirr || existing?.xirr || 0,
+        last_processed_date: nf.lastProcessedDate || existing?.lastProcessedDate || new Date().toISOString(),
       };
-      
-      if (existingId) {
-        row.id = existingId;
-        // Optimization: Try to preserve existing SIP settings if they exist in state
-        const existingState = currentFunds.find(f => f.id === existingId);
-        if (existingState) {
-          row.sip_day = existingState.sipDay;
-          row.sip_account_id = existingState.sipAccountId;
-          row.last_processed_date = existingState.lastProcessedDate;
-          row.sip_amount = nf.sipAmount || existingState.sipAmount; // Prefer new SIP amount if available
-        }
-      } else {
-        // New fund: set initial last_processed_date to today
-        row.last_processed_date = new Date().toISOString();
-      }
-      
-      return row;
     });
 
     const { error: upsertError } = await supabase
       .from('mutual_funds')
-      .upsert(upsertPayload, { onConflict: 'id' });
+      .upsert(upsertPayload, { onConflict: 'user_id, fund' });
 
     if (upsertError) {
       console.error('Error during bulk upsert:', upsertError);
