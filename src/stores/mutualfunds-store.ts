@@ -64,10 +64,10 @@ export const useMutualFundsStore = create<MutualFundsState>((set, get) => ({
         units: row.units ? Number(row.units) : undefined,
         amc: row.amc,
         subCategory: row.sub_category,
-        sipAmount: row.sip_amount ? Number(row.sip_amount) : undefined,
+        sipAmount: Number(row.sip_amount || 0),
         sipDay: row.sip_day ? Number(row.sip_day) : undefined,
         sipAccountId: row.sip_account_id || undefined,
-        xirr: row.xirr ? Number(row.xirr) : undefined,
+        xirr: Number(row.xirr || 0),
         lastProcessedDate: row.last_processed_date || undefined,
       }));
 
