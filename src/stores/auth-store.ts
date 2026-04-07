@@ -31,6 +31,8 @@ interface AuthState {
   refreshUser: () => Promise<boolean | void>;
   // Resend verification email
   resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>;
+  // Check verification status via RPC (no session required)
+  checkPublicVerification: (userId: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -223,6 +225,33 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, error: error.message };
         }
         return { success: true };
+      },
+
+      checkPublicVerification: async (userId: string) => {
+        try {
+          const { data, error } = await supabase.rpc('check_user_verification', { target_id: userId });
+          
+          if (error) {
+            console.error('RPC Error (check_user_verification):', error.message);
+            return false;
+          }
+          
+          if (data === true) {
+            // Update local state if verified
+            const currentUser = get().user;
+            if (currentUser && !currentUser.isEmailVerified) {
+              set({
+                user: { ...currentUser, isEmailVerified: true }
+              });
+            }
+            return true;
+          }
+          
+          return false;
+        } catch (err) {
+          console.error('Unexpected error checking public verification:', err);
+          return false;
+        }
       },
     }),
     { 

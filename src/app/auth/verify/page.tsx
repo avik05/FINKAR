@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 export default function VerifyPage() {
   const router = useRouter();
-  const { user, logout, refreshUser, isLoggedIn } = useAuthStore();
+  const { user, logout, refreshUser, checkPublicVerification, isLoggedIn } = useAuthStore();
   const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -30,25 +30,39 @@ export default function VerifyPage() {
 
   // Automatic Background Polling
   useEffect(() => {
-    if (!isLoggedIn || user?.isEmailVerified) return;
+    if (!isLoggedIn || user?.isEmailVerified || !user?.id) return;
 
     const interval = setInterval(async () => {
+      // Use public check first in case session is missing/unstable
+      await checkPublicVerification(user.id);
+      // Also try refreshUser in case session IS available (more thorough)
       await refreshUser();
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isLoggedIn, user?.isEmailVerified, refreshUser]);
+  }, [isLoggedIn, user?.isEmailVerified, user?.id, refreshUser, checkPublicVerification]);
 
   const handleRefresh = async () => {
+    if (!user?.id) return;
+    
     setChecking(true);
     setMessage("Checking verification status...");
     try {
-      const isVerified = await refreshUser();
+      // Try public RPC check first
+      const isVerifiedPublic = await checkPublicVerification(user.id);
       
-      if (isVerified) {
+      if (isVerifiedPublic) {
+        setMessage("Verified! Redirecting to dashboard...");
+        return;
+      }
+
+      // Fallback to refreshUser (requires session)
+      const isVerifiedSession = await refreshUser();
+      
+      if (isVerifiedSession) {
         setMessage("Verified! Redirecting...");
       } else {
-        setMessage("Verification link not yet clicked. Please check your email.");
+        setMessage("Link not yet clicked OR please try logging in again if already verified on phone.");
       }
     } catch (err) {
       setMessage("Failed to refresh. Please try again.");
