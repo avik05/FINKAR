@@ -56,7 +56,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // 1. Redirect logged-in users away from /login
     if (isLoggedIn && AUTH_ROUTES.includes(pathname)) {
-      router.replace("/dashboard");
+      if (user && !user.isEmailVerified) {
+        router.replace("/auth/verify");
+      } else {
+        router.replace("/dashboard");
+      }
       return;
     }
 
@@ -85,8 +89,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Prevent flash of protected content
-  if (isLoggedIn && !user?.isEmailVerified && SENSITIVE_ROUTES.some(r => pathname?.startsWith(r))) return null;
+  // Prevent flash of protected content and handle unverified access
+  if (isLoggedIn && !user?.isEmailVerified) {
+    // If on a sensitive route and unverified, redirect to verify
+    if (SENSITIVE_ROUTES.some(r => pathname?.startsWith(r))) {
+      router.replace("/auth/verify");
+      return null;
+    }
+  }
+
   if (!isLoggedIn && ["/settings"].some(r => pathname?.startsWith(r))) return null;
   if (isLoggedIn && AUTH_ROUTES.includes(pathname)) return null;
 

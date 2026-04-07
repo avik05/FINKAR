@@ -32,42 +32,52 @@ export const useMutualFundsStore = create<MutualFundsState>((set, get) => ({
   fetchFunds: async (providedUserId) => {
     const userId = providedUserId !== undefined ? providedUserId : useAuthStore.getState().user?.id;
     
+    // If not logged in at all, show sample data for preview
     if (!userId) {
       set({ funds: SAMPLE_FUNDS, isLoading: false });
       return;
     }
 
     set({ isLoading: true });
-    const { data, error } = await supabase
-      .from('mutual_funds')
-      .select('*')
-      .order('fund', { ascending: true });
+    
+    try {
+      const { data, error } = await supabase
+        .from('mutual_funds')
+        .select('*')
+        .order('fund', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching mutual funds:', error);
-      set({ isLoading: false });
-      return;
+      if (error) {
+        console.error('Supabase fetch error (funds):', error);
+        // Important: If we are logged in, we set to [] so we don't show confusing sample data
+        set({ funds: [], isLoading: false });
+        return;
+      }
+
+      console.log(`Fetched ${data?.length || 0} mutual funds for user ${userId}`);
+
+      const mapped = (data || []).map(row => ({
+        id: row.id,
+        fund: row.fund,
+        category: row.category as MutualFund['category'],
+        invested: Number(row.invested),
+        current: Number(row.current),
+        units: row.units ? Number(row.units) : undefined,
+        amc: row.amc,
+        subCategory: row.sub_category,
+        sipAmount: row.sip_amount ? Number(row.sip_amount) : undefined,
+        sipDay: row.sip_day ? Number(row.sip_day) : undefined,
+        sipAccountId: row.sip_account_id || undefined,
+        xirr: row.xirr ? Number(row.xirr) : undefined,
+        lastProcessedDate: row.last_processed_date || undefined,
+      }));
+
+      set({ funds: mapped, isLoading: false });
+      // Trigger SIP processing after fetching
+      get().processSIPs();
+    } catch (err) {
+      console.error('Unexpected error fetching funds:', err);
+      set({ funds: [], isLoading: false });
     }
-
-    const mapped = (data || []).map(row => ({
-      id: row.id,
-      fund: row.fund,
-      category: row.category as MutualFund['category'],
-      invested: Number(row.invested),
-      current: Number(row.current),
-      sipAmount: Number(row.sip_amount),
-      xirr: Number(row.xirr),
-      sipDay: row.sip_day ? Number(row.sip_day) : undefined,
-      sipAccountId: row.sip_account_id || null,
-      lastProcessedDate: row.last_processed_date || null,
-      units: row.units ? Number(row.units) : undefined,
-      amc: row.amc,
-      subCategory: row.sub_category,
-    }));
-
-    set({ funds: mapped, isLoading: false });
-    // Trigger SIP processing after fetching
-    get().processSIPs();
   },
 
   addFund: async (f) => {

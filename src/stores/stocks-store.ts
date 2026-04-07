@@ -30,36 +30,46 @@ export const useStocksStore = create<StocksState>((set, get) => ({
   fetchHoldings: async (providedUserId) => {
     const userId = providedUserId !== undefined ? providedUserId : useAuthStore.getState().user?.id;
     
+    // If not logged in at all, show sample data for preview
     if (!userId) {
       set({ holdings: SAMPLE_STOCKS, isLoading: false });
       return;
     }
 
     set({ isLoading: true });
-    const { data, error } = await supabase
-      .from('stocks')
-      .select('*')
-      .order('symbol', { ascending: true });
+    
+    try {
+      const { data, error } = await supabase
+        .from('stocks')
+        .select('*')
+        .order('symbol', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching stocks:', error);
-      set({ isLoading: false });
-      return;
+      if (error) {
+        console.error('Supabase fetch error (stocks):', error);
+        // Important: If we are logged in, we set to [] so we don't show confusing sample data
+        set({ holdings: [], isLoading: false });
+        return;
+      }
+
+      console.log(`Fetched ${data?.length || 0} stocks for user ${userId}`);
+
+      const mapped = (data || []).map(row => ({
+        id: row.id,
+        symbol: row.symbol,
+        name: row.name,
+        quantity: Number(row.quantity),
+        avgBuyPrice: Number(row.avg_buy_price),
+        currentPrice: Number(row.current_price),
+        sector: row.sector || 'Others',
+        exchange: (row.exchange || 'NSE') as StockHolding['exchange'],
+        purchasedAt: row.purchased_at,
+      }));
+
+      set({ holdings: mapped, isLoading: false });
+    } catch (err) {
+      console.error('Unexpected error fetching stocks:', err);
+      set({ holdings: [], isLoading: false });
     }
-
-    const mapped = (data || []).map(row => ({
-      id: row.id,
-      symbol: row.symbol,
-      name: row.name,
-      quantity: Number(row.quantity),
-      avgBuyPrice: Number(row.avg_buy_price),
-      currentPrice: Number(row.current_price),
-      sector: row.sector || 'Others',
-      exchange: (row.exchange || 'NSE') as StockHolding['exchange'],
-      purchasedAt: row.purchased_at,
-    }));
-
-    set({ holdings: mapped, isLoading: false });
   },
 
   addHolding: async (h) => {
