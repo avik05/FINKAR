@@ -41,12 +41,23 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
 
       refreshUser: async () => {
-        // Force a fresh user data fetch from Supabase
+        // 1. Check if we even have a session first, to avoid "Auth session missing" noise
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          // No session means we can't refresh user data from server
+          return false;
+        }
+
+        // 2. Force a fresh user data fetch from Supabase
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error) {
-          console.error('Error refreshing user:', error.message);
-          return;
+          // If it's a real error (not just missing session), log it but don't crash
+          if (error.message !== 'Auth session missing!') {
+            console.error('Error refreshing user:', error.message);
+          }
+          return false;
         }
 
         if (user) {
