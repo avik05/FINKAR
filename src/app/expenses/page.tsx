@@ -59,23 +59,23 @@ export default function ExpensesPage() {
         <AddTransactionDialog />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <span className="text-sm font-medium text-muted-foreground">Monthly Spend</span>
-            <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(totalExpense)}</h2>
+          <FinanceCard className="p-3 md:p-6 border-border/50">
+            <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-[0.1em] truncate">Monthly Spend</span>
+            <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{formatINR(totalExpense)}</h2>
           </FinanceCard>
         </motion.div>
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <span className="text-sm font-medium text-muted-foreground">Categories</span>
-            <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{categoryBreakdown.length}</h2>
+          <FinanceCard className="p-3 md:p-6 border-border/50">
+            <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-[0.1em] truncate">Categories</span>
+            <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{categoryBreakdown.length}</h2>
           </FinanceCard>
         </motion.div>
-        <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <span className="text-sm font-medium text-muted-foreground">Transactions</span>
-            <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{thisMonthExpenses.length}</h2>
+        <motion.div variants={FADE_UP} className="col-span-2 md:col-span-1">
+          <FinanceCard className="p-3 md:p-6 border-border/50">
+            <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-[0.1em] truncate">Transactions</span>
+            <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{thisMonthExpenses.length}</h2>
           </FinanceCard>
         </motion.div>
       </div>

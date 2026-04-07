@@ -17,7 +17,7 @@ interface FinancialPulseProps {
   transactionCount: number;
 }
 
-export function FinancialPulse({
+export const FinancialPulse = React.memo(function FinancialPulse({
   cashBalance,
   investedAssets,
   totalGain,
@@ -68,7 +68,8 @@ export function FinancialPulse({
   ];
 
   return (
-    <FinanceCard className="p-6 h-full flex flex-col justify-between overflow-hidden relative">
+    <div className="gpu-accelerated h-full">
+      <FinanceCard className="p-6 h-full flex flex-col justify-between overflow-hidden relative">
       <div>
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-heading font-bold text-foreground flex items-center gap-2">
@@ -117,6 +118,7 @@ export function FinancialPulse({
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover/btn:text-primary transition-colors">See Detailed Insights</span>
         <ArrowUpRight size={14} className="text-muted-foreground group-hover/btn:text-primary group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-all" />
       </Link>
-    </FinanceCard>
+      </FinanceCard>
+    </div>
   );
-}
+});

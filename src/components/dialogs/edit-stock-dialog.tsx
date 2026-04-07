@@ -10,6 +10,13 @@ import { useStocksStore } from "@/stores/stocks-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { StockHolding } from "@/types/finance";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const SECTORS = [
+  "Technology", "Financials", "Healthcare", "Consumer Discretionary", 
+  "Consumer Staples", "Energy", "Industrials", "Materials", 
+  "Utilities", "Real Estate", "Automobile", "Others"
+];
 
 interface EditStockDialogProps {
   holding: StockHolding;
@@ -27,6 +34,8 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
   const [quantity, setQuantity] = useState(holding.quantity.toString());
   const [buyPrice, setBuyPrice] = useState(holding.avgBuyPrice.toString());
   const [currentPrice, setCurrentPrice] = useState(holding.currentPrice.toString());
+  const [sector, setSector] = useState(holding.sector || "Others");
+  const [exchange, setExchange] = useState<"NSE" | "BSE" | "US">(holding.exchange || "NSE");
 
   // Reset state when holding changes or dialog opens
   useEffect(() => {
@@ -36,6 +45,8 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
       setQuantity(holding.quantity.toString());
       setBuyPrice(holding.avgBuyPrice.toString());
       setCurrentPrice(holding.currentPrice.toString());
+      setSector(holding.sector || "Others");
+      setExchange(holding.exchange || "NSE");
     }
   }, [holding, open]);
 
@@ -54,6 +65,8 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
       quantity: parseFloat(quantity) || 0,
       avgBuyPrice: parseFloat(buyPrice) || 0,
       currentPrice: parseFloat(currentPrice) || (parseFloat(buyPrice) || 0),
+      sector,
+      exchange,
     });
 
     setOpen(false);
@@ -81,10 +94,42 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
                 <Input id="stock-name-edit" placeholder="Reliance Industries" value={name} onChange={(e) => setName(e.target.value)} className="bg-foreground/5 border-border/50" required />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="stock-qty-edit">Quantity</Label>
-              <Input id="stock-qty-edit" type="number" step="1" placeholder="10" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="bg-foreground/5 border-border/50" required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Sector</Label>
+                <Select value={sector} onValueChange={(v) => setSector(v || "Others")}>
+                  <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground">
+                    <SelectValue placeholder="Select Sector" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {SECTORS.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Exchange</Label>
+                <Select value={exchange} onValueChange={(v: any) => setExchange(v || "NSE")}>
+                  <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground">
+                    <SelectValue placeholder="NSE" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="NSE">NSE</SelectItem>
+                    <SelectItem value="BSE">BSE</SelectItem>
+                    <SelectItem value="US">US Market</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            <div className="grid grid-cols-1">
+              <div className="space-y-2">
+                <Label htmlFor="stock-qty-edit">Quantity</Label>
+                <Input id="stock-qty-edit" type="number" step="1" placeholder="10" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="bg-foreground/5 border-border/50" required />
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="stock-buy-edit">Avg Buy Price (₹)</Label>
@@ -96,7 +141,7 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
               </div>
             </div>
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">
-              Update Holding
+              {isLoggedIn ? "Update Holding" : "Sign Up to Update"}
             </Button>
           </form>
         </DialogContent>

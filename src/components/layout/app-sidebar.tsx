@@ -18,6 +18,9 @@ import {
   ArrowUpRight,
   Globe,
   ExternalLink,
+  HelpCircle,
+  LifeBuoy,
+  MessageSquare
 } from "lucide-react";
 
 import {
@@ -67,9 +70,10 @@ export function AppSidebar() {
         
         {/* Branding Header */}
         <div className="h-24 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
-          <Link href="/" className="flex items-center gap-0 group hover:scale-[1.02] transition-all duration-300">
+          <Link href="/" className="flex items-center gap-0.5 group hover:scale-[1.02] transition-all duration-300 relative">
             <span className="text-5xl font-sans font-bold text-foreground tracking-tighter">Fin</span>
-            <span className="text-5xl font-sans font-bold text-primary tracking-tighter ml-1">कर</span>
+            <span className="text-5xl font-sans font-bold text-primary tracking-tighter">कर</span>
+            <span className="text-[10px] font-bold text-muted-foreground/60 align-top relative -top-4 ml-0.5">TM</span>
           </Link>
 
           {/* Mobile Close Button */}
@@ -113,7 +117,7 @@ export function AppSidebar() {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="p-4 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
+      <div className="p-4 md:pb-4 pb-24 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
         <Link 
           href="https://finkar.substack.com/" 
           target="_blank" 
@@ -130,22 +134,35 @@ export function AppSidebar() {
           </div>
         </Link>
 
-        <div className="p-4 rounded-2xl bg-sidebar-accent/10 border border-border/40 group/market flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
-            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Market Status</span>
+        <div className="p-1 rounded-[24px] bg-sidebar-accent/5 border border-border/10 flex flex-col gap-1 overflow-hidden transition-all duration-500 hover:border-primary/20">
+          {/* Top: Market Status (Full width) */}
+          <div className="p-4 bg-foreground/[0.02] rounded-t-[20px] rounded-b-[4px] flex flex-col gap-2 border-b border-border/5">
+             <div className="flex items-center gap-2 opacity-60">
+                <Globe size={12} className="text-muted-foreground" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-black text-muted-foreground">Market Pulse</span>
+             </div>
+             <MarketStatusIndicator />
           </div>
-          <div className="flex flex-col gap-1">
-            <MarketStatusIndicator />
+          
+          {/* Bottom: FAQ & Contact (Split) */}
+          <div className="grid grid-cols-2 gap-1 px-1 pb-1">
+             <Link 
+               href="/faq" 
+               className="flex items-center justify-center gap-2 py-3 rounded-bl-[4px] rounded-br-[4px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all group"
+             >
+                <HelpCircle size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">FAQ</span>
+             </Link>
+             <Link 
+               href="/contact" 
+               className="flex items-center justify-center gap-2 py-3 rounded-bl-[20px] rounded-br-[20px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all group"
+             >
+                <LifeBuoy size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">Support</span>
+             </Link>
           </div>
         </div>
 
-        {/* Guest Mode Badge if needed */}
-        {!isLoggedIn && (
-           <div className="py-2 px-4 rounded-xl bg-muted/50 border border-border/20 text-center">
-             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Guest Mode</span>
-           </div>
-        )}
       </div>
     </aside>
     </>

@@ -22,6 +22,9 @@ export interface StockHolding {
   quantity: number;
   avgBuyPrice: number;
   currentPrice: number;
+  sector: string;
+  exchange: 'NSE' | 'BSE' | 'US';
+  purchasedAt?: string; // ISO date
 }
 
 export interface MutualFund {
@@ -32,6 +35,12 @@ export interface MutualFund {
   current: number;
   sipAmount: number;
   xirr: number;
+  sipDay?: number; // 1-31
+  sipAccountId?: string | null;
+  lastProcessedDate?: string | null; // ISO Date of last SIP execution
+  units?: number;
+  amc?: string;
+  subCategory?: string;
 }
 
 export interface Goal {

@@ -146,10 +146,24 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+    background-color: color-mix(in srgb, var(--card) 60%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    
+    @media (max-width: 768px) {
+      background-color: color-mix(in srgb, var(--card) 80%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
   }
   .dark .glass-card {
-    @apply border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)];
+    border: 1px solid color-mix(in srgb, #ffffff 5%, transparent);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    @media (max-width: 768px) {
+      background-color: color-mix(in srgb, var(--card) 90%, transparent);
+    }
   }
   
   .glow-hover {
@@ -173,6 +187,33 @@
   
   .bg-gradient-radial {
     background-image: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-to));
+  }
+
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .touch-snappy {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 100ms ease;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .touch-snappy:active {
+    transform: scale(0.95);
+  }
+
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
 

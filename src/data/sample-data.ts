@@ -9,14 +9,14 @@ export const SAMPLE_ACCOUNTS: Omit<BankAccount, 'id'>[] = [
 ];
 
 export const SAMPLE_STOCKS: Omit<StockHolding, 'id'>[] = [
-  { symbol: "RELIANCE",    name: "Reliance Industries Ltd",            quantity: 15,  avgBuyPrice: 2450.50, currentPrice: 2980.25 },
-  { symbol: "TCS",         name: "Tata Consultancy Services",          quantity: 8,   avgBuyPrice: 3200.00, currentPrice: 4120.50 },
-  { symbol: "HDFCBANK",    name: "HDFC Bank Ltd",                      quantity: 45,  avgBuyPrice: 1520.75, currentPrice: 1445.60 },
-  { symbol: "INFY",        name: "Infosys Ltd",                        quantity: 20,  avgBuyPrice: 1350.00, currentPrice: 1620.00 },
-  { symbol: "TATASTEEL",   name: "Tata Steel Ltd",                     quantity: 150, avgBuyPrice: 110.50,  currentPrice: 145.30 },
-  { symbol: "ZOMATO",      name: "Zomato Ltd",                         quantity: 500, avgBuyPrice: 95.00,   currentPrice: 184.20 },
-  { symbol: "ICICIBANK",   name: "ICICI Bank Ltd",                     quantity: 30,  avgBuyPrice: 850.00,  currentPrice: 1120.45 },
-  { symbol: "WIPRO",       name: "Wipro Ltd",                          quantity: 60,  avgBuyPrice: 420.00,  currentPrice: 465.80 },
+  { symbol: "RELIANCE",    name: "Reliance Industries Ltd",            quantity: 15,  avgBuyPrice: 2450.50, currentPrice: 2980.25, sector: "Energy", exchange: "NSE" },
+  { symbol: "TCS",         name: "Tata Consultancy Services",          quantity: 8,   avgBuyPrice: 3200.00, currentPrice: 4120.50, sector: "Technology", exchange: "NSE" },
+  { symbol: "HDFCBANK",    name: "HDFC Bank Ltd",                      quantity: 45,  avgBuyPrice: 1520.75, currentPrice: 1445.60, sector: "Banking", exchange: "NSE" },
+  { symbol: "INFY",        name: "Infosys Ltd",                        quantity: 20,  avgBuyPrice: 1350.00, currentPrice: 1620.00, sector: "Technology", exchange: "NSE" },
+  { symbol: "TATASTEEL",   name: "Tata Steel Ltd",                     quantity: 150, avgBuyPrice: 110.50,  currentPrice: 145.30, sector: "Metals", exchange: "NSE" },
+  { symbol: "ZOMATO",      name: "Zomato Ltd",                         quantity: 500, avgBuyPrice: 95.00,   currentPrice: 184.20, sector: "Consumer", exchange: "NSE" },
+  { symbol: "ICICIBANK",   name: "ICICI Bank Ltd",                     quantity: 30,  avgBuyPrice: 850.00,  currentPrice: 1120.45, sector: "Banking", exchange: "NSE" },
+  { symbol: "WIPRO",       name: "Wipro Ltd",                          quantity: 60,  avgBuyPrice: 420.00,  currentPrice: 465.80, sector: "Technology", exchange: "NSE" },
 ];
 
 export const SAMPLE_MUTUAL_FUNDS: Omit<MutualFund, 'id'>[] = [

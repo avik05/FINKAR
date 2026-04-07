@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Trash2 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
+import { StockHolding } from "@/types/finance";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { useStocksStore } from "@/stores/stocks-store";
@@ -11,6 +12,11 @@ import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddStockDialog } from "@/components/dialogs/add-stock-dialog";
 import { EditStockDialog } from "@/components/dialogs/edit-stock-dialog";
+import { SellStockDialog } from "@/components/dialogs/sell-stock-dialog";
+import { FetchStocksDialog } from "@/components/dialogs/fetch-stocks-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -43,6 +49,7 @@ export default function StocksPage() {
   const deleteHolding = useStocksStore((s) => s.deleteHolding);
   const { isLoggedIn } = useAuthStore();
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [targetAccountId, setTargetAccountId] = useState("");
 
   const totalInvested = holdings.reduce((s, h) => s + h.avgBuyPrice * h.quantity, 0);
   const totalCurrent = holdings.reduce((s, h) => s + h.currentPrice * h.quantity, 0);
@@ -75,27 +82,35 @@ export default function StocksPage() {
   });
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6 gpu-accelerated">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Stocks & Equity</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Track your equity portfolio holdings.</p>
+          <h1 className="text-3xl font-heading font-black text-foreground tracking-tight">Stocks & Equity</h1>
+          <p className="text-muted-foreground mt-1 text-sm font-medium opacity-70">Track your equity portfolio holdings.</p>
         </div>
-        <div className="flex gap-3 items-center">
+        
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           {holdings.length > 0 && (
-            <FinanceCard className="px-6 py-3 flex flex-col justify-center bg-card/40 border-border/50">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Unrealized P&L</span>
+            <FinanceCard className="px-4 py-3 flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-center bg-card/40 border-border/50 gap-4 sm:gap-0">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-black opacity-60">Unrealized P&L</span>
               <div className="flex items-center gap-2">
-                <span className={`text-lg font-bold ${totalGain >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                <span className={`text-lg font-black tracking-tighter ${totalGain >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {totalGain >= 0 ? '+' : ''}{formatINR(totalGain)}
                 </span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${totalGain >= 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
+                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg ${totalGain >= 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
                   {totalGain >= 0 ? '+' : ''}{gainPct.toFixed(1)}%
                 </span>
               </div>
             </FinanceCard>
           )}
-          <AddStockDialog />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex-1 sm:flex-initial">
+              <FetchStocksDialog />
+            </div>
+            <div className="flex-1 sm:flex-initial">
+              <AddStockDialog />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -104,30 +119,33 @@ export default function StocksPage() {
           <FinanceCard className="p-12 text-center">
             <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-heading font-semibold mb-2 text-foreground">No Stock Holdings</h3>
-            <p className="text-sm text-muted-foreground mb-6">Add your first stock to start tracking your equity portfolio.</p>
-            <AddStockDialog />
+            <p className="text-sm text-muted-foreground mb-6">Import your holdings or add them manually to start tracking.</p>
+            <div className="flex items-center justify-center gap-3">
+              <FetchStocksDialog />
+              <AddStockDialog />
+            </div>
           </FinanceCard>
         </motion.div>
       ) : (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6">
-                <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Portfolio Value</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(totalCurrent)}</h2>
+              <FinanceCard className="p-3 md:p-6 border-border/50">
+                <span className="text-[9px] md:text-xs text-muted-foreground uppercase tracking-widest font-black">Portfolio Value</span>
+                <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{formatINR(totalCurrent)}</h2>
               </FinanceCard>
             </motion.div>
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6">
-                <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Total Invested</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(totalInvested)}</h2>
+              <FinanceCard className="p-3 md:p-6 border-border/50">
+                <span className="text-[9px] md:text-xs text-muted-foreground uppercase tracking-widest font-black">Total Invested</span>
+                <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{formatINR(totalInvested)}</h2>
               </FinanceCard>
             </motion.div>
-            <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6">
-                <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Holdings</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{holdings.length} stocks</h2>
+            <motion.div variants={FADE_UP} className="col-span-2 md:col-span-1">
+              <FinanceCard className="p-3 md:p-6 border-border/50">
+                <span className="text-[9px] md:text-xs text-muted-foreground uppercase tracking-widest font-black">Holdings</span>
+                <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{holdings.length} stocks</h2>
               </FinanceCard>
             </motion.div>
           </div>
@@ -220,17 +238,18 @@ export default function StocksPage() {
                 <h2 className="text-lg font-heading font-semibold text-foreground">Holdings</h2>
                 <AddStockDialog />
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto h-full">
+                {/* Desktop Table */}
+                <table className="w-full text-left border-collapse hidden md:table">
                   <thead>
                     <tr className="border-b border-border/50 text-[10px] uppercase tracking-wider text-muted-foreground bg-foreground/5 font-bold">
-                      <th className="px-6 py-4 font-bold">Symbol</th>
-                      <th className="px-6 py-4 font-bold">Company</th>
+                      <th className="px-6 py-4 font-bold">Stock</th>
+                      <th className="px-6 py-4 font-bold">Sector</th>
                       <th className="px-6 py-4 font-bold text-right">Qty</th>
                       <th className="px-6 py-4 font-bold text-right">Avg Price</th>
                       <th className="px-6 py-4 font-bold text-right">CMP</th>
                       <th className="px-6 py-4 font-bold text-right">P&L</th>
-                      <th className="px-6 py-4 w-10"></th>
+                      <th className="px-6 py-4">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/30">
@@ -239,19 +258,38 @@ export default function StocksPage() {
                       const plPct = h.avgBuyPrice > 0 ? ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
                       return (
                         <tr key={h.id} className="hover:bg-foreground/5 transition-colors group">
-                          <td className="px-6 py-4 font-bold text-sm text-foreground">{h.symbol}</td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground">{h.name}</td>
-                          <td className="px-6 py-4 text-sm text-right text-foreground">{h.quantity}</td>
-                          <td className="px-6 py-4 text-sm text-right text-muted-foreground">{formatINR(h.avgBuyPrice)}</td>
-                          <td className="px-6 py-4 text-sm text-right font-medium text-foreground">{formatINR(h.currentPrice)}</td>
-                          <td className={`px-6 py-4 text-sm text-right font-semibold ${pl >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-sm text-foreground flex items-center gap-2">
+                                {h.symbol}
+                                <span className="text-[8px] px-1 py-px rounded bg-secondary/30 text-muted-foreground border border-border/50">
+                                  {h.exchange}
+                                </span>
+                              </span>
+                              <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{h.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-primary/80">
+                            <span className="bg-primary/5 px-2 py-1 rounded-md border border-primary/10">
+                              {h.sector}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-right text-foreground font-mono">{h.quantity}</td>
+                          <td className="px-6 py-4 text-sm text-right text-muted-foreground font-mono">{formatINR(h.avgBuyPrice)}</td>
+                          <td className="px-6 py-4 text-sm text-right font-medium text-foreground font-mono">{formatINR(h.currentPrice)}</td>
+                          <td className={`px-6 py-4 text-sm text-right font-semibold ${pl >= 0 ? 'text-primary' : 'text-red-500'}`}>
                             {pl >= 0 ? '+' : ''}{formatINR(pl)}
                             <span className="text-[10px] block font-bold">{pl >= 0 ? '+' : ''}{plPct.toFixed(1)}%</span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <SellStockDialog holding={h} />
                               <EditStockDialog holding={h} />
-                              <button onClick={() => handleDelete(h.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete">
+                              <button 
+                                onClick={() => handleDelete(h.id)} 
+                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" 
+                                title="Delete"
+                              >
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -261,6 +299,72 @@ export default function StocksPage() {
                     })}
                   </tbody>
                 </table>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-border/10">
+                  {holdings.length === 0 ? (
+                    <div className="p-12 text-center text-muted-foreground text-sm">
+                      No holdings to display.
+                    </div>
+                  ) : (
+                    holdings.map((h) => {
+                      const pl = (h.currentPrice - h.avgBuyPrice) * h.quantity;
+                      const plPct = h.avgBuyPrice > 0 ? ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
+                      return (
+                        <div key={h.id} className="p-5 hover:bg-primary/5 active:bg-primary/10 transition-all group">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-black text-foreground truncate group-hover:text-primary transition-colors">
+                                  {h.symbol}
+                                </h4>
+                                <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                  {h.sector}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">
+                                {h.name}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-base font-black tabular-nums text-foreground">
+                                {formatINR(h.currentPrice * h.quantity)}
+                              </div>
+                              <div className={cn(
+                                "text-[10px] font-black uppercase mt-1 px-2 py-0.5 rounded-lg inline-block",
+                                pl >= 0 ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"
+                              )}>
+                                {pl >= 0 ? "+" : ""}{plPct.toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Qty</p>
+                              <p className="text-xs font-mono font-bold text-foreground">{h.quantity}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Avg Price</p>
+                              <p className="text-xs font-mono font-bold text-foreground">{formatINR(h.avgBuyPrice)}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end gap-3 pt-4 border-t border-border/5">
+                            <SellStockDialog holding={h} />
+                            <EditStockDialog holding={h} />
+                            <button 
+                              onClick={() => handleDelete(h.id)} 
+                              className="p-1.5 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </FinanceCard>
           </motion.div>

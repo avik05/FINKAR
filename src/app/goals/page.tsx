@@ -52,7 +52,12 @@ function AddGoalDialog() {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={<Button variant="outline" size="sm" className="gap-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" />}>
+        <DialogTrigger render={
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm no-select tap-highlight-none"
+          />
+        }>
           <Plus size={16} /> Add Goal
         </DialogTrigger>
         <DialogContent className="bg-card border-border/50 backdrop-blur-2xl sm:max-w-md">
@@ -115,7 +120,12 @@ function ContributeDialog({ goalId, goalName }: { goalId: string; goalName: stri
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={<button className="text-xs text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors font-medium" />}>
+        <DialogTrigger render={
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            className="text-[10px] md:text-xs text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors font-black uppercase tracking-widest no-select tap-highlight-none"
+          />
+        }>
           + Add Funds
         </DialogTrigger>
         <DialogContent className="bg-card border-border/50 backdrop-blur-2xl sm:max-w-sm">
@@ -166,23 +176,23 @@ export default function GoalsPage() {
       </div>
 
       {goals.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           <motion.div variants={FADE_UP}>
-            <FinanceCard className="p-6">
-              <span className="text-sm text-muted-foreground">Total Target</span>
-              <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(totalTarget)}</h2>
+            <FinanceCard className="p-3 md:p-6 border-border/50">
+              <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-widest truncate">Target</span>
+              <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{formatINR(totalTarget)}</h2>
             </FinanceCard>
           </motion.div>
           <motion.div variants={FADE_UP}>
-            <FinanceCard className="p-6">
-              <span className="text-sm text-muted-foreground">Total Saved</span>
-              <h2 className="text-2xl font-heading font-bold mt-1 text-primary">{formatINR(totalSaved)}</h2>
+            <FinanceCard className="p-3 md:p-6 border-border/50">
+              <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-widest truncate">Saved</span>
+              <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-primary tracking-tighter truncate">{formatINR(totalSaved)}</h2>
             </FinanceCard>
           </motion.div>
-          <motion.div variants={FADE_UP}>
-            <FinanceCard className="p-6">
-              <span className="text-sm text-muted-foreground">Overall Progress</span>
-              <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">
+          <motion.div variants={FADE_UP} className="col-span-2 md:col-span-1">
+            <FinanceCard className="p-3 md:p-6 border-border/50">
+              <span className="text-[9px] md:text-sm font-black text-muted-foreground uppercase tracking-widest truncate">Progress</span>
+              <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">
                 {totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(0) : 0}%
               </h2>
             </FinanceCard>
@@ -192,7 +202,7 @@ export default function GoalsPage() {
 
       {goals.length === 0 ? (
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-12 text-center">
+          <FinanceCard className="p-12 text-center border-border/50">
             <PiggyBank className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-heading font-semibold mb-2 text-foreground">No Goals Yet</h3>
             <p className="text-sm text-muted-foreground mb-6">Set financial goals like an emergency fund, vacation savings, or down payment target.</p>
@@ -200,34 +210,33 @@ export default function GoalsPage() {
           </FinanceCard>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-3 md:gap-6">
           {goals.map((goal) => {
             const pct = goal.targetAmount > 0 ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100) : 0;
             const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
             return (
-              <motion.div key={goal.id} variants={FADE_UP}>
-                <FinanceCard className="p-6 group relative h-full">
-                  <button onClick={() => handleDelete(goal.id)} className="absolute top-4 right-4 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete goal">
-                    <Trash2 size={14} />
+              <motion.div key={goal.id} variants={FADE_UP} className="aspect-square md:aspect-auto">
+                <FinanceCard className="p-3 md:p-6 group relative h-full border-border/50 overflow-hidden flex flex-col justify-between">
+                  <button onClick={() => handleDelete(goal.id)} className="absolute top-2 right-2 p-1 rounded-lg opacity-0 lg:group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete goal">
+                    <Trash2 size={12} />
                   </button>
 
-                  <div className="flex justify-between items-start mb-4 pr-8">
+                  <div className="flex justify-between items-start mb-2 md:mb-4 pr-6">
                     <div>
-                      <h3 className="text-lg font-heading font-bold text-foreground">{goal.name}</h3>
+                      <h3 className="text-sm md:text-lg font-heading font-black text-foreground tracking-tight truncate leading-tight">{goal.name}</h3>
                       {goal.deadline && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Target: {new Date(goal.deadline).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                        <p className="text-[8px] md:text-xs text-muted-foreground mt-0.5 font-bold uppercase tracking-tighter">
+                          {new Date(goal.deadline).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
                         </p>
                       )}
                     </div>
-                    <ContributeDialog goalId={goal.id} goalName={goal.name} />
                   </div>
 
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="flex justify-between text-[10px] md:text-sm mb-1.5 font-black uppercase tracking-tighter">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="font-semibold text-foreground">{pct.toFixed(0)}%</span>
+                    <span className="text-foreground">{pct.toFixed(0)}%</span>
                   </div>
-                  <div className="h-3 w-full bg-foreground/5 rounded-full overflow-hidden mb-4 border border-border/50">
+                  <div className="h-2 md:h-3 w-full bg-foreground/5 rounded-full overflow-hidden mb-3 md:mb-4 border border-border/50">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
@@ -237,18 +246,18 @@ export default function GoalsPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 text-center pt-2 border-t border-border/5 mt-auto">
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Saved</p>
-                      <p className="text-sm font-semibold text-primary">{formatINR(goal.currentAmount)}</p>
+                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Saved</p>
+                      <p className="text-[10px] md:text-sm font-black text-primary truncate">{formatINR(goal.currentAmount)}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Target</p>
-                      <p className="text-sm font-semibold text-foreground">{formatINR(goal.targetAmount)}</p>
+                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Target</p>
+                      <p className="text-[10px] md:text-sm font-black text-foreground truncate">{formatINR(goal.targetAmount)}</p>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining</p>
-                      <p className="text-sm font-semibold text-foreground">{formatINR(remaining)}</p>
+                    <div className="hidden xs:block">
+                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Rem.</p>
+                      <p className="text-[10px] md:text-sm font-black text-foreground truncate">{formatINR(remaining)}</p>
                     </div>
                   </div>
                 </FinanceCard>

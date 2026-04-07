@@ -16,13 +16,29 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Finkar Dashboard - Actionable Finance",
-  description: "Don’t just manage money. Do finance.",
+  title: "Finkar Dashboard — Actionable Finance",
+  description: "Don’t just manage money. Do finance. The futuristic dashboard for controlling your financial destiny.",
+  applicationName: "Finkar",
+  authors: [{ name: "Avik", url: "https://www.linkedin.com/in/avik0508" }],
+  creator: "Avik",
+  publisher: "Finkar",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  other: {
+    copyright: "© 2024-2025 Finkar. All Rights Reserved.",
+  }
 };
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { StoreHydrator } from "@/components/shared/store-hydrator";
 import { AiChatbotPanel } from "@/components/shared/ai-chatbot-panel";
@@ -72,7 +88,7 @@ export default function RootLayout({
               {/* Main content area - Shifted by sidebar width on desktop */}
               <div className="flex flex-col flex-1 z-10 w-full relative md:pl-64 transition-[padding] duration-300 group-has-data-[sidebar=sidebar-wrapper][data-state=collapsed]:md:pl-20">
                 <Header />
-                <main className="flex-1 p-4 md:p-6 lg:p-8 transition-[padding] duration-300 overflow-visible">
+                <main className="flex-1 p-4 md:p-6 lg:p-8 transition-[padding] duration-300 overflow-visible pb-24 md:pb-8">
                   {/* Physical Header Spacer — Guaranteed Clearance */}
                   <div className="h-16 md:h-20 w-full shrink-0" />
                   
@@ -84,6 +100,7 @@ export default function RootLayout({
                   </div>
                 </main>
               </div>
+              <BottomNav />
             </div>
           </SidebarProvider>
           <AiChatbotPanel />

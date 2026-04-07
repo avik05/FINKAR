@@ -199,12 +199,12 @@ export function Header() {
 
   return (
     <header 
-      className={`fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'}`}
+      className={`fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-200 gpu-accelerated no-select ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
     >
-      {/* Mobile Menu Trigger */}
+      {/* Mobile Menu Trigger - Hidden because of BottomNav 'More' button */}
       <button 
         onClick={toggleMobileMenu}
-        className="mr-4 p-2 text-muted-foreground hover:text-foreground md:hidden rounded-full hover:bg-foreground/5 transition-colors"
+        className="mr-4 p-2 text-muted-foreground hover:text-foreground hidden rounded-full hover:bg-foreground/5 transition-colors"
       >
         <Menu size={24} />
       </button>

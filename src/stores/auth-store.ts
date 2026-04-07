@@ -28,7 +28,7 @@ interface AuthState {
   // Delete user data and log out
   deleteAccount: () => Promise<void>;
   // Refresh user data (useful for verification check)
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<boolean | void>;
   // Resend verification email
   resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
@@ -41,8 +41,16 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
 
       refreshUser: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Force a fresh user data fetch from Supabase
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.error('Error refreshing user:', error.message);
+          return;
+        }
+
         if (user) {
+          const isVerified = !!user.email_confirmed_at;
           set({
             user: {
               id: user.id,
@@ -50,10 +58,13 @@ export const useAuthStore = create<AuthState>()(
               email: user.email!,
               createdAt: user.created_at,
               avatarUrl: user.user_metadata?.avatar_url,
-              isEmailVerified: !!user.email_confirmed_at,
+              isEmailVerified: isVerified,
             },
             isLoggedIn: true,
           });
+          
+          // Return the verification status for immediate use in UI
+          return isVerified;
         }
       },
 

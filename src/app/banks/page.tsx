@@ -11,8 +11,10 @@ import { useTransactionsStore } from "@/stores/transactions-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddAccountDialog } from "@/components/dialogs/add-account-dialog";
+import { EditAccountDialog } from "@/components/dialogs/edit-account-dialog";
 import { AddTransactionDialog } from "@/components/dialogs/add-transaction-dialog";
 import { EditTransactionDialog } from "@/components/dialogs/edit-transaction-dialog";
+import { cn } from "@/lib/utils";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -89,7 +91,7 @@ export default function BanksPage() {
           <h1 className="text-3xl font-heading font-bold text-foreground">Banks & Cards</h1>
           <p className="text-muted-foreground mt-1 text-sm">Unified view of your liquidity and obligations.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full md:w-auto">
           <AddAccountDialog />
           <AddTransactionDialog />
         </div>
@@ -105,25 +107,42 @@ export default function BanksPage() {
           </FinanceCard>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {accounts.map((account) => {
             const Icon = iconMap[account.type] || Landmark;
             const colors = colorMap[account.type] || colorMap.Savings;
             return (
-              <motion.div key={account.id} variants={FADE_UP}>
-                <FinanceCard className="p-6 group relative h-full">
-                  <button onClick={() => handleDeleteAccount(account.id)} className="absolute top-3 right-3 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete account">
-                    <Trash2 size={14} />
-                  </button>
-                  <div className="flex justify-between items-start">
-                    <div className={`p-3 rounded-xl ${colors.bg} border border-border/50`}>
-                      <Icon className={`w-6 h-6 ${colors.color}`} />
-                    </div>
-                    <span className="text-xs font-medium text-muted-foreground bg-foreground/5 py-1 px-2 rounded">{account.type}</span>
+              <motion.div key={account.id} variants={FADE_UP} className="aspect-square md:aspect-auto">
+                <FinanceCard className="p-3 md:p-6 group relative h-full flex flex-col justify-between overflow-hidden border-border/50 no-select tap-highlight-none">
+                  {/* Action Bar (Top Right) */}
+                  <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
+                    <EditAccountDialog account={account} />
+                    <button 
+                      onClick={() => handleDeleteAccount(account.id)} 
+                      className="p-1 rounded-lg opacity-0 lg:group-hover:opacity-100 hover:bg-destructive/20 text-destructive/60 hover:text-destructive transition-all border border-transparent hover:border-destructive/20" 
+                      title="Delete account"
+                    >
+                      <Trash2 size={12} />
+                    </button>
                   </div>
-                  <div className="mt-6">
-                    <h3 className="text-xs font-medium text-muted-foreground truncate uppercase tracking-wider">{account.name}</h3>
-                    <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(account.balance)}</h2>
+
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${colors.bg} border border-border/50 shadow-sm shadow-black/20`}>
+                        <Icon className={`w-4 h-4 md:w-6 md:h-6 ${colors.color}`} />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-[8px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] truncate">{account.name}</h3>
+                      <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter">{formatINR(account.balance)}</h2>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 md:mt-6 flex items-center justify-between">
+                    <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${colors.color} ${colors.bg} py-0.5 px-2 rounded-md md:rounded-lg border border-current/10`}>
+                      {account.type}
+                    </span>
                   </div>
                 </FinanceCard>
               </motion.div>
@@ -187,15 +206,12 @@ export default function BanksPage() {
 
           {transactions.length === 0 ? (
             <div className="p-20 text-center flex flex-col items-center">
-              <div className="w-16 h-16 bg-foreground/5 rounded-2xl flex items-center justify-center mb-4 border border-border/30">
-                <Filter className="text-muted-foreground opacity-20 w-8 h-8" />
-              </div>
-              <p className="text-muted-foreground font-medium mb-4">No transactions recorded yet.</p>
               <AddTransactionDialog />
             </div>
           ) : (
             <div className="relative max-h-[600px] overflow-y-auto custom-scrollbar border-t border-border/20">
-              <table className="w-full text-left border-collapse min-w-[700px]">
+              {/* Desktop Table */}
+              <table className="w-full text-left border-collapse min-w-[700px] hidden md:table">
                 <thead className="sticky top-0 z-20 bg-card/95 backdrop-blur-xl border-b border-border/50">
                   <tr className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">
                     <th className="px-8 py-5">Date</th>
@@ -269,6 +285,63 @@ export default function BanksPage() {
                   </AnimatePresence>
                 </tbody>
               </table>
+
+              {/* Mobile Card List */}
+              <div className="md:hidden divide-y divide-border/10">
+                <AnimatePresence mode="popLayout">
+                  {filteredTx.length === 0 ? (
+                    <div className="px-6 py-12 text-center text-muted-foreground text-sm">
+                      No matching transactions found.
+                    </div>
+                  ) : (
+                    filteredTx.map((tx) => (
+                      <motion.div
+                        key={tx.id}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="p-5 hover:bg-primary/5 active:bg-primary/10 transition-all group"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] uppercase font-black text-muted-foreground/60 tracking-wider">
+                                {formatDate(tx.date)}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                              {tx.merchant}
+                            </h4>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
+                              {tx.accountName}
+                            </p>
+                          </div>
+                          <div className="text-right flex flex-col items-end gap-1">
+                            <div className={cn(
+                              "text-base font-black tabular-nums",
+                              tx.amount > 0 ? "text-primary drop-shadow-[0_0_8px_rgba(0,255,156,0.2)]" : "text-foreground"
+                            )}>
+                              {tx.amount > 0 ? "+" : "-"}{formatINR(Math.abs(tx.amount))}
+                            </div>
+                            <span className="inline-flex items-center gap-1 overflow-hidden px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] bg-foreground/5 dark:bg-white/5 border border-border/40 text-muted-foreground">
+                              {tx.category}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-2 border-t border-border/5 pt-3">
+                          <EditTransactionDialog transaction={tx} />
+                          <button 
+                            onClick={() => handleDeleteTransaction(tx.id)} 
+                            className="p-1.5 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           )}
         </FinanceCard>

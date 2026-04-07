@@ -27,11 +27,24 @@ export function Footer() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center md:items-start gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-heading font-bold text-foreground glow-hover cursor-pointer tracking-wider text-lg">FINKAR</span>
+            <span className="font-heading font-bold text-foreground glow-hover cursor-pointer tracking-wider text-xl uppercase flex items-center relative">
+              FINKAR<span className="text-[10px] font-bold text-muted-foreground/60 align-top relative -top-2 ml-0.5">TM</span>
+            </span>
             <span className="text-muted-foreground/60">/</span>
-            <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()}</span>
+            <span className="text-xs text-muted-foreground">&copy; 2024-2025 Finkar. All Rights Reserved.</span>
           </div>
-          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em]">Actionable Finance. Futuristic Control.</p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2 text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium transition-all">
+            <Link href="/faq" className="hover:text-primary transition-colors hover:glow-sm">FAQ</Link>
+            <span className="opacity-30">/</span>
+            <Link href="/contact" className="hover:text-primary transition-colors hover:glow-sm">Contact Us</Link>
+            <span className="opacity-30">•</span>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <span className="opacity-30">•</span>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <span className="opacity-30">•</span>
+            <Link href="/license" className="hover:text-primary transition-colors">License</Link>
+          </div>
+          <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">Actionable Finance. Futuristic Control.</p>
         </div>
 
         <div className="flex items-center gap-4 order-last md:order-none">

@@ -75,8 +75,10 @@ export default function SettingsPage() {
   return (
     <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6 pb-6 lg:max-w-4xl">
       <div>
-        <h1 className="text-3xl font-heading font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your data, security, and preferences.</p>
+        <h1 className="text-3xl font-heading font-bold text-foreground flex items-center gap-2">
+          Settings<span className="text-xs font-bold text-muted-foreground/60 align-top relative -top-2">TM</span>
+        </h1>
+        <p className="text-muted-foreground mt-1">Manage your data, security, and proprietary preferences.</p>
       </div>
 
       <motion.div variants={FADE_UP} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
@@ -115,34 +117,74 @@ export default function SettingsPage() {
               </Button>
             </div>
           </FinanceCard>
+
+          {/* Legal & Brand (NEW) */}
+          <h2 className="text-lg font-heading font-semibold text-foreground flex items-center gap-2 pt-4">
+            <ShieldCheck size={20} className="text-primary" /> Legal & Brand
+          </h2>
+          <FinanceCard className="p-6 space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2 font-bold font-heading">Proprietary Documentation</p>
+            <div className="space-y-1">
+              <button onClick={() => router.push("/terms")} className="w-full text-left p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/50 flex items-center justify-between group">
+                <span className="text-sm font-bold text-foreground/80">Terms of Service</span>
+                <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Read Policy</span>
+              </button>
+              <button onClick={() => router.push("/privacy")} className="w-full text-left p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/50 flex items-center justify-between group">
+                <span className="text-sm font-bold text-foreground/80">Privacy Policy</span>
+                <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Read Policy</span>
+              </button>
+              <button onClick={() => router.push("/license")} className="w-full text-left p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/50 flex items-center justify-between group">
+                <span className="text-sm font-bold text-foreground/80">License & Copyright</span>
+                <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Read Policy</span>
+              </button>
+            </div>
+          </FinanceCard>
         </div>
 
-        {/* Storage Info */}
+        {/* Data Sync & Security */}
         <div className="space-y-4">
           <h2 className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
-            <ShieldCheck size={20} className="text-primary" /> Storage & Privacy
+            <ShieldCheck size={20} className="text-primary" /> Cloud Sync & Security
           </h2>
           <FinanceCard className="p-6 space-y-6">
             <div>
-              <h3 className="font-semibold text-sm mb-2">How your data is stored</h3>
+              <h3 className="font-bold text-sm mb-2 text-foreground tracking-tight">How your data is stored</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                All your financial data is stored <strong>locally in your browser</strong> using localStorage. Nothing is sent to any server. Your data stays on this device and persists across page refreshes.
+                Your data is securely synced to your **Finkar account in the cloud** using high-grade encryption. This allows you to access your financial dashboard from any device while maintaining the highest privacy standards. Your data is never shared with third parties.
               </p>
             </div>
             <div className="pt-4 border-t border-foreground/5">
-              <h3 className="font-semibold text-sm mb-2">Backup Recommendation</h3>
+              <h3 className="font-bold text-sm mb-2 text-foreground tracking-tight">Security & Ownership</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Use the &quot;Export Data as JSON&quot; button regularly to create backups. If you clear your browser data, your financial records will be lost unless you have a backup.
+                Finkar is proprietary software. All data is protected by industry-standard security protocols. All rights are reserved to the developer (**Avik**). Unauthorized redistribution or reverse engineering of this dashboard is strictly prohibited.
               </p>
             </div>
             <div className="pt-4 border-t border-foreground/5">
-              <div className="flex items-center gap-2 text-primary font-medium mb-3">
-                <Smartphone size={16} /> App Info
+              <div className="flex items-center gap-2 text-primary font-bold mb-4 uppercase tracking-widest text-[10px]">
+                <Smartphone size={14} /> FINKAR App Info
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Version</span><span className="font-mono">1.0.0</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Framework</span><span className="font-mono">Next.js</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Storage</span><span className="font-mono">localStorage</span></div>
+              <div className="space-y-2.5 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Developer</span>
+                  <span className="font-bold text-foreground">Avik</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Status</span>
+                  <span className="font-bold text-primary flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10">Reserved ™</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Version</span>
+                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-secondary border border-border/50">v1.2.0-secure</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Storage</span>
+                  <span className="font-bold text-foreground">Supabase Cloud (PostgreSQL)</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-border/10 mt-2">
+                  <span className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] w-full text-center">
+                    © 2024-2025 FINKAR. All Rights Reserved.
+                  </span>
+                </div>
               </div>
             </div>
           </FinanceCard>

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Landmark, Activity, Plus } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR, formatINRCompact } from "@/lib/format";
+import { safeSum, safeRound } from "@/lib/financial-math";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useTransactionsStore } from "@/stores/transactions-store";
 import { useStocksStore } from "@/stores/stocks-store";
@@ -19,8 +20,8 @@ import {
 } from "recharts";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 150, damping: 20 } },
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 350, damping: 25, mass: 0.5 } },
 };
 
 export default function DashboardPage() {
@@ -32,16 +33,27 @@ export default function DashboardPage() {
   const funds = useMutualFundsStore((s) => s.funds);
   const { dateRange } = useLayoutStore();
 
-  // Computed KPIs
-  const cashBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
-  const stockValue = stocks.reduce((sum, s) => sum + s.currentPrice * s.quantity, 0);
-  const stockInvested = stocks.reduce((sum, s) => sum + s.avgBuyPrice * s.quantity, 0);
-  const mfValue = funds.reduce((sum, f) => sum + f.current, 0);
-  const mfInvested = funds.reduce((sum, f) => sum + f.invested, 0);
-  const netWorth = cashBalance + stockValue + mfValue;
-  const investedAssets = stockValue + mfValue;
+  // Computed KPIs with precision hardening
+  const { netWorth, cashBalance, investedAssets, totalInvestedBase, stockValue, mfValue, stockInvested, mfInvested } = useMemo(() => {
+    const cash = safeSum(accounts.map(a => a.balance));
+    const sValue = safeSum(stocks.map(s => safeRound(s.currentPrice * s.quantity)));
+    const sInvested = safeSum(stocks.map(s => safeRound(s.avgBuyPrice * s.quantity)));
+    const mValue = safeSum(funds.map(f => f.current));
+    const mInvested = safeSum(funds.map(f => f.invested));
+    
+    return {
+      cashBalance: cash,
+      stockValue: sValue,
+      mfValue: mValue,
+      stockInvested: sInvested,
+      mfInvested: mInvested,
+      netWorth: safeSum([cash, sValue, mValue]),
+      investedAssets: safeSum([sValue, mValue]),
+      totalInvestedBase: safeSum([sInvested, mInvested])
+    };
+  }, [accounts, stocks, funds]);
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const d = new Date(t.date);
@@ -65,15 +77,18 @@ export default function DashboardPage() {
     });
   }, [transactions, dateRange, now]);
 
-  const monthlyExpense = filteredTransactions.filter((t: any) => t.amount < 0).reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
-  const monthlyIncome = filteredTransactions.filter((t: any) => t.amount > 0).reduce((s: number, t: any) => s + t.amount, 0);
+  const { monthlyExpense, monthlyIncome } = useMemo(() => {
+    const expense = filteredTransactions.filter((t: any) => t.amount < 0).reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+    const income = filteredTransactions.filter((t: any) => t.amount > 0).reduce((s: number, t: any) => s + t.amount, 0);
+    return { monthlyExpense: expense, monthlyIncome: income };
+  }, [filteredTransactions]);
 
   // Asset allocation for donut
-  const allocation = [
+  const allocation = useMemo(() => [
     { name: "Cash (Banks)", value: Math.max(0, cashBalance), color: "var(--primary)", gradient: "url(#cashGrad)" },
     { name: "Stocks", value: stockValue, color: "#60A5FA", gradient: "url(#equityGrad)" },
     { name: "Mutual Funds", value: mfValue, color: "#A855F7", gradient: "url(#mfGrad)" },
-  ].filter((a) => a.value > 0);
+  ].filter((a) => a.value > 0), [cashBalance, stockValue, mfValue]);
 
   const renderActiveShape = (props: any) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
@@ -105,7 +120,12 @@ export default function DashboardPage() {
   const isEmpty = accounts.length === 0 && stocks.length === 0 && funds.length === 0;
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }} className="space-y-8 pb-10">
+    <motion.div 
+      initial="hidden" 
+      animate="show" 
+      variants={{ show: { transition: { staggerChildren: 0.03 } } }} 
+      className="space-y-8 pb-10 gpu-accelerated no-select"
+    >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2">
         <div className="animate-float">
           <h1 className="text-3xl lg:text-4xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -114,73 +134,73 @@ export default function DashboardPage() {
           <p className="text-muted-foreground mt-2 font-medium tracking-wide">Here is your financial pulse for today.</p>
         </div>
         <AddTransactionDialog>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm">
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm shadow-sm no-select tap-highlight-none"
+          >
             <Plus size={16} /> Quick Add
-          </button>
+          </motion.button>
         </AddTransactionDialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6 relative overflow-hidden group glass-card">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-all duration-700 ease-out group-hover:scale-125">
+          <FinanceCard className="p-4 md:p-6 relative overflow-hidden group glass-card gpu-accelerated">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-all duration-700 ease-out group-hover:scale-125 hidden lg:block">
               <Landmark className="w-32 h-32 text-primary translate-x-4 -translate-y-4" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Total Net Worth</p>
-            <h2 className="text-3xl font-heading font-bold mt-2 text-foreground truncate">{formatINR(netWorth)}</h2>
-            <p className="text-xs text-muted-foreground mt-2">Cash + Stocks + Mutual Funds</p>
-            {isEmpty && <p className="text-xs text-muted-foreground mt-3">Add accounts & holdings to see your net worth</p>}
+            <p className="text-[10px] md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Net Worth</p>
+            <h2 className="text-xl md:text-3xl font-heading font-black mt-1 text-foreground truncate tracking-tight">{formatINR(netWorth)}</h2>
+            <p className="text-[9px] md:text-xs text-muted-foreground mt-1.5 opacity-60">Cash + Stocks + Mutual Funds</p>
+            {isEmpty && <p className="text-[9px] md:text-xs text-muted-foreground mt-2 italic">Add accounts to see stats</p>}
           </FinanceCard>
         </motion.div>
 
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <div className="flex justify-between items-start">
+          <FinanceCard className="p-4 md:p-6 gpu-accelerated relative group overflow-hidden">
+            <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Stocks &amp; Mutual Funds</p>
-                <h3 className="text-xl md:text-2xl font-heading font-bold mt-1 text-foreground truncate">{formatINR(investedAssets)}</h3>
+                <p className="text-[10px] md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Investments</p>
+                <h2 className="text-xl md:text-3xl font-heading font-black mt-1 text-foreground tracking-tight">{formatINR(investedAssets)}</h2>
               </div>
-              <div className="p-2 bg-foreground/5 rounded-xl border border-border/50"><TrendingUp className="w-5 h-5 text-chart-2" /></div>
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-primary opacity-40 group-hover:opacity-100 transition-opacity" />
             </div>
             {investedAssets > 0 && (
-              <div className="flex items-center gap-2 mt-4 text-xs">
-                <span className={`font-medium px-1.5 py-0.5 rounded ${stockValue + mfValue - stockInvested - mfInvested >= 0 ? 'text-primary bg-primary/10' : 'text-destructive bg-destructive/10'}`}>
-                  {((stockValue + mfValue - stockInvested - mfInvested) / (stockInvested + mfInvested) * 100).toFixed(1)}% Overall Return
-                </span>
-              </div>
+              <span className={`text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded-lg ${investedAssets - totalInvestedBase >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                {totalInvestedBase > 0 ? ((investedAssets - totalInvestedBase) / totalInvestedBase * 100).toFixed(1) : 0}% Overall
+              </span>
             )}
             {investedAssets === 0 && <p className="text-xs text-muted-foreground mt-4">No investments tracked yet</p>}
           </FinanceCard>
         </motion.div>
 
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <div className="flex justify-between items-start">
+          <FinanceCard className="p-4 md:p-6 gpu-accelerated relative group overflow-hidden h-full">
+            <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Cash in Banks</p>
-                <h3 className="text-xl md:text-2xl font-heading font-bold mt-1 text-foreground truncate">{formatINR(cashBalance)}</h3>
+                <p className="text-[10px] md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Cash</p>
+                <h2 className="text-xl md:text-3xl font-heading font-black mt-1 text-foreground tracking-tight">{formatINR(cashBalance)}</h2>
               </div>
-              <div className="p-2 bg-foreground/5 rounded-xl border border-border/50"><Landmark className="w-5 h-5 text-chart-4" /></div>
+              <Landmark className="w-4 h-4 md:w-5 md:h-5 text-primary opacity-40 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="mt-4 text-xs text-muted-foreground">Across {accounts.length} account{accounts.length !== 1 ? 's' : ''}</div>
+            <p className="text-[9px] md:text-xs text-muted-foreground opacity-60 truncate">Across {accounts.length} accounts</p>
           </FinanceCard>
         </motion.div>
 
         <motion.div variants={FADE_UP}>
-          <FinanceCard className="p-6">
-            <div className="flex justify-between items-start">
+          <FinanceCard className="p-4 md:p-6 gpu-accelerated relative group overflow-hidden h-full">
+            <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Flow ({dateRange})</p>
-                <h3 className="text-xl md:text-2xl font-heading font-bold mt-1 text-foreground truncate">{formatINR(monthlyExpense)}</h3>
+                <p className="text-[10px] md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Expenses</p>
+                <h2 className="text-xl md:text-3xl font-heading font-black mt-1 text-foreground tracking-tight">{formatINR(Math.abs(monthlyExpense))}</h2>
               </div>
-              <div className="p-2 bg-foreground/5 rounded-xl border border-border/50"><Activity className="w-5 h-5 text-destructive" /></div>
+              <Activity className="w-4 h-4 md:w-5 md:h-5 text-primary opacity-40 group-hover:opacity-100 transition-opacity" />
             </div>
-            {monthlyIncome > 0 && (
-              <div className="flex items-center gap-2 mt-4 text-xs">
-                <span className="text-muted-foreground">Savings rate: {((1 - monthlyExpense / monthlyIncome) * 100).toFixed(0)}%</span>
-              </div>
+            {monthlyIncome > 0 ? (
+              <p className="text-[9px] md:text-xs text-muted-foreground opacity-60">Savings rate: {((1 - Math.abs(monthlyExpense) / monthlyIncome) * 100).toFixed(0)}%</p>
+            ) : (
+              <p className="text-[9px] md:text-xs text-muted-foreground opacity-60">This Month</p>
             )}
-            {monthlyIncome === 0 && <p className="text-xs text-muted-foreground mt-4">No income recorded this month</p>}
           </FinanceCard>
         </motion.div>
       </div>
@@ -189,7 +209,7 @@ export default function DashboardPage() {
       {allocation.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-foreground">
           <motion.div variants={FADE_UP} className="lg:col-span-2">
-            <FinanceCard className="p-6 h-[400px] flex flex-col items-center justify-center relative overflow-hidden group">
+            <FinanceCard className="p-6 h-[400px] flex flex-col items-center justify-center relative overflow-hidden group gpu-accelerated">
               <div className="flex justify-between items-start w-full mb-4">
                 <div>
                   <h2 className="text-lg font-heading font-semibold">Asset Allocation</h2>

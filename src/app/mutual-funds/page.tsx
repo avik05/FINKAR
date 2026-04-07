@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Target, Trash2 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ReferenceLine } from "recharts";
@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddFundDialog } from "@/components/dialogs/add-fund-dialog";
 import { EditFundDialog } from "@/components/dialogs/edit-fund-dialog";
+import { FetchFundsDialog } from "@/components/dialogs/fetch-funds-dialog";
 import { MutualFund } from "@/types/finance";
 
 const FADE_UP = {
@@ -49,10 +50,13 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export default function MutualFundsPage() {
-  const funds = useMutualFundsStore((s) => s.funds);
-  const deleteFund = useMutualFundsStore((s) => s.deleteFund);
+  const { funds, deleteFund, processSIPs } = useMutualFundsStore();
   const { isLoggedIn } = useAuthStore();
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+
+  useEffect(() => {
+    processSIPs();
+  }, [processSIPs]);
 
   const totalInvested = funds.reduce((acc, mf) => acc + mf.invested, 0);
   const totalValue = funds.reduce((acc, mf) => acc + mf.current, 0);
@@ -86,13 +90,20 @@ export default function MutualFundsPage() {
   }));
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6 gpu-accelerated">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Mutual Funds & SIPs</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Track your mutual fund holdings and SIP investments.</p>
+          <h1 className="text-3xl font-heading font-black text-foreground tracking-tight">Mutual Funds & SIPs</h1>
+          <p className="text-muted-foreground text-sm font-medium opacity-70">Auto-sync your holdings or track manually.</p>
         </div>
-        <AddFundDialog />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          <div className="flex-1 sm:flex-initial">
+            <FetchFundsDialog />
+          </div>
+          <div className="flex-1 sm:flex-initial">
+            <AddFundDialog label="Add Manual Fund" />
+          </div>
+        </div>
       </div>
 
       {funds.length === 0 ? (
@@ -106,38 +117,38 @@ export default function MutualFundsPage() {
         </motion.div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 shadow-sm shadow-blue-500/5">
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 uppercase tracking-widest">Total Invested</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-blue-950 dark:text-blue-100">{formatINR(totalInvested)}</h2>
+              <FinanceCard className="p-3 md:p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 shadow-sm shadow-blue-500/5">
+                <span className="text-[8px] md:text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Invested</span>
+                <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-blue-950 dark:text-blue-100 tracking-tighter break-all">{formatINR(totalInvested)}</h2>
               </FinanceCard>
             </motion.div>
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 shadow-sm shadow-primary/5">
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-primary uppercase tracking-widest">Current Value</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <h2 className="text-2xl font-heading font-bold text-foreground">{formatINR(totalValue)}</h2>
+              <FinanceCard className="p-3 md:p-6 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 shadow-sm shadow-primary/5">
+                <span className="text-[8px] md:text-[10px] font-black text-emerald-600 dark:text-primary uppercase tracking-widest">Current</span>
+                <div className="flex flex-col md:flex-row md:items-center gap-1 mt-0.5">
+                  <h2 className="text-base md:text-2xl font-heading font-black text-foreground tracking-tighter break-all">{formatINR(totalValue)}</h2>
                   {totalInvested > 0 && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-black ${totalGain >= 0 ? 'bg-primary/20 text-emerald-700 dark:text-primary' : 'bg-destructive/20 text-destructive'}`}>
-                      {totalGain >= 0 ? '+' : ''}{((totalGain / totalInvested) * 100).toFixed(1)}%
+                    <span className={`text-[8px] md:text-[9px] w-fit px-1 py-0.5 rounded font-black ${totalGain >= 0 ? 'bg-primary/20 text-emerald-700 dark:text-primary' : 'bg-destructive/20 text-destructive'}`}>
+                      {totalGain >= 0 ? '+' : ''}{((totalGain / totalInvested) * 100).toFixed(0)}%
                     </span>
                   )}
                 </div>
               </FinanceCard>
             </motion.div>
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Gain</span>
-                <h2 className={`text-2xl font-heading font-bold mt-1 ${totalGain >= 0 ? 'text-primary' : 'text-destructive'}`}>
+              <FinanceCard className="p-3 md:p-6 border-border/50">
+                <span className="text-[8px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gain/Loss</span>
+                <h2 className={`text-base md:text-2xl font-heading font-black mt-0.5 tracking-tighter break-all ${totalGain >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {totalGain >= 0 ? '+' : ''}{formatINR(totalGain)}
                 </h2>
               </FinanceCard>
             </motion.div>
             <motion.div variants={FADE_UP}>
-              <FinanceCard className="p-6">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Monthly SIP</span>
-                <h2 className="text-2xl font-heading font-bold mt-1 text-foreground">{formatINR(totalSip)}</h2>
+              <FinanceCard className="p-3 md:p-6 border-border/50">
+                <span className="text-[8px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Monthly SIP</span>
+                <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter break-all">{formatINR(totalSip)}</h2>
               </FinanceCard>
             </motion.div>
           </div>
@@ -241,8 +252,36 @@ export default function MutualFundsPage() {
                     <div key={mf.id} className="p-5 rounded-2xl border border-border/50 bg-foreground/5 hover:bg-foreground/10 transition-all group relative overflow-hidden h-full flex flex-col">
                       <div className="flex justify-between items-start mb-4 gap-4">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm leading-tight text-foreground truncate" title={mf.fund}>{mf.fund}</h4>
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground bg-foreground/10 px-1.5 py-0.5 rounded mt-1.5 inline-block border border-border/10 tracking-widest">{mf.category}</span>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-black text-foreground truncate group-hover:text-primary transition-colors">{mf.fund}</h3>
+                            <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-foreground/5 text-muted-foreground shrink-0 border border-border/50">
+                              {mf.category}
+                            </span>
+                            {mf.subCategory && (
+                              <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0 border border-primary/20">
+                                {mf.subCategory}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Target size={12} className="text-muted-foreground shrink-0" />
+                              <span className="text-xs font-bold text-muted-foreground truncate">
+                                {mf.amc || "Fund House"}
+                              </span>
+                            </div>
+                            {mf.units && (
+                              <div className="flex items-center gap-1.5 border-l border-border/50 pl-4">
+                                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Units</span>
+                                <span className="text-xs font-mono font-bold text-foreground">{mf.units.toFixed(3)}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5 border-l border-border/50 pl-4">
+                              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Inv</span>
+                              <span className="text-xs font-bold text-foreground">{formatINR(mf.invested)}</span>
+                            </div>
+                          </div>
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">

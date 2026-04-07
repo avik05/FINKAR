@@ -18,21 +18,42 @@ export default function VerifyPage() {
   // Auto-redirect if verified
   useEffect(() => {
     if (isLoggedIn && user?.isEmailVerified) {
-      router.replace("/dashboard");
+      if (!message.includes("Verified")) {
+        setMessage("Verified! Redirecting to your dashboard...");
+      }
+      const timeout = setTimeout(() => {
+        router.replace("/dashboard");
+      }, 1500);
+      return () => clearTimeout(timeout);
     }
-  }, [isLoggedIn, user?.isEmailVerified, router]);
+  }, [isLoggedIn, user?.isEmailVerified, router, message]);
+
+  // Automatic Background Polling
+  useEffect(() => {
+    if (!isLoggedIn || user?.isEmailVerified) return;
+
+    const interval = setInterval(async () => {
+      await refreshUser();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isLoggedIn, user?.isEmailVerified, refreshUser]);
 
   const handleRefresh = async () => {
     setChecking(true);
-    setMessage("");
+    setMessage("Checking verification status...");
     try {
-      await refreshUser();
-      // Logic inside refreshUser updates the store, which triggers the useEffect above
-      setMessage("Status refreshed. If you've verified, you'll be redirected soon.");
+      const isVerified = await refreshUser();
+      
+      if (isVerified) {
+        setMessage("Verified! Redirecting...");
+      } else {
+        setMessage("Verification link not yet clicked. Please check your email.");
+      }
     } catch (err) {
       setMessage("Failed to refresh. Please try again.");
     } finally {
-      setChecking(false);
+      setTimeout(() => setChecking(false), 800);
     }
   };
 
