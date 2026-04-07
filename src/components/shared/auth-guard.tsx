@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { supabase } from "@/lib/supabase";
 import { useTransactionsStore } from "@/stores/transactions-store";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useGoalsStore } from "@/stores/goals-store";
@@ -54,13 +55,21 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // 1. Redirect logged-in users away from /login
+    // 1. Redirect logged-in users away from /login ONLY if they have a real session
     if (isLoggedIn && AUTH_ROUTES.includes(pathname)) {
-      if (user && !user.isEmailVerified) {
-        router.replace("/auth/verify");
-      } else {
-        router.replace("/dashboard");
-      }
+      const checkAndRedirect = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (user && !user.isEmailVerified) {
+          router.replace("/auth/verify");
+        } else if (session) {
+          // Only redirect to dashboard if a real session exists
+          router.replace("/dashboard");
+        }
+        // If no session but isLoggedIn is true, stay on /login to allow them to log in
+      };
+      
+      checkAndRedirect();
       return;
     }
 
