@@ -83,7 +83,7 @@ export function AiChatbotPanel() {
       {/* FAB button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-48 right-6 lg:bottom-10 lg:right-10 p-4 bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(0,255,156,0.5)] hover:scale-110 transition-all duration-300 z-50 ${
+        className={`fixed bottom-20 right-6 lg:bottom-10 lg:right-10 p-4 bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(0,255,156,0.5)] hover:scale-110 transition-all duration-300 z-50 ${
           isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
         }`}
       >
@@ -92,7 +92,7 @@ export function AiChatbotPanel() {
 
       {/* Chat panel */}
       <div
-        className={`fixed bottom-48 right-6 lg:bottom-10 lg:right-10 w-[350px] sm:w-[400px] h-[520px] bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-2xl flex flex-col z-50 transition-all duration-500 origin-bottom-right ${
+        className={`fixed bottom-20 right-6 lg:bottom-10 lg:right-10 w-[min(90vw,400px)] h-[520px] bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-2xl flex flex-col z-50 transition-all duration-500 origin-bottom-right ${
           isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0 pointer-events-none"
         }`}
       >

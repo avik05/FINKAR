@@ -26,8 +26,8 @@ export function BottomNav() {
   const { toggleMobileMenu } = useLayoutStore();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-background/80 backdrop-blur-2xl border-t border-border/10 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
-      <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-background/80 backdrop-blur-2xl border-t border-border/10 pb-[env(safe-area-inset-bottom)] sm:pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+      <div className="flex items-center justify-around h-16 sm:h-18 px-2 max-w-lg mx-auto">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (

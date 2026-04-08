@@ -199,7 +199,9 @@ export default function BanksPage() {
                     onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
-                <AddTransactionDialog />
+                <div className="hidden sm:block">
+                  <AddTransactionDialog />
+                </div>
               </div>
             </div>
           </div>

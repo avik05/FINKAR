@@ -199,7 +199,7 @@ export function Header() {
 
   return (
     <header 
-      className={`fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/60 backdrop-blur-xl border-b border-border/50 transition-all duration-200 gpu-accelerated no-select ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+      className={`fixed top-0 right-0 z-40 flex h-16 md:left-64 shrink-0 items-center px-4 sm:px-6 bg-background/40 backdrop-blur-3xl border-b border-border/10 transition-all duration-200 gpu-accelerated no-select ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
     >
       {/* Mobile Menu Trigger - Hidden because of BottomNav 'More' button */}
       <button 
@@ -258,7 +258,7 @@ export function Header() {
       </div>
 
       {/* --- Right Column: Actions --- */}
-      <div className="flex items-center gap-1 sm:gap-3">
+      <div className="flex items-center gap-1 sm:gap-3 bg-foreground/5 sm:bg-transparent p-1 sm:p-0 rounded-2xl border border-border/10 sm:border-transparent">
         {/* Date Range Selector */}
         <DropdownMenu>
           <DropdownMenuTrigger className="hidden sm:flex items-center gap-2 px-3 py-1.5 h-9 rounded-xl hover:bg-foreground/5 transition-all text-xs font-bold text-muted-foreground outline-none">

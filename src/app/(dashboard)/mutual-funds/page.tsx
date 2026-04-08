@@ -241,10 +241,10 @@ export default function MutualFundsPage() {
 
           <motion.div variants={FADE_UP}>
             <FinanceCard className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-heading font-semibold text-foreground">Fund Holdings</h2>
-                <AddFundDialog />
-              </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-lg font-heading font-semibold text-foreground">Fund Holdings</h2>
+              <AddFundDialog />
+            </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {funds.map((mf) => {
                   const gain = mf.current - mf.invested;

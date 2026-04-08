@@ -234,7 +234,7 @@ export default function StocksPage() {
 
           <motion.div variants={FADE_UP}>
             <FinanceCard className="w-full">
-              <div className="p-6 border-b border-border/50 flex justify-between items-center">
+              <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg font-heading font-semibold text-foreground">Holdings</h2>
                 <AddStockDialog />
               </div>
