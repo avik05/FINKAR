@@ -18,7 +18,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL('https://getfinkar.com'),
   title: {
-    default: "Finkar Dashboard — Actionable Finance",
+    default: "Finkar - Personal Finance Dashboard",
     template: "%s | Finkar"
   },
   description: "Don’t just manage money. Do finance. The futuristic dashboard for controlling your financial destiny. Track stocks, mutual funds, and bank accounts in one view.",
@@ -33,20 +33,20 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://getfinkar.com",
-    title: "Finkar — Actionable Personal Finance",
+    title: "Finkar - Personal Finance Dashboard",
     description: "The all-in-one financial cockpit for tracking bank accounts, stocks, and mutual funds.",
     siteName: "Finkar",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Finkar — Actionable Personal Finance",
+    title: "Finkar - Personal Finance Dashboard",
     description: "Control your financial destiny with the futuristic Finkar dashboard.",
     creator: "@aviiiiiiik",
   },
