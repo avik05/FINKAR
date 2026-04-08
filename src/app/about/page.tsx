@@ -22,7 +22,6 @@ import {
   Globe,
 } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
-import { useSidebar } from "@/components/ui/sidebar";
 
 // --- Components ---
 
@@ -126,7 +125,6 @@ const features = [
 export default function AboutPage() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll();
-  const { state, isMobile } = useSidebar();
 
   const heroY = useTransform(scrollYProgress, [0, 0.05], [0, -300]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.04], [1, 0]);
@@ -143,9 +141,8 @@ export default function AboutPage() {
     });
   }, [scrollYProgress]);
 
-  // Sidebar-aware alignment logic
-  // Expanded: 16rem (256px), Collapsed: 3rem (48px)
-  const sidebarOffset = isMobile ? 0 : (state === "expanded" ? 256 : 48);
+  // No sidebar on about page
+  const sidebarOffset = 0;
 
   return (
     <div ref={containerRef} className="relative bg-background">
