@@ -24,7 +24,7 @@ export function safeSum(values: number[]): number {
  * Robustly converts a string (like "₹ 1,234.56") to a number.
  * Handles commas, multiple decimal points (takes the last), and negative signs.
  */
-export function cleanCurrency(val: any): number {
+export function cleanCurrency(val: string | number | null | undefined): number {
   if (val === null || val === undefined) return 0;
   if (typeof val === 'number') return safeRound(val);
   

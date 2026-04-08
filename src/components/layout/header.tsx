@@ -92,10 +92,17 @@ export function Header() {
   // Theme state
   const [isDark, setIsDark] = useState(true);
 
+  // Mounted state for hydration safety
+  const [mounted, setMounted] = useState(false);
+
   // Check theme on mount
   useEffect(() => {
-    const isDarkTheme = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkTheme);
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+      const isDarkTheme = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkTheme);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const toggleTheme = () => {
@@ -248,7 +255,7 @@ export function Header() {
                   </ul>
                 ) : (
                   <div className="px-4 py-8 text-center text-muted-foreground text-sm">
-                    No results found for "{searchQuery}"
+                    No results found for &quot;{searchQuery}&quot;
                   </div>
                 )}
               </div>

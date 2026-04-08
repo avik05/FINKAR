@@ -70,9 +70,10 @@ export default function ContactPage() {
 
       setIsSuccess(true);
       setFormData({ name: "", email: "", type: "", message: "" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Submission error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -101,10 +102,10 @@ export default function ContactPage() {
               Support Center
             </div>
             <h1 className="text-4xl md:text-5xl font-heading font-black tracking-tighter text-foreground">
-              Let's build the <span className="text-primary italic">future</span> of your finance.
+              Let&apos;s build the <span className="text-primary italic">future</span> of your finance.
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Have a suggestion, found a bug, or just want to tell us how much you love Finkar? We're listening. Our team reviews every message within 24 hours.
+              Have a suggestion, found a bug, or just want to tell us how much you love Finkar? We&apos;re listening. Our team reviews every message within 24 hours.
             </p>
           </div>
 
@@ -124,7 +125,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold text-foreground mb-1 group-hover:text-blue-500 transition-colors">Collaborations</h3>
-                <p className="text-sm text-muted-foreground">Interested in partnering? Reach out via "Suggestion" type.</p>
+                <p className="text-sm text-muted-foreground">Interested in partnering? Reach out via &quot;Suggestion&quot; type.</p>
               </div>
             </div>
           </div>

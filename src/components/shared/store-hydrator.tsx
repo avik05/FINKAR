@@ -60,7 +60,7 @@ export function StoreHydrator() {
         // Delay transactions briefly to allow accounts to be stored
         setTimeout(() => {
           const latestAccounts = useAccountsStore.getState().accounts;
-          const accountIds = latestAccounts.map((a: any) => a.id);
+          const accountIds = latestAccounts.map((a) => a.id);
           SAMPLE_TRANSACTIONS(accountIds).forEach(tx => transactionsStore.addTransaction(tx));
           initialized.current = true;
         }, 100);

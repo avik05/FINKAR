@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { StockHolding } from "@/types/finance";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 
 const SECTORS = [
   "Technology", "Financials", "Healthcare", "Consumer Discretionary", 
@@ -22,11 +23,17 @@ interface EditStockDialogProps {
   holding: StockHolding;
 }
 
-export function EditStockDialog({ holding }: EditStockDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const { isLoggedIn } = useAuthStore();
-  
+function EditStockForm({ 
+  holding, 
+  onSuccess,
+  isLoggedIn,
+  setAuthPromptOpen 
+}: { 
+  holding: StockHolding; 
+  onSuccess: () => void;
+  isLoggedIn: boolean;
+  setAuthPromptOpen: (open: boolean) => void;
+}) {
   const updateHolding = useStocksStore((s) => s.updateHolding);
   
   const [symbol, setSymbol] = useState(holding.symbol);
@@ -36,19 +43,6 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
   const [currentPrice, setCurrentPrice] = useState(holding.currentPrice.toString());
   const [sector, setSector] = useState(holding.sector || "Others");
   const [exchange, setExchange] = useState<"NSE" | "BSE" | "US">(holding.exchange || "NSE");
-
-  // Reset state when holding changes or dialog opens
-  useEffect(() => {
-    if (open) {
-      setSymbol(holding.symbol);
-      setName(holding.name);
-      setQuantity(holding.quantity.toString());
-      setBuyPrice(holding.avgBuyPrice.toString());
-      setCurrentPrice(holding.currentPrice.toString());
-      setSector(holding.sector || "Others");
-      setExchange(holding.exchange || "NSE");
-    }
-  }, [holding, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,83 +63,104 @@ export function EditStockDialog({ holding }: EditStockDialogProps) {
       exchange,
     });
 
-    setOpen(false);
+    onSuccess();
   };
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="stock-symbol-edit">Symbol</Label>
+          <Input id="stock-symbol-edit" placeholder="RELIANCE" value={symbol} onChange={(e) => setSymbol(e.target.value)} className="bg-foreground/5 border-border/50" required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="stock-name-edit">Company Name</Label>
+          <Input id="stock-name-edit" placeholder="Reliance Industries" value={name} onChange={(e) => setName(e.target.value)} className="bg-foreground/5 border-border/50" required />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Sector</Label>
+          <Select value={sector} onValueChange={(v) => setSector(v || "Others")}>
+            <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground h-10">
+              <SelectValue placeholder="Select Sector" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              {SECTORS.map(s => (
+                <SelectItem key={s} value={s} textValue={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Exchange</Label>
+          <Select value={exchange} onValueChange={(v) => v && setExchange(v)}>
+            <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground h-10">
+              <SelectValue placeholder="NSE" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              <SelectItem value="NSE" textValue="NSE">NSE</SelectItem>
+              <SelectItem value="BSE" textValue="BSE">BSE</SelectItem>
+              <SelectItem value="US" textValue="US Market">US Market</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1">
+        <div className="space-y-2">
+          <Label htmlFor="stock-qty-edit">Quantity</Label>
+          <Input id="stock-qty-edit" type="number" step="1" placeholder="10" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="bg-foreground/5 border-border/50" required />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="stock-buy-edit">Avg Buy Price (₹)</Label>
+          <Input id="stock-buy-edit" type="number" step="0.01" placeholder="2450.00" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} className="bg-foreground/5 border-border/50" required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="stock-current-edit">Current Price (₹)</Label>
+          <Input id="stock-current-edit" type="number" step="0.01" placeholder="2550.00" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="bg-foreground/5 border-border/50" />
+        </div>
+      </div>
+      <Button type="submit" className="w-full bg-primary text-primary-foreground md:hover:bg-primary/90 active:scale-[0.98] transition-all font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">
+        {isLoggedIn ? "Update Holding" : "Sign Up to Update"}
+      </Button>
+    </form>
+  );
+}
+
+export function EditStockDialog({ holding }: EditStockDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const { isLoggedIn } = useAuthStore();
+
+  return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={<button className="flex items-center justify-center p-1.5 rounded-lg hover:bg-primary/20 text-primary transition-all" title="Edit holding" />}>
-          <Pencil size={14} />
-        </DialogTrigger>
-        <DialogContent className="bg-card border-border/50 backdrop-blur-2xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-xl text-foreground">Edit Stock Holding</DialogTitle>
-            <DialogDescription className="text-muted-foreground">Modify your equity holding details.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="stock-symbol-edit">Symbol</Label>
-                <Input id="stock-symbol-edit" placeholder="RELIANCE" value={symbol} onChange={(e) => setSymbol(e.target.value)} className="bg-foreground/5 border-border/50" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock-name-edit">Company Name</Label>
-                <Input id="stock-name-edit" placeholder="Reliance Industries" value={name} onChange={(e) => setName(e.target.value)} className="bg-foreground/5 border-border/50" required />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Sector</Label>
-                <Select value={sector} onValueChange={(v) => setSector(v || "Others")}>
-                  <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground">
-                    <SelectValue placeholder="Select Sector" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    {SECTORS.map(s => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Exchange</Label>
-                <Select value={exchange} onValueChange={(v: any) => setExchange(v || "NSE")}>
-                  <SelectTrigger className="bg-foreground/5 border-border/50 text-foreground">
-                    <SelectValue placeholder="NSE" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="NSE">NSE</SelectItem>
-                    <SelectItem value="BSE">BSE</SelectItem>
-                    <SelectItem value="US">US Market</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1">
-              <div className="space-y-2">
-                <Label htmlFor="stock-qty-edit">Quantity</Label>
-                <Input id="stock-qty-edit" type="number" step="1" placeholder="10" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="bg-foreground/5 border-border/50" required />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="stock-buy-edit">Avg Buy Price (₹)</Label>
-                <Input id="stock-buy-edit" type="number" step="0.01" placeholder="2450.00" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} className="bg-foreground/5 border-border/50" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock-current-edit">Current Price (₹)</Label>
-                <Input id="stock-current-edit" type="number" step="0.01" placeholder="2550.00" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="bg-foreground/5 border-border/50" />
-              </div>
-            </div>
-            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">
-              {isLoggedIn ? "Update Holding" : "Sign Up to Update"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Edit Stock Holding"
+        description="Modify your equity holding details."
+        nativeButton={true}
+        trigger={
+          <button 
+            className="flex items-center justify-center p-2 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 md:hover:bg-primary/20 text-primary transition-all active:scale-95 active:bg-primary/10" 
+            title="Edit holding"
+          >
+            <Pencil size={15} />
+          </button>
+        }
+      >
+        <EditStockForm 
+          key={open ? `edit-${holding.id}-${holding.symbol}` : 'closed'}
+          holding={holding}
+          isLoggedIn={isLoggedIn}
+          setAuthPromptOpen={setAuthPromptOpen}
+          onSuccess={() => setOpen(false)}
+        />
+      </ResponsiveDialog>
       
       <AuthRequiredDialog open={authPromptOpen} setOpen={setAuthPromptOpen} />
     </>

@@ -4,7 +4,7 @@ import { MutualFund } from '@/types/finance';
 import { useAuthStore } from './auth-store';
 import { useAccountsStore } from './accounts-store';
 import { useTransactionsStore } from './transactions-store';
-import { safeRound, safeNextMonth, safeSum } from '@/lib/financial-math';
+import { safeRound, safeNextMonth } from '@/lib/financial-math';
 
 const SAMPLE_FUNDS: MutualFund[] = [
   { id: 'mf_1', fund: 'Parag Parikh Flexi Cap Fund', category: 'Equity', invested: 620000, current: 845000, sipAmount: 15000, xirr: 19.8 },
@@ -277,12 +277,7 @@ export const useMutualFundsStore = create<MutualFundsState>((set, get) => ({
     const { funds, updateFund } = get();
     const { accounts, updateAccount } = useAccountsStore.getState();
     const { addTransaction } = useTransactionsStore.getState();
-    const userId = useAuthStore.getState().user?.id;
-    
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    
     let updatedAny = false;
 
     for (const fund of funds) {

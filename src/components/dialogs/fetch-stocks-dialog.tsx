@@ -61,12 +61,12 @@ export function FetchStocksDialog() {
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        const rawRows = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+        const rawRows = XLSX.utils.sheet_to_json<Array<string | number>>(worksheet, { header: 1 });
         
         // Find Header Row
         let headerIdx = -1;
         for (let i = 0; i < Math.min(rawRows.length, 50); i++) {
-          if (rawRows[i].some((cell: any) => String(cell).toLowerCase().includes("stock name"))) {
+          if (rawRows[i].some((cell) => String(cell).toLowerCase().includes("stock name"))) {
             headerIdx = i;
             break;
           }
@@ -76,7 +76,7 @@ export function FetchStocksDialog() {
           throw new Error("Could not find stock list headers. Please ensure you are uploading a standard broker holding statement.");
         }
 
-        const headers = rawRows[headerIdx] as any[];
+        const headers = rawRows[headerIdx] as (string | number)[];
         const dataRows = rawRows.slice(headerIdx + 1);
 
         const findCol = (terms: string[]) => headers.findIndex(h => terms.some(t => String(h).toLowerCase().includes(t.toLowerCase())));
@@ -114,8 +114,8 @@ export function FetchStocksDialog() {
         }
 
         setPreviewData(mappedHoldings);
-      } catch (err: any) {
-        setError(err.message || "Failed to parse XLSX file.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to parse XLSX file.");
       } finally {
         setIsParsing(false);
       }
@@ -159,7 +159,7 @@ export function FetchStocksDialog() {
                     Auto Stocks Sync
                   </DialogTitle>
                   <DialogDescription className="text-muted-foreground text-sm font-medium mt-1">
-                    Instantly synchronize your equity portfolio using your broker's holding statement.
+                    Instantly synchronize your equity portfolio using your broker&apos;s holding statement.
                   </DialogDescription>
                 </div>
                 <div className="hidden md:flex items-center gap-6">

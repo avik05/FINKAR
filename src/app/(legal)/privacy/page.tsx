@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
       
       <section className="mb-12">
         <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-          At Finkar ("the Service"), we take the privacy of your financial data seriously. This Privacy Policy describes our practices regarding the collection, use, and disclosure of information.
+          At Finkar (&quot;the Service&quot;), we take the privacy of your financial data seriously. This Privacy Policy describes our practices regarding the collection, use, and disclosure of information.
         </p>
       </section>
 
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
           <li><strong>Cloud Synchronization:</strong> All your financial data is securely synced to your Finkar account in the cloud using **Supabase** (powered by AWS/PostgreSQL).</li>
           <li><strong>Encryption:</strong> Data is encrypted both in transit (TLS/SSL) and at rest to ensure maximum protection.</li>
-          <li><strong>Confidentiality:</strong> Your data is used only to provide the dashboard's features and is never accessible to anyone but you.</li>
+          <li><strong>Confidentiality:</strong> Your data is used only to provide the dashboard&apos;s features and is never accessible to anyone but you.</li>
         </ul>
       </section>
 

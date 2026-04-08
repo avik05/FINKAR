@@ -30,24 +30,27 @@ const CATEGORY_COLORS: Record<string, string> = {
 export default function ExpensesPage() {
   const transactions = useTransactionsStore((s) => s.transactions);
 
-  const now = new Date();
-  const thisMonthExpenses = transactions.filter((t) => {
-    if (t.amount >= 0) return false;
-    const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
+  const { totalExpense, categoryBreakdown, thisMonthExpenses } = useMemo(() => {
+    const now = new Date();
+    const filtered = transactions.filter((t) => {
+      if (t.amount >= 0) return false;
+      const d = new Date(t.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
 
-  const totalExpense = thisMonthExpenses.reduce((s, t) => s + Math.abs(t.amount), 0);
-
-  const categoryBreakdown = useMemo(() => {
+    const total = filtered.reduce((s, t) => s + Math.abs(t.amount), 0);
     const map = new Map<string, number>();
-    thisMonthExpenses.forEach((t) => {
+    
+    filtered.forEach((t) => {
       map.set(t.category, (map.get(t.category) || 0) + Math.abs(t.amount));
     });
-    return Array.from(map.entries())
+
+    const breakdown = Array.from(map.entries())
       .map(([name, amount]) => ({ name, amount, color: CATEGORY_COLORS[name] || "#78716c" }))
       .sort((a, b) => b.amount - a.amount);
-  }, [thisMonthExpenses]);
+
+    return { totalExpense: total, categoryBreakdown: breakdown, thisMonthExpenses: filtered };
+  }, [transactions]);
 
   return (
     <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">

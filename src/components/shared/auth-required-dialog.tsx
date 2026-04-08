@@ -22,7 +22,7 @@ export function AuthRequiredDialog({ open, setOpen }: { open: boolean; setOpen: 
             Elevate Your Finance Game
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed mb-8">
-            You're exploring Finkar as a Guest. Sign up now to sync your data across devices, unlock real-time analytics, and secure your financial future.
+            You&apos;re exploring Finkar as a Guest. Sign up now to sync your data across devices, unlock real-time analytics, and secure your financial future.
           </DialogDescription>
 
           <div className="w-full space-y-3">

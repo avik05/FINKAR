@@ -5,17 +5,26 @@ import { format, subDays, parseISO, isSameDay } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTransactionsStore } from "@/stores/transactions-store";
 import { formatINR, formatINRCompact } from "@/lib/format";
+import { Transaction } from "@/types/finance";
 import { EditTransactionDialog } from "@/components/dialogs/edit-transaction-dialog";
 
 const CELL = 12;  // px
 const GAP  = 3;   // px
 const DAY_LABEL_W = 28; // px
 
+interface DayData {
+  date: string;
+  count: number;
+  total: number;
+  intensity: number;
+  txs: Transaction[];
+}
+
 export function TransactionHeatmap() {
   const transactions = useTransactionsStore((s) => s.transactions);
   const [hoveredIntensity, setHoveredIntensity] = React.useState<number | null>(null);
-  const [selectedDay, setSelectedDay] = React.useState<any | null>(null);
-  const [hoveredDay, setHoveredDay] = React.useState<any | null>(null);
+  const [selectedDay, setSelectedDay] = React.useState<DayData | null>(null);
+  const [hoveredDay, setHoveredDay] = React.useState<DayData | null>(null);
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
 
   // Build a 52-week x 7-day grid (364 days, oldest first)
@@ -30,7 +39,7 @@ export function TransactionHeatmap() {
     });
 
     // Build 364-day array (oldest → newest), padded so the first cell is always Monday
-    const days: { date: string; count: number; total: number; intensity: number; txs: any[] }[] = [];
+    const days: DayData[] = [];
     for (let i = 363; i >= 0; i--) {
       const d = subDays(today, i);
       const dateKey = format(d, "yyyy-MM-dd");
@@ -78,29 +87,43 @@ export function TransactionHeatmap() {
   }, [transactions]);
 
   const totalW = weeks.length * (CELL + GAP) - GAP;
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll to end on mount
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+    }
+  }, [weeks]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({ 
-      x: e.clientX - rect.left, 
-      y: e.clientY - rect.top 
-    });
+    // Only track mouse if not on a touch device
+    if (window.matchMedia("(hover: hover)").matches) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setMousePos({ 
+        x: e.clientX - rect.left, 
+        y: e.clientY - rect.top 
+      });
+    }
   };
 
   return (
     <div className="w-full relative group" onMouseMove={handleMouseMove}>
-      <div className="w-full overflow-x-auto no-scrollbar pb-2">
-        <div style={{ minWidth: DAY_LABEL_W + totalW + 8 }} className="relative px-2">
+      <div 
+        ref={scrollContainerRef}
+        className="w-full overflow-x-auto no-scrollbar pb-2 snap-x snap-proximity scroll-smooth"
+      >
+        <div style={{ minWidth: DAY_LABEL_W + totalW + 16 }} className="relative px-2">
 
           {/* ── Month labels row ── */}
           <div
-            className="relative mb-1"
+            className="relative mb-2"
             style={{ height: 16, marginLeft: DAY_LABEL_W + 4 }}
           >
             {monthLabels.map(({ colIndex, label }) => (
               <span
                 key={label}
-                className="absolute text-[10px] font-black text-muted-foreground/60 leading-none pointer-events-none -translate-x-1/2 uppercase tracking-tighter"
+                className="absolute text-[9px] font-black text-muted-foreground/50 leading-none pointer-events-none -translate-x-1/2 uppercase tracking-[0.1em]"
                 style={{ left: colIndex * (CELL + GAP) + (CELL / 2) }}
               >
                 {label}
@@ -112,14 +135,14 @@ export function TransactionHeatmap() {
           <div className="flex" style={{ gap: 0 }}>
             {/* Day-of-week labels — 7 rows */}
             <div
-              className="flex flex-col text-[10px] text-muted-foreground/60 shrink-0 font-bold"
-              style={{ width: DAY_LABEL_W, gap: GAP, paddingRight: 4 }}
+              className="flex flex-col text-[9px] text-muted-foreground/40 shrink-0 font-bold"
+              style={{ width: DAY_LABEL_W, gap: GAP, paddingRight: 6 }}
             >
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
+              {[null, "Tue", null, "Thu", null, "Sat", null].map((d, i) => (
                 <span
-                  key={d}
+                  key={i}
                   style={{ height: CELL, lineHeight: `${CELL}px` }}
-                  className={i % 2 === 0 ? "opacity-100" : "opacity-0 select-none"}
+                  className="select-none h-4 uppercase tracking-tighter"
                 >
                   {d}
                 </span>
@@ -131,10 +154,10 @@ export function TransactionHeatmap() {
               {weeks.map((week, wIdx) => (
                 <motion.div 
                   key={wIdx} 
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: wIdx * 0.02 }}
-                  className="flex flex-col" 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: wIdx * 0.01 }}
+                  className="flex flex-col snap-always snap-center" 
                   style={{ gap: GAP }}
                 >
                   {week.map((day) => {
@@ -148,23 +171,23 @@ export function TransactionHeatmap() {
                         onMouseLeave={() => setHoveredDay(null)}
                         onClick={() => setSelectedDay(selectedDay?.date === day.date ? null : day)}
                         animate={{ 
-                          scale: isSelected ? 1.4 : isHighlighted ? 1.2 : 1,
+                          scale: isSelected ? 1.3 : isHighlighted ? 1.15 : 1,
                           zIndex: isSelected ? 10 : isHighlighted ? 5 : 0
                         }}
                         style={{ 
                           width: CELL, 
                           height: CELL,
-                          borderRadius: '2px',
+                          borderRadius: '2.5px',
                         }}
                         className={[
-                          "transition-colors duration-200 cursor-pointer",
-                          day.intensity === 0 && "bg-secondary/30",
+                          "transition-all duration-200 cursor-pointer tap-highlight-none",
+                          day.intensity === 0 && "bg-foreground/5",
                           day.intensity === 1 && "bg-primary/20",
                           day.intensity === 2 && "bg-primary/40",
                           day.intensity === 3 && "bg-primary/70",
-                          day.intensity === 4 && "bg-primary shadow-[0_0_10px_rgba(0,255,156,0.5)]",
-                          isHighlighted && "ring-1 ring-primary brightness-125 z-10",
-                          isSelected && "ring-2 ring-primary brightness-150 z-20"
+                          day.intensity === 4 && "bg-primary shadow-[0_0_12px_rgba(0,255,156,0.4)]",
+                          isHighlighted && "ring-1 ring-primary/50 brightness-110",
+                          isSelected && "ring-2 ring-primary brightness-125 z-20"
                         ]
                           .filter(Boolean)
                           .join(" ")}
@@ -177,55 +200,67 @@ export function TransactionHeatmap() {
           </div>
 
           {/* ── Legend ── */}
-          <div className="mt-4 flex items-center justify-end gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            <span>Less</span>
-            <div className="flex gap-1">
-              {[0, 1, 2, 3, 4].map((level) => (
-                <div 
-                  key={level} 
-                  style={{ width: CELL, height: CELL }} 
-                  onMouseEnter={() => setHoveredIntensity(level)}
-                  onMouseLeave={() => setHoveredIntensity(null)}
-                  className={`rounded-sm transition-all cursor-pointer hover:scale-125 ${
-                    level === 0 ? "bg-secondary/30" : 
-                    level === 1 ? "bg-primary/20" : 
-                    level === 2 ? "bg-primary/40" : 
-                    level === 3 ? "bg-primary/70" : 
-                    "bg-primary shadow-[0_0_8px_rgba(0,255,156,0.4)]"
-                  }`} 
-                />
-              ))}
+          <div className="mt-6 flex items-center justify-between px-1">
+            <div className="flex flex-col">
+               <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">Intensity</span>
+               <div className="flex gap-1.5 items-center">
+                  {[0, 1, 2, 3, 4].map((level) => (
+                    <div 
+                      key={level} 
+                      style={{ width: CELL+2, height: CELL+2 }} 
+                      onMouseEnter={() => setHoveredIntensity(level)}
+                      onMouseLeave={() => setHoveredIntensity(null)}
+                      className={`rounded-[3px] transition-all cursor-pointer md:hover:scale-125 active:scale-90 ${
+                        level === 0 ? "bg-foreground/10" : 
+                        level === 1 ? "bg-primary/20" : 
+                        level === 2 ? "bg-primary/40" : 
+                        level === 3 ? "bg-primary/70" : 
+                        "bg-primary shadow-[0_0_8px_rgba(0,255,156,0.4)]"
+                      }`} 
+                    />
+                  ))}
+               </div>
             </div>
-            <span>More</span>
+            
+            <div className="text-right">
+              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] block mb-1">Consistency</span>
+              <span className="text-xs font-black text-primary">{(transactions.length / 364 * 100).toFixed(1)}% Active</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Floating Tooltip ── */}
+      {/* ── Floating Tooltip (Desktop Only) ── */}
       <AnimatePresence>
         {hoveredDay && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
             style={{ 
-              position: 'absolute',
-              top: mousePos.y - 80,
-              left: mousePos.x + 10,
+              position: 'fixed',
+              top: mousePos.y + 120, // Offset to avoid cursor
+              left: mousePos.x + 300, 
               zIndex: 100,
               pointerEvents: 'none'
             }}
-            className="p-3 bg-background/90 backdrop-blur-xl border border-primary/20 rounded-xl shadow-2xl min-w-[140px]"
+            className="hidden md:block p-3 bg-card/90 backdrop-blur-2xl border border-primary/20 rounded-2xl shadow-2xl min-w-[160px] isolation-auto"
           >
-            <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mb-1">
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] leading-none mb-1.5">
               {format(parseISO(hoveredDay.date), "EEEE")}
             </p>
-            <h4 className="text-xs font-bold text-foreground mb-2">
+            <h4 className="text-sm font-black text-foreground mb-3 tracking-tight">
               {format(parseISO(hoveredDay.date), "dd MMM yyyy")}
             </h4>
-            <div className="flex justify-between items-center bg-foreground/5 rounded-lg p-1.5 border border-border/50">
-              <span className="text-[10px] font-medium text-muted-foreground">{hoveredDay.count} Txs</span>
-              <span className="text-[10px] font-black text-foreground">{formatINRCompact(hoveredDay.total)}</span>
+            <div className="flex justify-between items-center bg-foreground/5 rounded-xl p-2.5 border border-border/10">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase">Activity</span>
+                <span className="text-xs font-black text-foreground">{hoveredDay.count} Txs</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase">Volume</span>
+                <span className="text-xs font-black text-foreground">{formatINRCompact(hoveredDay.total)}</span>
+              </div>
             </div>
           </motion.div>
         )}
@@ -251,7 +286,7 @@ export function TransactionHeatmap() {
                 {selectedDay.txs.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic">No transactions recorded for this day.</p>
                 ) : (
-                  selectedDay.txs.slice(0, 5).map((tx: any) => (
+                  selectedDay.txs.slice(0, 5).map((tx) => (
                     <div key={tx.id} className="flex justify-between items-center p-2.5 rounded-xl bg-background/50 border border-border/30">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-foreground">{tx.merchant}</span>

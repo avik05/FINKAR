@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Target, Trash2 } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ReferenceLine } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
@@ -15,8 +15,8 @@ import { FetchFundsDialog } from "@/components/dialogs/fetch-funds-dialog";
 import { MutualFund } from "@/types/finance";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 500, damping: 30 } },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -27,7 +27,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   ELSS: "#F472B6",
 };
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-background/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 shadow-2xl min-w-[180px] animate-in fade-in zoom-in duration-200">
@@ -161,17 +161,15 @@ export default function MutualFundsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        {...({
-                          data: categoryData,
-                          cx: "50%",
-                          cy: "50%",
-                          innerRadius: 70,
-                          outerRadius: 110,
-                          paddingAngle: 3,
-                          dataKey: "value",
-                          nameKey: "name",
-                          stroke: "none"
-                        } as any)}
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={110}
+                        paddingAngle={3}
+                        dataKey="value"
+                        nameKey="name"
+                        stroke="none"
                       >
                         {categoryData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -208,12 +206,11 @@ export default function MutualFundsPage() {
                       />
                       <ReferenceLine y={0} stroke="currentColor" opacity={0.2} strokeDasharray="3 3" />
                       <Bar dataKey="Invested" fill="url(#investedGrad)" radius={[6, 6, 0, 0]} animationDuration={1000} />
-                      <Bar dataKey="Current" animationDuration={1200}>
+                      <Bar dataKey="Current" animationDuration={1200} radius={[6, 6, 0, 0]}>
                         {comparisonData.map((entry, index) => (
                           <Cell 
                             key={`cell-${index}`} 
                             fill={entry.Current >= entry.Invested ? "url(#profitGrad)" : "url(#lossGrad)"} 
-                            radius={[6, 6, 0, 0] as any} 
                             className="transition-all duration-300 hover:brightness-125 hover:filter hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]"
                           />
                         ))}
@@ -249,11 +246,11 @@ export default function MutualFundsPage() {
                 {funds.map((mf) => {
                   const gain = mf.current - mf.invested;
                   return (
-                    <div key={mf.id} className="p-5 rounded-2xl border border-border/50 bg-foreground/5 hover:bg-foreground/10 transition-all group relative overflow-hidden h-full flex flex-col">
+                    <div key={mf.id} className="p-5 rounded-2xl border border-border/50 bg-foreground/5 md:hover:bg-foreground/10 active:bg-foreground/10 transition-all group relative overflow-hidden h-full flex flex-col">
                       <div className="flex justify-between items-start mb-4 gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-lg font-black text-foreground truncate group-hover:text-primary transition-colors">{mf.fund}</h3>
+                            <h3 className="text-lg font-black text-foreground truncate md:group-hover:text-primary transition-colors">{mf.fund}</h3>
                             <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-foreground/5 text-muted-foreground shrink-0 border border-border/50">
                               {mf.category}
                             </span>
@@ -284,10 +281,14 @@ export default function MutualFundsPage() {
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all translate-x-2 md:translate-x-0 md:group-hover:translate-x-0">
                             <EditFundDialog fund={mf} />
-                            <button onClick={() => handleDelete(mf.id)} className="flex items-center justify-center p-1.5 rounded-lg hover:bg-destructive/20 text-destructive transition-all" title="Delete fund">
-                              <Trash2 size={14} />
+                            <button 
+                              onClick={() => handleDelete(mf.id)} 
+                              className="flex items-center justify-center p-2 rounded-lg hover:bg-destructive/20 text-destructive/60 hover:text-destructive transition-all active:scale-95" 
+                              title="Delete fund"
+                            >
+                              <Trash2 size={16} />
                             </button>
                           </div>
                           <span className={`text-[10px] font-black px-2 py-1 rounded-full whitespace-nowrap ${mf.xirr > 0 ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>

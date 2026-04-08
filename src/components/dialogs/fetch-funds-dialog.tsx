@@ -60,13 +60,13 @@ export function FetchFundsDialog() {
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        const rawRows = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+        const rawRows = XLSX.utils.sheet_to_json<Array<string | number>>(worksheet, { header: 1 });
         
         // Groww XLSX usually has headers starting around row 21 (0-indexed 20)
         // Let's find "Scheme Name" specifically
         let headerIdx = -1;
         for (let i = 0; i < Math.min(rawRows.length, 50); i++) {
-          if (rawRows[i].some((cell: any) => String(cell).toLowerCase().includes("scheme name"))) {
+          if (rawRows[i].some((cell) => String(cell).toLowerCase().includes("scheme name"))) {
             headerIdx = i;
             break;
           }
@@ -76,7 +76,7 @@ export function FetchFundsDialog() {
           throw new Error("Could not find fund list headers. Please ensure you are uploading a standard broker holding statement.");
         }
 
-        const headers = rawRows[headerIdx] as any[];
+        const headers = rawRows[headerIdx] as (string | number)[];
         const dataRows = rawRows.slice(headerIdx + 1);
 
         const findCol = (terms: string[]) => headers.findIndex(h => terms.some(t => String(h).toLowerCase().includes(t.toLowerCase())));
@@ -106,7 +106,7 @@ export function FetchFundsDialog() {
             return {
               fund: rawName,
               amc: colMap.amc > -1 ? String(row[colMap.amc]) : "Mutual Fund",
-              category: (colMap.category > -1 ? String(row[colMap.category]) : "Equity") as any,
+              category: (colMap.category > -1 ? String(row[colMap.category]) : "Equity") as MutualFund["category"],
               subCategory: colMap.subCategory > -1 ? String(row[colMap.subCategory]) : "Growth",
               units: cleanCurrency(row[colMap.units]),
               invested: investedVal,
@@ -122,8 +122,8 @@ export function FetchFundsDialog() {
         }
 
         setPreviewData(mappedFunds);
-      } catch (err: any) {
-        setError(err.message || "Failed to parse fund statement.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to parse fund statement.");
       } finally {
         setIsParsing(false);
       }
@@ -167,7 +167,7 @@ export function FetchFundsDialog() {
                     Mutual Funds Auto-Sync
                   </DialogTitle>
                   <DialogDescription className="text-muted-foreground text-sm font-medium mt-1">
-                    Instantly synchronize your portfolio using your broker's holdings statement.
+                    Instantly synchronize your portfolio using your broker&apos;s holdings statement.
                   </DialogDescription>
                 </div>
                 <div className="hidden md:flex items-center gap-6">

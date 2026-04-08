@@ -9,7 +9,8 @@ import {
   TrendingUp, 
   Terminal, 
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { Accordion } from "@/components/ui/accordion";
@@ -141,6 +142,26 @@ export default function FAQPage() {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -z-10 animate-float" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] -z-10 animate-float delay-1000" />
 
+      {/* Back to Dashboard Button */}
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="mb-8"
+      >
+        <Link 
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-black text-xs uppercase tracking-widest transition-colors group tap-highlight-none"
+        >
+          <motion.div
+            whileHover={{ x: -3 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <ChevronLeft size={16} />
+          </motion.div>
+          Back to Dashboard
+        </Link>
+      </motion.div>
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -150,7 +171,7 @@ export default function FAQPage() {
           Everything you need to <span className="text-primary italic">know</span>.
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Commonly asked questions about Finkar's features, security, and the future of automated finance.
+          Commonly asked questions about Finkar&apos;s features, security, and the future of automated finance.
         </p>
       </motion.div>
 

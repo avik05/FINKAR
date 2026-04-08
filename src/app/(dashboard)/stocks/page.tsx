@@ -3,8 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Trash2 } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
-import { StockHolding } from "@/types/finance";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, ReferenceLine, Tooltip, CartesianGrid } from "recharts";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { useStocksStore } from "@/stores/stocks-store";
@@ -14,18 +13,16 @@ import { AddStockDialog } from "@/components/dialogs/add-stock-dialog";
 import { EditStockDialog } from "@/components/dialogs/edit-stock-dialog";
 import { SellStockDialog } from "@/components/dialogs/sell-stock-dialog";
 import { FetchStocksDialog } from "@/components/dialogs/fetch-stocks-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 500, damping: 30 } },
 };
 
 const CHART_COLORS = ["#00FF9C", "#3ABEFF", "#FF6B6B", "#FFBE0B", "#A78BFA", "#F472B6", "#34D399", "#FB923C"];
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null;
   const value = payload[0].value;
   return (
@@ -49,7 +46,6 @@ export default function StocksPage() {
   const deleteHolding = useStocksStore((s) => s.deleteHolding);
   const { isLoggedIn } = useAuthStore();
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const [targetAccountId, setTargetAccountId] = useState("");
 
   const totalInvested = holdings.reduce((s, h) => s + h.avgBuyPrice * h.quantity, 0);
   const totalCurrent = holdings.reduce((s, h) => s + h.currentPrice * h.quantity, 0);
@@ -103,13 +99,11 @@ export default function StocksPage() {
               </div>
             </FinanceCard>
           )}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-initial">
-              <FetchStocksDialog />
-            </div>
-            <div className="flex-1 sm:flex-initial">
-              <AddStockDialog />
-            </div>
+          
+          {/* Action Grid - Snappy Mobile Layout */}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+            <FetchStocksDialog />
+            <AddStockDialog />
           </div>
         </div>
       </div>
@@ -119,11 +113,7 @@ export default function StocksPage() {
           <FinanceCard className="p-12 text-center">
             <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-heading font-semibold mb-2 text-foreground">No Stock Holdings</h3>
-            <p className="text-sm text-muted-foreground mb-6">Import your holdings or add them manually to start tracking.</p>
-            <div className="flex items-center justify-center gap-3">
-              <FetchStocksDialog />
-              <AddStockDialog />
-            </div>
+            <p className="text-sm text-muted-foreground mb-6">Import your holdings or add them manually above to start tracking.</p>
           </FinanceCard>
         </motion.div>
       ) : (
@@ -159,17 +149,15 @@ export default function StocksPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        {...({
-                          data: allocationData,
-                          cx: "50%",
-                          cy: "50%",
-                          innerRadius: 70,
-                          outerRadius: 110,
-                          paddingAngle: 3,
-                          dataKey: "value",
-                          nameKey: "name",
-                          stroke: "none"
-                        } as any)}
+                        data={allocationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={110}
+                        paddingAngle={3}
+                        dataKey="value"
+                        nameKey="name"
+                        stroke="none"
                       >
                         {allocationData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -210,8 +198,7 @@ export default function StocksPage() {
                           <Cell 
                             key={`cell-${index}`} 
                             fill={entry.pl >= 0 ? "url(#profitGrad)" : "url(#lossGrad)"} 
-                            radius={entry.pl >= 0 ? [6, 6, 0, 0] as any : [0, 0, 6, 6] as any} 
-                            className="transition-all duration-300 hover:brightness-125 hover:filter hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]"
+                            className="transition-all duration-300 md:hover:brightness-125 md:hover:filter md:hover:drop-shadow-[0_0_8px_rgba(0,255,156,0.5)]"
                           />
                         ))}
                       </Bar>
@@ -257,7 +244,7 @@ export default function StocksPage() {
                       const pl = (h.currentPrice - h.avgBuyPrice) * h.quantity;
                       const plPct = h.avgBuyPrice > 0 ? ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
                       return (
-                        <tr key={h.id} className="hover:bg-foreground/5 transition-colors group">
+                        <tr key={h.id} className="md:hover:bg-foreground/5 transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className="font-bold text-sm text-foreground flex items-center gap-2">
@@ -287,7 +274,7 @@ export default function StocksPage() {
                               <EditStockDialog holding={h} />
                               <button 
                                 onClick={() => handleDelete(h.id)} 
-                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" 
+                                className="p-2 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-destructive/20 text-destructive/60 hover:text-destructive transition-all active:scale-95" 
                                 title="Delete"
                               >
                                 <Trash2 size={14} />
@@ -311,11 +298,11 @@ export default function StocksPage() {
                       const pl = (h.currentPrice - h.avgBuyPrice) * h.quantity;
                       const plPct = h.avgBuyPrice > 0 ? ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
                       return (
-                        <div key={h.id} className="p-5 hover:bg-primary/5 active:bg-primary/10 transition-all group">
+                        <div key={h.id} className="p-5 active:bg-primary/5 transition-all group">
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-black text-foreground truncate group-hover:text-primary transition-colors">
+                                <h4 className="font-black text-foreground truncate transition-colors">
                                   {h.symbol}
                                 </h4>
                                 <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
@@ -355,7 +342,7 @@ export default function StocksPage() {
                             <EditStockDialog holding={h} />
                             <button 
                               onClick={() => handleDelete(h.id)} 
-                              className="p-1.5 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                              className="p-2 rounded-lg text-destructive/60 active:bg-destructive/10 transition-all active:scale-95"
                             >
                               <Trash2 size={16} />
                             </button>

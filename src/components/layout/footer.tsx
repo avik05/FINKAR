@@ -2,24 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Instagram, Twitter, Linkedin, Heart, Eye } from "lucide-react";
+import { Instagram, Linkedin, Heart, Eye } from "lucide-react";
 
 export function Footer() {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    // Simulate a realistic visitor counter using localStorage
-    const key = "finkar_visitor_count";
-    let count = parseInt(localStorage.getItem(key) || "1283");
-    
-    // Increment the count once per session
-    if (!sessionStorage.getItem("finkar_visited")) {
-      count += Math.floor(Math.random() * 3) + 1; // Add 1-3 new visitors
-      localStorage.setItem(key, count.toString());
-      sessionStorage.setItem("finkar_visited", "true");
-    }
-    
-    setVisitorCount(count);
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+      // Simulate a realistic visitor counter using localStorage
+      const key = "finkar_visitor_count";
+      let count = parseInt(localStorage.getItem(key) || "1283");
+      
+      // Increment the count once per session
+      if (!sessionStorage.getItem("finkar_visited")) {
+        count += Math.floor(Math.random() * 3) + 1; // Add 1-3 new visitors
+        localStorage.setItem(key, count.toString());
+        sessionStorage.setItem("finkar_visited", "true");
+      }
+      
+      setVisitorCount(count);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (

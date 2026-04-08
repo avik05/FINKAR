@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Landmark, Activity, Plus } from "lucide-react";
+import { TrendingUp, Landmark, Activity, Plus } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR, formatINRCompact } from "@/lib/format";
 import { safeSum, safeRound } from "@/lib/financial-math";
@@ -16,12 +16,12 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useLayoutStore } from "@/stores/layout-store";
 import { FinancialPulse } from "@/components/dashboard/financial-pulse";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Sector
+  PieChart, Pie, Cell, Sector, ResponsiveContainer
 } from "recharts";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 350, damping: 25, mass: 0.5 } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 500, damping: 30, mass: 0.5 } },
 };
 
 export default function DashboardPage() {
@@ -78,8 +78,12 @@ export default function DashboardPage() {
   }, [transactions, dateRange, now]);
 
   const { monthlyExpense, monthlyIncome } = useMemo(() => {
-    const expense = filteredTransactions.filter((t: any) => t.amount < 0).reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
-    const income = filteredTransactions.filter((t: any) => t.amount > 0).reduce((s: number, t: any) => s + t.amount, 0);
+    const expense = filteredTransactions
+      .filter((t) => t.amount < 0)
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+    const income = filteredTransactions
+      .filter((t) => t.amount > 0)
+      .reduce((s, t) => s + t.amount, 0);
     return { monthlyExpense: expense, monthlyIncome: income };
   }, [filteredTransactions]);
 
@@ -90,8 +94,16 @@ export default function DashboardPage() {
     { name: "Mutual Funds", value: mfValue, color: "#A855F7", gradient: "url(#mfGrad)" },
   ].filter((a) => a.value > 0), [cashBalance, stockValue, mfValue]);
 
-  const renderActiveShape = (props: any) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+  const renderActiveShape = (props: {
+    cx?: number;
+    cy?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    startAngle?: number;
+    endAngle?: number;
+    fill?: string;
+  }) => {
+    const { cx = 0, cy = 0, innerRadius = 0, outerRadius = 0, startAngle = 0, endAngle = 0, fill = "var(--primary)" } = props;
     return (
       <g>
         <Sector
@@ -123,7 +135,7 @@ export default function DashboardPage() {
     <motion.div 
       initial="hidden" 
       animate="show" 
-      variants={{ show: { transition: { staggerChildren: 0.03 } } }} 
+      variants={{ show: { transition: { staggerChildren: 0.02 } } }} 
       className="space-y-8 pb-10 gpu-accelerated no-select"
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2">
@@ -240,7 +252,7 @@ export default function DashboardPage() {
                         <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
-                    <Pie 
+                    <Pie
                       {...({
                         activeIndex: activeIndex !== null ? activeIndex : undefined,
                         activeShape: renderActiveShape,
@@ -252,10 +264,10 @@ export default function DashboardPage() {
                         paddingAngle: 5,
                         dataKey: "value",
                         stroke: "none",
-                        onMouseEnter: (_: any, index: number) => setActiveIndex(index),
+                        onMouseEnter: (_: unknown, index: number) => setActiveIndex(index),
                         onMouseLeave: () => setActiveIndex(null),
                         animationDuration: 1500
-                      } as any)}
+                      } as Record<string, unknown>)}
                     >
                       {allocation.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.gradient} />

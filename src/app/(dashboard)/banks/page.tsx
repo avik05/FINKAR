@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CreditCard, Landmark, Wallet, Search, Filter, ArrowUpRight, ArrowDownRight, Tag, Trash2, Receipt, Briefcase } from "lucide-react";
+import { CreditCard, Landmark, Wallet, Search, ArrowUpRight, ArrowDownRight, Tag, Trash2, Receipt, Briefcase } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,8 @@ import { EditTransactionDialog } from "@/components/dialogs/edit-transaction-dia
 import { cn } from "@/lib/utils";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 500, damping: 30 } },
 };
 
 const iconMap: Record<string, React.ElementType> = { Savings: Landmark, Checking: Landmark, Salary: Briefcase, Credit: CreditCard, Wallet: Wallet };
@@ -119,10 +119,10 @@ export default function BanksPage() {
                     <EditAccountDialog account={account} />
                     <button 
                       onClick={() => handleDeleteAccount(account.id)} 
-                      className="p-1 rounded-lg opacity-0 lg:group-hover:opacity-100 hover:bg-destructive/20 text-destructive/60 hover:text-destructive transition-all border border-transparent hover:border-destructive/20" 
+                      className="p-2 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 md:hover:bg-destructive/20 text-destructive/60 md:hover:text-destructive transition-all border border-transparent md:hover:border-destructive/20 active:scale-95 active:bg-destructive/10" 
                       title="Delete account"
                     >
-                      <Trash2 size={12} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
 
@@ -161,30 +161,33 @@ export default function BanksPage() {
                 </h2>
                 
                 {/* Tabs filter */}
-                <div className="flex items-center p-1 bg-foreground/5 rounded-xl border border-border/50 w-fit">
-                  {[
-                    { id: 'all', label: 'All', count: transactions.length },
-                    { id: 'income', label: 'Incomes', count: incomeCount },
-                    { id: 'expense', label: 'Expenses', count: expenseCount }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`relative px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 rounded-lg flex items-center gap-2 ${activeTab === tab.id ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                      {activeTab === tab.id && (
-                        <motion.div
-                          layoutId="activeTabLabel"
-                          className="absolute inset-0 bg-primary rounded-lg shadow-[0_0_15px_rgba(0,255,156,0.3)]"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                      <span className="relative z-10">{tab.label}</span>
-                      <span className={`relative z-10 text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-black/20 text-white' : 'bg-foreground/10 text-muted-foreground'}`}>
-                        {tab.count}
-                      </span>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 md:flex items-center p-1 bg-foreground/5 rounded-xl border border-border/50 w-full md:w-fit h-11">
+                  {(['all', 'income', 'expense'] as const).map((id) => {
+                    const labels = { all: 'All', income: 'Incomes', expense: 'Expenses' };
+                    const counts = { all: transactions.length, income: incomeCount, expense: expenseCount };
+                    const label = labels[id];
+                    const count = counts[id];
+                    
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => setActiveTab(id)}
+                        className={`relative px-2 md:px-4 h-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-lg flex items-center justify-center gap-1 md:gap-2 tap-highlight-none active:scale-95 ${activeTab === id ? 'text-primary-foreground' : 'text-muted-foreground md:hover:text-foreground'}`}
+                      >
+                        {activeTab === id && (
+                          <motion.div
+                            layoutId="activeTabLabel"
+                            className="absolute inset-0 bg-primary rounded-lg shadow-[0_0_15px_rgba(0,255,156,0.3)]"
+                            transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                          />
+                        )}
+                        <span className="relative z-10">{label}</span>
+                        <span className={`relative z-10 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-full font-bold tabular-nums flex items-center justify-center min-w-[18px] md:min-w-[20px] h-3.5 md:h-4 ${activeTab === id ? 'bg-black/20 text-white' : 'bg-foreground/10 text-muted-foreground'}`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -193,7 +196,7 @@ export default function BanksPage() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     type="search" 
-                    placeholder="Search by merchant or category..." 
+                    placeholder="Search transactions..." 
                     className="pl-11 bg-foreground/5 border-border/50 text-sm h-12 rounded-xl focus:border-primary/50 transition-all font-medium" 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
@@ -276,7 +279,11 @@ export default function BanksPage() {
                           <td className="px-8 py-5">
                             <div className="flex justify-end gap-2">
                               <EditTransactionDialog transaction={tx} />
-                              <button onClick={() => handleDeleteTransaction(tx.id)} className="p-2 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-destructive/60 hover:text-destructive border border-transparent hover:border-destructive/20 transition-all" title="Delete">
+                              <button 
+                                onClick={() => handleDeleteTransaction(tx.id)} 
+                                className="p-2 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 md:hover:bg-destructive/10 text-destructive/60 md:hover:text-destructive border border-transparent md:hover:border-destructive/20 transition-all active:scale-95" 
+                                title="Delete"
+                              >
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -296,50 +303,60 @@ export default function BanksPage() {
                       No matching transactions found.
                     </div>
                   ) : (
-                    filteredTx.map((tx) => (
-                      <motion.div
-                        key={tx.id}
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="p-5 hover:bg-primary/5 active:bg-primary/10 transition-all group"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] uppercase font-black text-muted-foreground/60 tracking-wider">
-                                {formatDate(tx.date)}
-                              </span>
-                            </div>
-                            <h4 className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                              {tx.merchant}
-                            </h4>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
-                              {tx.accountName}
-                            </p>
-                          </div>
-                          <div className="text-right flex flex-col items-end gap-1">
-                            <div className={cn(
-                              "text-base font-black tabular-nums",
-                              tx.amount > 0 ? "text-primary drop-shadow-[0_0_8px_rgba(0,255,156,0.2)]" : "text-foreground"
-                            )}>
-                              {tx.amount > 0 ? "+" : "-"}{formatINR(Math.abs(tx.amount))}
-                            </div>
-                            <span className="inline-flex items-center gap-1 overflow-hidden px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] bg-foreground/5 dark:bg-white/5 border border-border/40 text-muted-foreground">
-                              {tx.category}
-                            </span>
-                          </div>
+                    Object.entries(
+                      filteredTx.reduce((acc, tx) => {
+                        const date = formatDate(tx.date);
+                        if (!acc[date]) acc[date] = [];
+                        acc[date].push(tx);
+                        return acc;
+                      }, {} as Record<string, typeof filteredTx>)
+                    ).map(([date, groupTx]) => (
+                      <div key={date}>
+                        {/* Sticky Date Header */}
+                        <div className="sticky top-0 z-10 py-2 px-5 bg-card/60 backdrop-blur-xl border-b border-border/5">
+                          <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em]">{date}</span>
                         </div>
-                        <div className="flex justify-end gap-3 mt-2 border-t border-border/5 pt-3">
-                          <EditTransactionDialog transaction={tx} />
-                          <button 
-                            onClick={() => handleDeleteTransaction(tx.id)} 
-                            className="p-1.5 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                        {groupTx.map((tx) => (
+                          <motion.div
+                            key={tx.id}
+                            layout
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="p-5 active:bg-primary/5 transition-all group"
                           >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </motion.div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-foreground truncate transition-colors">
+                                  {tx.merchant}
+                                </h4>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
+                                  {tx.accountName}
+                                </p>
+                              </div>
+                              <div className="text-right flex flex-col items-end gap-1">
+                                <div className={cn(
+                                  "text-base font-black tabular-nums",
+                                  tx.amount > 0 ? "text-primary drop-shadow-[0_0_8px_rgba(0,255,156,0.2)]" : "text-foreground"
+                                )}>
+                                  {tx.amount > 0 ? "+" : "-"}{formatINR(Math.abs(tx.amount))}
+                                </div>
+                                <span className="inline-flex items-center gap-1 overflow-hidden px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] bg-foreground/5 dark:bg-white/5 border border-border/40 text-muted-foreground">
+                                  {tx.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-2 border-t border-border/5 pt-3">
+                              <EditTransactionDialog transaction={tx} />
+                              <button 
+                                onClick={() => handleDeleteTransaction(tx.id)} 
+                                className="p-2 rounded-lg text-destructive/60 active:bg-destructive/10 transition-all active:scale-95"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
                     ))
                   )}
                 </AnimatePresence>

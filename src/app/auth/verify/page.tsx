@@ -157,14 +157,14 @@ export default function VerifyPage() {
             <div className="space-y-3 max-w-sm">
               <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight">Verify Your Email</h1>
               <p className="text-muted-foreground leading-relaxed">
-                We've sent a secure verification link to <br/>
+                We&apos;ve sent a secure verification link to <br/>
                 <span className="text-primary font-bold">{user?.email}</span>
               </p>
             </div>
 
             <div className="w-full space-y-4 pt-4">
               <div className="p-4 rounded-2xl bg-foreground/5 border border-border/50 text-xs text-muted-foreground leading-relaxed backdrop-blur-sm">
-                Can't find the email? Check your <span className="text-foreground font-semibold uppercase tracking-tighter">Spam</span> folder. 
+                Can&apos;t find the email? Check your <span className="text-foreground font-semibold uppercase tracking-tighter">Spam</span> folder. 
                 Verification ensures your financial data stays exclusive to you.
               </div>
 

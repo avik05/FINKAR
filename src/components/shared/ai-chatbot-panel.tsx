@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles } from "lucide-react";
-import { formatINR } from "@/lib/format";
+import { Send, Sparkles, X } from "lucide-react";
 import { getFinancialSnapshot, generateSmartResponse, AIResponse } from "@/lib/ai-logic";
 import { useAccountsStore } from "@/stores/accounts-store";
 import { useTransactionsStore } from "@/stores/transactions-store";
@@ -48,13 +47,16 @@ export function AiChatbotPanel() {
 
   // Update greeting when user changes
   useEffect(() => {
-    setMessages([
-      {
-        id: "msg_0",
-        sender: "ai",
-        text: `Hi ${firstName}! I'm your Finkar AI assistant. Ask me about your net worth, expenses, income, stocks, or mutual funds.`,
-      },
-    ]);
+    const frame = requestAnimationFrame(() => {
+      setMessages([
+        {
+          id: "msg_0",
+          sender: "ai",
+          text: `Hi ${firstName}! I'm your Finkar AI assistant. Ask me about your net worth, expenses, income, stocks, or mutual funds.`,
+        },
+      ]);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [firstName]);
 
   const handleSend = (e?: React.FormEvent, overrideText?: string) => {
@@ -62,7 +64,11 @@ export function AiChatbotPanel() {
     const text = overrideText || inputValue;
     if (!text.trim() || isThinking) return;
   
-    const userMsg: ChatMessage = { id: `msg_${Date.now()}`, sender: "user", text: text };
+    const userMsg: ChatMessage = { 
+      id: `msg_u_${messages.length}`, 
+      sender: "user", 
+      text: text 
+    };
     setMessages((prev) => [...prev, userMsg]);
     setInputValue("");
     setIsThinking(true);
@@ -72,7 +78,10 @@ export function AiChatbotPanel() {
       const snapshot = getFinancialSnapshot({ accounts, transactions, stocks, funds, goals });
       const response: AIResponse = generateSmartResponse(text, snapshot, firstName);
       
-      setMessages((prev) => [...prev, { id: `msg_${Date.now() + 1}`, sender: "ai", text: response.text }]);
+      setMessages((prev) => [
+        ...prev, 
+        { id: `msg_a_${messages.length + 1}`, sender: "ai", text: response.text }
+      ]);
       if (response.suggestions) setCurrentSuggestions(response.suggestions);
       setIsThinking(false);
     }, 800);

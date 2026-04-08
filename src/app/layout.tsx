@@ -66,19 +66,28 @@ export const metadata: Metadata = {
   },
   other: {
     copyright: "© 2024-2025 Finkar. All Rights Reserved.",
-  }
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Finkar",
+  },
 };
 
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+export const viewport = {
+  themeColor: "#0B0B0F",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 import { MobileBottomWrapper } from "@/components/layout/mobile-bottom-wrapper";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { StoreHydrator } from "@/components/shared/store-hydrator";
 import { AiChatbotPanel } from "@/components/shared/ai-chatbot-panel";
 import { AuthGuard } from "@/components/shared/auth-guard";
 import { CursorGlow } from "@/components/shared/cursor-glow";
-import { BackgroundGlows } from "@/components/shared/background-glows";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { JsonLd } from "@/components/shared/json-ld";

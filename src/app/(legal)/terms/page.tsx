@@ -9,7 +9,7 @@ export default function TermsOfServicePage() {
       
       <section className="mb-12">
         <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-          Welcome to Finkar ("the Service"). By using our website and dashboard, you agree to the following terms.
+          Welcome to Finkar (&quot;the Service&quot;). By using our website and dashboard, you agree to the following terms.
         </p>
       </section>
 
@@ -59,7 +59,7 @@ export default function TermsOfServicePage() {
           5. Intellectual Property
         </h2>
         <p className="text-muted-foreground leading-relaxed">
-          All content, design, and code (the "Finkar Brand") are the exclusive property of Finkar. No authorization is granted to copy, redistribute, or reverse engineer any part of the Service.
+          All content, design, and code (the &quot;Finkar Brand&quot;) are the exclusive property of Finkar. No authorization is granted to copy, redistribute, or reverse engineer any part of the Service.
         </p>
       </section>
 

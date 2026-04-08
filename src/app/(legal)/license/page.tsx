@@ -17,7 +17,7 @@ export default function LicensePage() {
           Proprietary License
         </h2>
         <p className="text-muted-foreground leading-relaxed mb-6">
-          The software, design, cloud-synchronization architecture, and content of "Finkar" (the "Software") are the exclusive property of Finkar and its owners.
+          The software, design, cloud-synchronization architecture, and content of &quot;Finkar&quot; (the &quot;Software&quot;) are the exclusive property of Finkar and its owners.
         </p>
       </section>
 
@@ -37,9 +37,9 @@ export default function LicensePage() {
         <div className="p-6 rounded-2xl bg-destructive/5 border border-destructive/10">
           <p className="text-destructive font-black uppercase tracking-widest text-[10px] mb-4">Prohibited Actions</p>
           <ul className="list-disc list-inside space-y-3 text-muted-foreground font-medium">
-            <li>Copy, reproduce, or redistribute the Software's code or design in any form.</li>
+            <li>Copy, reproduce, or redistribute the Software&apos;s code or design in any form.</li>
             <li>Modify the Software and distribute it as your own.</li>
-            <li>Use the "Finkar" or "Finकर" name or logo without express written permission.</li>
+            <li>Use the &quot;Finkar&quot; or &quot;Finकर&quot; name or logo without express written permission.</li>
             <li>Decompile, reverse engineer, or attempt to derive the source code of the Software.</li>
           </ul>
         </div>

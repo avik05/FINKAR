@@ -51,7 +51,6 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { isLoggedIn } = useAuthStore();
   const { isMobileMenuOpen, setMobileMenuOpen } = useLayoutStore();
 
   return (
@@ -69,8 +68,12 @@ export function AppSidebar() {
         ${isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}>
         
         {/* Branding Header */}
-        <div className="h-24 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
-          <Link href="/" className="flex items-center gap-0.5 group hover:scale-[1.02] transition-all duration-300 relative">
+        <div className="md:h-24 h-20 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
+          <Link 
+            href="/" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-0.5 group md:hover:scale-[1.02] transition-all duration-300 relative"
+          >
             <span className="text-5xl font-sans font-bold text-foreground tracking-tighter">Fin</span>
             <span className="text-5xl font-sans font-bold text-primary tracking-tighter">कर</span>
             <span className="text-[10px] font-bold text-muted-foreground/60 align-top relative -top-4 ml-0.5">TM</span>
@@ -79,25 +82,25 @@ export function AppSidebar() {
           {/* Mobile Close Button */}
           <button 
             onClick={() => setMobileMenuOpen(false)}
-            className="p-3 -mr-2 text-muted-foreground hover:text-foreground md:hidden rounded-full hover:bg-foreground/10 transition-colors"
+            className="p-3 -mr-2 text-muted-foreground md:hover:text-foreground md:hover:bg-foreground/10 md:hidden rounded-full transition-colors active:bg-foreground/10"
           >
             <X size={28} />
           </button>
         </div>
 
       {/* Navigation Content */}
-      <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-hide">
-        <nav className="space-y-1.5">
+      <div className="flex-1 overflow-y-auto md:py-6 py-6 px-4 scrollbar-hide">
+        <nav className="md:space-y-1.5 space-y-4">
           {navItems.map((item) => {
             const isActive = pathname === item.url || pathname?.startsWith(`${item.url}/`);
             return (
               <div key={item.name} className="relative group px-1">
                 <Link
                   href={item.url}
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-[background-color,color,border-color,box-shadow] duration-300 group
-                    ${isActive 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-4 px-4 md:py-3.5 py-4 rounded-2xl transition-[background-color,color,border-color,box-shadow] duration-300 group
                       ? "bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(0,255,156,0.05)] border border-primary/20" 
-                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                      : "text-muted-foreground md:hover:bg-foreground/5 md:hover:text-foreground active:bg-foreground/5"
                     }`}
                 >
                   <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
@@ -117,12 +120,12 @@ export function AppSidebar() {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="p-4 md:pb-4 pb-24 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
+      <div className="p-4 md:pb-4 pb-20 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
         <Link 
           href="https://finkar.substack.com/" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="block p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-[background-color] duration-300 group/newsletter overflow-hidden"
+          className="block md:p-4 p-3 rounded-2xl bg-primary/5 border border-primary/10 md:hover:bg-primary/10 transition-[background-color] duration-300 group/newsletter overflow-hidden active:bg-primary/10"
         >
           <div className="flex items-center gap-3">
             <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />
@@ -134,9 +137,9 @@ export function AppSidebar() {
           </div>
         </Link>
 
-        <div className="p-1 rounded-[24px] bg-sidebar-accent/5 border border-border/10 flex flex-col gap-1 overflow-hidden transition-all duration-500 hover:border-primary/20">
+        <div className="p-1 rounded-[24px] bg-sidebar-accent/5 border border-border/10 flex flex-col gap-1 overflow-hidden transition-all duration-500 md:hover:border-primary/20 active:border-primary/20">
           {/* Top: Market Status (Full width) */}
-          <div className="p-4 bg-foreground/[0.02] rounded-t-[20px] rounded-b-[4px] flex flex-col gap-2 border-b border-border/5">
+          <div className="md:p-4 p-3 bg-foreground/[0.02] rounded-t-[20px] rounded-b-[4px] flex flex-col gap-2 border-b border-border/5">
              <div className="flex items-center gap-2 opacity-60">
                 <Globe size={12} className="text-muted-foreground" />
                 <span className="text-[9px] uppercase tracking-[0.2em] font-black text-muted-foreground">Market Pulse</span>
@@ -148,17 +151,19 @@ export function AppSidebar() {
           <div className="grid grid-cols-2 gap-1 px-1 pb-1">
              <Link 
                href="/faq" 
-               className="flex items-center justify-center gap-2 py-3 rounded-bl-[4px] rounded-br-[4px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all group"
+               onClick={() => setMobileMenuOpen(false)}
+               className="flex items-center justify-center gap-2 py-3 rounded-bl-[4px] rounded-br-[4px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] md:hover:bg-primary/10 border border-transparent md:hover:border-primary/20 transition-all group active:bg-primary/5"
              >
-                <HelpCircle size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">FAQ</span>
+                <HelpCircle size={14} className="text-muted-foreground md:group-hover:text-primary transition-colors" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground md:group-hover:text-primary transition-colors">FAQ</span>
              </Link>
              <Link 
                href="/contact" 
-               className="flex items-center justify-center gap-2 py-3 rounded-bl-[20px] rounded-br-[20px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all group"
+               onClick={() => setMobileMenuOpen(false)}
+               className="flex items-center justify-center gap-2 py-3 rounded-bl-[20px] rounded-br-[20px] rounded-tl-[4px] rounded-tr-[4px] bg-foreground/[0.03] md:hover:bg-primary/10 border border-transparent md:hover:border-primary/20 transition-all group active:bg-primary/5"
              >
-                <LifeBuoy size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">Support</span>
+                <LifeBuoy size={14} className="text-muted-foreground md:group-hover:text-primary transition-colors" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground md:group-hover:text-primary transition-colors">Support</span>
              </Link>
           </div>
         </div>
@@ -229,9 +234,7 @@ function getMarketStatus(): { isOpen: boolean; label: string; nextOpen?: string 
   const marketClose = 15 * 60 + 30; // 3:30 PM IST
   const currentIST = istHour * 60 + istMin;
 
-  const isWeekday = adjustedDay >= 1 && adjustedDay <= 5;
   const isHoliday = NSE_HOLIDAYS_2025.has(istDateStr);
-  const isDuringHours = currentIST >= marketOpen && currentIST < marketClose;
 
   if (isHoliday) {
     return { isOpen: false, label: "Market Holiday", nextOpen: "NSE/BSE holiday today" };
