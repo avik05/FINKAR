@@ -90,17 +90,22 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Prevent flash of protected content and handle unverified access
+  // Prevent flash of protected content and redirect unverified users
   if (isLoggedIn && !user?.isEmailVerified) {
-    // If on a sensitive route and unverified, redirect to verify
-    if (SENSITIVE_ROUTES.some(r => pathname?.startsWith(r))) {
+    if (SENSITIVE_ROUTES.some(r => pathname === r || pathname?.startsWith(`${r}/`))) {
       router.replace("/auth/verify");
       return null;
     }
   }
 
-  if (!isLoggedIn && ["/settings"].some(r => pathname?.startsWith(r))) return null;
-  if (isLoggedIn && AUTH_ROUTES.includes(pathname)) return null;
+  // Final check for strictly protected routes (guests)
+  const isStrictlyProtected = ["/settings"].some(r => 
+    pathname === r || pathname?.startsWith(`${r}/`)
+  );
+  if (!isLoggedIn && isStrictlyProtected) return null;
+
+  // Block Auth routes for logged-in verified users
+  if (isLoggedIn && user?.isEmailVerified && AUTH_ROUTES.includes(pathname)) return null;
 
   return <>{children}</>;
 }

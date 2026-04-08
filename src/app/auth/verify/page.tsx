@@ -119,12 +119,14 @@ export default function VerifyPage() {
     }
   }, [cooldown]);
 
-  if (!isLoggedIn) {
-    return null; // AuthGuard will handle redirection to login
+  // If there's no user in the store (e.g., direct navigation), redirect to login
+  if (!user?.id) {
+    router.replace("/login");
+    return null;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background fixed inset-0 z-50 p-4">
+    <div className="flex-1 flex items-center justify-center bg-background p-4 relative overflow-hidden">
       {/* Ambient backgrounds */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
