@@ -55,21 +55,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // 1. Redirect logged-in users away from /login ONLY if they have a real session
+    // 1. Redirect logged-in users away from /login
     if (isLoggedIn && AUTH_ROUTES.includes(pathname)) {
-      const checkAndRedirect = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (user && !user.isEmailVerified) {
-          router.replace("/auth/verify");
-        } else if (session) {
-          // Only redirect to dashboard if a real session exists
-          router.replace("/dashboard");
-        }
-        // If no session but isLoggedIn is true, stay on /login to allow them to log in
-      };
-      
-      checkAndRedirect();
+      if (user && !user.isEmailVerified) {
+        router.replace("/auth/verify");
+      } else {
+        router.replace("/dashboard");
+      }
       return;
     }
 

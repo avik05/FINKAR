@@ -150,7 +150,7 @@ export const useAuthStore = create<AuthState>()(
               createdAt: data.user.created_at,
               isEmailVerified: !!data.user.email_confirmed_at,
             },
-            isLoggedIn: true, // We allow "logged in" state but AuthGuard will block based on isEmailVerified
+            isLoggedIn: !isPending, // False if pending, true if auto-confirmed
             isLoading: false,
           });
           

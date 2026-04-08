@@ -18,7 +18,8 @@ export default function VerifyPage() {
 
   // Auto-redirect or prompt login if verified
   useEffect(() => {
-    if (isLoggedIn && user?.isEmailVerified) {
+    // We check user?.id instead of isLoggedIn because users aren't "logged in" until they have a session
+    if (user?.id && user?.isEmailVerified) {
       const handleRedirect = async () => {
         // Check if we have a real Supabase session
         const { data: { session } } = await supabase.auth.getSession();
@@ -39,11 +40,11 @@ export default function VerifyPage() {
 
       handleRedirect();
     }
-  }, [isLoggedIn, user?.isEmailVerified, user?.id, user?.email, router, message]);
+  }, [user?.id, user?.isEmailVerified, user?.email, router, message]);
 
   // Automatic Background Polling
   useEffect(() => {
-    if (!isLoggedIn || user?.isEmailVerified || !user?.id) return;
+    if (user?.isEmailVerified || !user?.id) return;
 
     const interval = setInterval(async () => {
       // Use public check first in case session is missing/unstable
@@ -53,7 +54,7 @@ export default function VerifyPage() {
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isLoggedIn, user?.isEmailVerified, user?.id, refreshUser, checkPublicVerification]);
+  }, [user?.isEmailVerified, user?.id, refreshUser, checkPublicVerification]);
 
   const handleRefresh = async () => {
     if (!user?.id) return;
