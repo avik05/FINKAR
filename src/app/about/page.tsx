@@ -22,6 +22,7 @@ import {
   Globe,
 } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
+import { Footer } from "@/components/layout/footer";
 
 // --- Components ---
 
@@ -377,6 +378,8 @@ export default function AboutPage() {
             <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar</p>
           </ScrollReveal>
         </section>
+
+        <Footer />
       </div>
     </div>
   );

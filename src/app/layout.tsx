@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { MobileBottomWrapper } from "@/components/layout/mobile-bottom-wrapper";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { StoreHydrator } from "@/components/shared/store-hydrator";
 import { AiChatbotPanel } from "@/components/shared/ai-chatbot-panel";
@@ -75,6 +75,7 @@ export default function RootLayout({
           <div className="relative min-h-screen flex flex-col">
             {children}
           </div>
+          <MobileBottomWrapper />
           <AiChatbotPanel />
           <Analytics />
           <SpeedInsights />

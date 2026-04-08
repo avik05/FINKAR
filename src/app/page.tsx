@@ -3,6 +3,9 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/auth-store";
+import { Footer } from "@/components/layout/footer";
 import {
   Landmark,
   TrendingUp,
@@ -132,6 +135,16 @@ export default function HomePage() {
   
   const contentY = useTransform(scrollYProgress, [0.04, 0.12], [150, 0]);
   const contentOpacity = useTransform(scrollYProgress, [0.03, 0.08], [0, 1]);
+  
+  const router = useRouter();
+  const { isLoggedIn } = useAuthStore();
+
+  // Redirect logged in users
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      router.push("/dashboard");
+    }
+  }, [isLoggedIn, router]);
 
   // Interaction logic
   const [isHeroInteractive, setIsHeroInteractive] = React.useState(true);
@@ -377,6 +390,8 @@ export default function HomePage() {
             <p className="text-muted-foreground mt-16 font-black uppercase tracking-[0.4em] text-xs">Crafted with <Heart size={14} className="inline text-primary mx-2 animate-pulse" /> by Avik Majumdar</p>
           </ScrollReveal>
         </section>
+        
+        <Footer />
       </div>
     </div>
   );

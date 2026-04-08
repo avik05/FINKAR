@@ -42,7 +42,6 @@ export default function DashboardLayout({
             </div>
           </main>
         </div>
-        <BottomNav />
       </div>
     </SidebarProvider>
   );
