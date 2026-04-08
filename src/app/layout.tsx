@@ -16,12 +16,17 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Finkar Dashboard — Actionable Finance",
-  description: "Don’t just manage money. Do finance. The futuristic dashboard for controlling your financial destiny.",
+  metadataBase: new URL('https://getfinkar.com'),
+  title: {
+    default: "Finkar Dashboard — Actionable Finance",
+    template: "%s | Finkar"
+  },
+  description: "Don’t just manage money. Do finance. The futuristic dashboard for controlling your financial destiny. Track stocks, mutual funds, and bank accounts in one view.",
   applicationName: "Finkar",
-  authors: [{ name: "Avik", url: "https://www.linkedin.com/in/avik0508" }],
-  creator: "Avik",
+  authors: [{ name: "Avik Majumdar", url: "https://www.linkedin.com/in/avik0508" }],
+  creator: "Avik Majumdar",
   publisher: "Finkar",
+  keywords: ["finance tracker", "stock portfolio", "mutual fund tracking", "expense manager", "indian finance", "investment dashboard"],
   formatDetection: {
     email: false,
     address: false,
@@ -29,6 +34,35 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://getfinkar.com",
+    title: "Finkar — Actionable Personal Finance",
+    description: "The all-in-one financial cockpit for tracking bank accounts, stocks, and mutual funds.",
+    siteName: "Finkar",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Finkar — Actionable Personal Finance",
+    description: "Control your financial destiny with the futuristic Finkar dashboard.",
+    creator: "@aviiiiiiik",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://getfinkar.com',
   },
   other: {
     copyright: "© 2024-2025 Finkar. All Rights Reserved.",
