@@ -184,3 +184,26 @@ CREATE TRIGGER update_bank_accounts_modtime BEFORE UPDATE ON public.bank_account
 CREATE TRIGGER update_stocks_modtime BEFORE UPDATE ON public.stocks FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_mutual_funds_modtime BEFORE UPDATE ON public.mutual_funds FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_goals_modtime BEFORE UPDATE ON public.goals FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+
+--------------------------------------------------------------------------------
+-- 7. CONTACT MESSAGES (For Contact Us Form)
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.contact_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Allow anyone to insert (public submissions)
+DROP POLICY IF EXISTS "Anyone can submit contact messages" ON public.contact_messages;
+CREATE POLICY "Anyone can submit contact messages" ON public.contact_messages 
+FOR INSERT WITH CHECK (true);
+
+-- Note: Select access is restricted to service_role/owner by default.
