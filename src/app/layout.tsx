@@ -81,6 +81,7 @@ import { CursorGlow } from "@/components/shared/cursor-glow";
 import { BackgroundGlows } from "@/components/shared/background-glows";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { JsonLd } from "@/components/shared/json-ld";
 
 export default function RootLayout({
   children,
@@ -111,6 +112,7 @@ export default function RootLayout({
           </div>
           <MobileBottomWrapper />
           <AiChatbotPanel />
+          <JsonLd />
           <Analytics />
           <SpeedInsights />
         </AuthGuard>
