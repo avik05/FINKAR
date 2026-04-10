@@ -13,23 +13,25 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: 'microsoft'
+          java-version: '17'
 
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
       - name: Configure SDK & JDK Paths
         run: |
+          # Skip telemetry to prevent interactive prompts
+          echo "BUBBLEWRAP_SKIP_TELEMETRY=true" >> $GITHUB_ENV
           # Use the pre-installed Android SDK on the GitHub runner
           echo "BUBBLEWRAP_ANDROID_SDK_PATH=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           # Bubblewrap requires a specific command to set its internal paths
-          bubblewrap updateConfig --jdkPath /usr/lib/jvm/temurin-11-jdk-amd64 --androidSdkPath $ANDROID_SDK_ROOT
+          bubblewrap updateConfig --jdkPath $JAVA_HOME --androidSdkPath $ANDROID_SDK_ROOT
 
       - name: Create Keys (for First Build)
         run: |
