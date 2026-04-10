@@ -21,6 +21,9 @@ jobs:
           distribution: 'microsoft'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
@@ -29,9 +32,9 @@ jobs:
           # Skip telemetry to prevent interactive prompts
           echo "BUBBLEWRAP_SKIP_TELEMETRY=true" >> $GITHUB_ENV
           
-          # Manually create the config directory and file to bypass interactive setup
+          # Manually create the config directory and file using the official environment variables
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           
           # Verify the config
           bubblewrap doctor
