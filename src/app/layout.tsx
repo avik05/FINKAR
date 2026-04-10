@@ -17,6 +17,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://getfinkar.com'),
+  manifest: "/manifest.json",
   title: {
     default: "Finkar - Personal Finance Dashboard",
     template: "%s | Finkar"
