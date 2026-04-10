@@ -221,9 +221,7 @@
 
   .gpu-accelerated {
     transform: translateZ(0);
-    will-change: transform, opacity;
     backface-visibility: hidden;
-    perspective: 1000px;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -245,6 +243,29 @@
     user-select: none;
     -webkit-user-select: none;
   }
+
+  /* Performance: Skip rendering for off-screen sections */
+  .perf-contain {
+    contain: layout style paint;
+  }
+
+  .perf-offscreen {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+}
+
+/* ─── Reduced Motion: Disable ALL animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float, .animate-float-delayed, .ambient-blob, .animate-pulse, .animate-bounce {
+    animation: none !important;
+  }
 }
 
 @keyframes float {
@@ -264,11 +285,11 @@
 }
 
 .ambient-blob {
-  @apply blur-[100px] will-change-[transform,opacity];
-  animation: pulse-glow 10s ease-in-out infinite alternate;
+  @apply blur-[80px];
+  animation: pulse-glow 12s ease-in-out infinite alternate;
 }
 
 .dark .ambient-blob {
-  @apply blur-[120px] will-change-[transform,opacity];
-  animation: pulse-glow-dark 10s ease-in-out infinite alternate;
+  @apply blur-[90px];
+  animation: pulse-glow-dark 12s ease-in-out infinite alternate;
 }

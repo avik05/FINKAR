@@ -140,7 +140,7 @@ export default function DashboardPage() {
       className="space-y-8 pb-10 gpu-accelerated no-select"
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2">
-        <div className="animate-float">
+        <div>
           <h1 className="text-3xl lg:text-4xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
             Welcome back, {user?.name?.split(" ")[0] || "there"}
           </h1>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
 
       {/* Asset Allocation */}
       {allocation.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-foreground">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-foreground perf-offscreen">
           <motion.div variants={FADE_UP} className="lg:col-span-2">
             <FinanceCard className="p-6 h-[400px] flex flex-col items-center justify-center relative overflow-hidden group gpu-accelerated">
               <div className="flex justify-between items-start w-full mb-4">
@@ -331,7 +331,7 @@ export default function DashboardPage() {
 
       {/* Heatmap Activity */}
       <motion.div variants={FADE_UP}>
-        <FinanceCard className="p-6 glass-card overflow-hidden">
+        <FinanceCard className="p-6 glass-card overflow-hidden perf-contain">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-heading font-semibold">Activity Heatmap</h2>
             <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">Pro</span>
