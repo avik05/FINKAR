@@ -1,0 +1,48 @@
+{
+  "packageId": "com.getfinkar.app",
+  "host": "getfinkar.com",
+  "name": "Finkar",
+  "launcherName": "Finkar",
+  "description": "The futuristic financial cockpit for tracking bank accounts, stocks, and mutual funds.",
+  "iconUrl": "https://getfinkar.com/logo.png",
+  "maskableIconUrl": "https://getfinkar.com/logo.png",
+  "display": "standalone",
+  "background_color": "#0B0B0F",
+  "theme_color": "#0B0B0F",
+  "startUrl": "/",
+  "orientation": "portrait",
+  "fullScreen": false,
+  "enableNotifications": true,
+  "shortcuts": [
+    {
+      "name": "Overview",
+      "short_name": "Overview",
+      "url": "/dashboard",
+      "icon": "https://getfinkar.com/logo.png"
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "url": "/analytics",
+      "icon": "https://getfinkar.com/logo.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://getfinkar.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "location": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alpha": {
+    "enabled": false
+  },
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "androidkey"
+  }
+}

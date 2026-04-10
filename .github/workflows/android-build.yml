@@ -1,0 +1,54 @@
+name: Build Android TWA
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Configure SDK & JDK Paths
+        run: |
+          # Use the pre-installed Android SDK on the GitHub runner
+          echo "BUBBLEWRAP_ANDROID_SDK_PATH=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          # Bubblewrap requires a specific command to set its internal paths
+          bubblewrap updateConfig --jdkPath /usr/lib/jvm/temurin-11-jdk-amd64 --androidSdkPath $ANDROID_SDK_ROOT
+
+      - name: Create Keys (for First Build)
+        run: |
+          # Create a dummy keystore for the unsigned/debug build
+          # In a real production setup, these would be GitHub Secrets
+          keytool -genkey -v -keystore android.keystore -alias androidkey -keyalg RSA -keysize 2048 -validity 10000 -storepass "finkar123" -keypass "finkar123" -dname "CN=Finkar, OU=Engineering, O=Finkar, L=Unknown, S=Unknown, C=US"
+
+      - name: Build Android Bundle
+        run: |
+          # Run build using the manifest in the repo
+          # We provide the passwords via environment variables
+          export BUBBLEWRAP_KEYSTORE_PASSWORD="finkar123"
+          export BUBBLEWRAP_KEY_PASSWORD="finkar123"
+          bubblewrap build --skipSigning
+
+      - name: Upload Android Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: finkar-android-bundle
+          path: |
+            *.aab
+            *.apk
