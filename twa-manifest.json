@@ -1,48 +1,68 @@
 {
   "packageId": "com.getfinkar.app",
   "host": "getfinkar.com",
-  "name": "Finkar",
+  "name": "Finkar - Personal Finance Dashboard",
   "launcherName": "Finkar",
-  "description": "The futuristic financial cockpit for tracking bank accounts, stocks, and mutual funds.",
-  "iconUrl": "https://getfinkar.com/logo.png",
-  "maskableIconUrl": "https://getfinkar.com/logo.png",
   "display": "standalone",
-  "background_color": "#0B0B0F",
-  "theme_color": "#0B0B0F",
-  "startUrl": "/",
-  "orientation": "portrait",
-  "fullScreen": false,
+  "themeColor": "#0B0B0F",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#0B0B0F",
   "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://getfinkar.com/icon-512.png",
+  "maskableIconUrl": "https://getfinkar.com/logo.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/Users/avik/Documents/Finkar Dashboard/android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
   "shortcuts": [
     {
-      "name": "Overview",
-      "short_name": "Overview",
-      "url": "/dashboard",
+      "name": "Dashboard Overview",
+      "shortName": "Overview",
+      "url": "https://getfinkar.com/dashboard",
       "chosenIconUrl": "https://getfinkar.com/logo.png"
     },
     {
-      "name": "Analytics",
-      "short_name": "Analytics",
-      "url": "/analytics",
+      "name": "Financial Analytics",
+      "shortName": "Analytics",
+      "url": "https://getfinkar.com/analytics",
+      "chosenIconUrl": "https://getfinkar.com/logo.png"
+    },
+    {
+      "name": "Add Transaction",
+      "shortName": "Add",
+      "url": "https://getfinkar.com/dashboard",
       "chosenIconUrl": "https://getfinkar.com/logo.png"
     }
   ],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://getfinkar.com/manifest.json",
   "fallbackType": "customtabs",
-  "features": {
-    "location": {
-      "enabled": false
-    },
-    "playBilling": {
-      "enabled": false
-    }
-  },
-  "alpha": {
+  "features": {},
+  "alphaDependencies": {
     "enabled": false
   },
-  "signingKey": {
-    "path": "./android.keystore",
-    "alias": "androidkey"
-  }
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://getfinkar.com/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    "69:FF:68:D4:43:A6:76:5C:C4:67:82:8B:C3:F1:DF:5D:48:0B:18:50:3B:B6:B4:9A:B8:32:C4:8F:3B:7F:65:00"
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1"
 }
