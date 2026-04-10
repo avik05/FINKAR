@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, useSpring, useMotionValue, useTransform } from "framer-motion";
 
 /**
- * CursorGlow — 'Emerald Silence' System (V10)
+ * CursorGlow — 'Emerald Silence' System (V11 - Synchronized)
  * 
  * Final Refinements:
- * 1. Ultra-Low Intensity Glow: Reduced to a whisper of emerald to ensure eye comfort.
- * 2. Soothing Interaction: Grid dots fade in softly, creating an elegant 'ghost' effect.
- * 3. Minimalist Palette: Removed all harsh colors in favor of soft transparent greens.
+ * 1. Synchronized Liquid Motion: Both the Dot and Ring now share the same 'smooth' 
+ *    interpolated position. They stay perfectly locked together with the signature liquid lag.
+ * 2. Ultra-Low Intensity Glow: Maintains the soothing emerald whisper for eye comfort.
+ * 3. Interactive Grid: Background dots illuminate softly as the cursor passes.
  */
 export function CursorGlow() {
   const [mounted, setMounted] = useState(false);
@@ -19,12 +20,12 @@ export function CursorGlow() {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Performance Spring: Optimized for silky, weightless movement
+  // Performance Spring: The shared 'liquid' coordinate for both Dot and Ring
   const springConfig = { damping: 30, stiffness: 180, mass: 0.8 };
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  // Dynamic mask position for the grid reaction (larger radius, softer falloff)
+  // Dynamic mask position for the grid reaction (linked to smooth position)
   const gridMask = useTransform(
     [smoothX, smoothY],
     ([x, y]) => `radial-gradient(400px circle at ${x}px ${y}px, black 0%, transparent 100%)`
@@ -58,7 +59,6 @@ export function CursorGlow() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] overflow-hidden">
       {/* 1. SOOTHING EMERALD GLOW */}
-      {/* Drastically reduced alpha and global opacity for 'silence' effect */}
       <motion.div
         className="absolute h-[450px] w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.04] blur-[100px]"
         style={{
@@ -69,7 +69,7 @@ export function CursorGlow() {
         }}
       />
 
-      {/* 2. MINIMALIST RING */}
+      {/* 2. LIQUID RING (Synchronized) */}
       <motion.div
         className="absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/20 bg-primary/[0.02]"
         style={{
@@ -79,17 +79,16 @@ export function CursorGlow() {
         }}
       />
 
-      {/* 3. PRECISION DOT */}
+      {/* 3. LIQUID DOT (Synchronized - Now follows the Smooth position) */}
       <motion.div
         className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/80 shadow-[0_0_8px_rgba(0,255,156,0.3)]"
         style={{
-          x: mouseX,
-          y: mouseY,
+          x: smoothX,
+          y: smoothY,
         }}
       />
 
       {/* 4. GHOST GRID REACTION */}
-      {/* Very subtle grid presence that only suggests itself as you move */}
       <motion.div 
         className="absolute inset-0 z-[-1]"
         style={{ 
