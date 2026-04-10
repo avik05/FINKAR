@@ -16,21 +16,15 @@
   "icons": [
     {
       "src": "/logo.png",
-      "sizes": "192x192",
+      "sizes": "3090x3090",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     },
     {
       "src": "/logo.png",
       "sizes": "3090x3090",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -42,7 +36,7 @@
       "icons": [
         {
           "src": "/logo.png",
-          "sizes": "192x192"
+          "sizes": "3090x3090"
         }
       ]
     },
@@ -54,7 +48,7 @@
       "icons": [
         {
           "src": "/logo.png",
-          "sizes": "192x192"
+          "sizes": "3090x3090"
         }
       ]
     },
@@ -66,7 +60,7 @@
       "icons": [
         {
           "src": "/logo.png",
-          "sizes": "192x192"
+          "sizes": "3090x3090"
         }
       ]
     }
