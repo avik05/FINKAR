@@ -47,11 +47,10 @@ jobs:
 
       - name: Build Android Bundle
         run: |
-          # Run build using the manifest in the repo
-          # We provide the passwords via environment variables
+          # Use 'yes' pipe to handle any remaining interactive prompts automatically
           export BUBBLEWRAP_KEYSTORE_PASSWORD="finkar123"
           export BUBBLEWRAP_KEY_PASSWORD="finkar123"
-          bubblewrap build --skipSigning
+          yes | bubblewrap build --skipSigning
 
       - name: Upload Android Bundle
         uses: actions/upload-artifact@v4

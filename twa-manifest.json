@@ -18,13 +18,13 @@
       "name": "Overview",
       "short_name": "Overview",
       "url": "/dashboard",
-      "icon": "https://getfinkar.com/logo.png"
+      "chosenIconUrl": "https://getfinkar.com/logo.png"
     },
     {
       "name": "Analytics",
       "short_name": "Analytics",
       "url": "/analytics",
-      "icon": "https://getfinkar.com/logo.png"
+      "chosenIconUrl": "https://getfinkar.com/logo.png"
     }
   ],
   "generatorApp": "bubblewrap-cli",
