@@ -52,7 +52,7 @@ export default function LegalLayout({
       <footer className="border-t border-border/10 py-12 bg-secondary/20">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-muted-foreground/40">
-            © 2024-2025 Finkar. Actionable Finance. Futuristic Control.
+            © 2024-2026 Finkar. Actionable Finance. Futuristic Control.
           </p>
         </div>
       </footer>

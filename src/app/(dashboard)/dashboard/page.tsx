@@ -15,6 +15,7 @@ import { TransactionHeatmap } from "@/components/shared/transaction-heatmap";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLayoutStore } from "@/stores/layout-store";
 import { FinancialPulse } from "@/components/dashboard/financial-pulse";
+import { InstallCard } from "@/components/shared/install-card";
 import {
   PieChart, Pie, Cell, Sector, ResponsiveContainer
 } from "recharts";
@@ -216,6 +217,11 @@ export default function DashboardPage() {
           </FinanceCard>
         </motion.div>
       </div>
+
+      {/* PWA Install Promotion */}
+      <motion.div variants={FADE_UP}>
+        <InstallCard />
+      </motion.div>
 
       {/* Asset Allocation */}
       {allocation.length > 0 && (

@@ -1,6 +1,6 @@
 # LICENSE
 
-Copyright © 2024-2025 Finkar. All rights reserved.
+Copyright © 2024-2026 Finkar. All rights reserved.
 
 ## Proprietary License
 

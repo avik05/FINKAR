@@ -129,6 +129,15 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  
+  /* Allow selection for inputs and specifically marked text */
+  input, textarea, [contenteditable="true"], .selectable {
+    user-select: text;
+    -webkit-user-select: text;
   }
   
   /* Custom sleek scrollbar */

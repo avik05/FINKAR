@@ -37,7 +37,7 @@ export function Footer() {
               FINKAR<span className="text-[10px] font-bold text-muted-foreground/60 align-top relative -top-2 ml-0.5">TM</span>
             </span>
             <span className="text-muted-foreground/60">/</span>
-            <span className="text-xs text-muted-foreground">&copy; 2024-2025 Finkar. All Rights Reserved.</span>
+            <span className="text-xs text-muted-foreground">&copy; 2024-2026 Finkar. All Rights Reserved.</span>
           </div>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2 text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium transition-all">
             <Link href="/faq" className="hover:text-primary transition-colors hover:glow-sm">FAQ</Link>
@@ -48,7 +48,7 @@ export function Footer() {
             <span className="opacity-30">•</span>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
             <span className="opacity-30">•</span>
-            <Link href="/license" className="hover:text-primary transition-colors">License</Link>
+            <Link href="/licence" className="hover:text-primary transition-colors">License</Link>
           </div>
           <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">Actionable Finance. Futuristic Control.</p>
         </div>

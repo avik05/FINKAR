@@ -133,7 +133,7 @@ export default function SettingsPage() {
                 <span className="text-sm font-bold text-foreground/80">Privacy Policy</span>
                 <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Read Policy</span>
               </button>
-              <button onClick={() => router.push("/license")} className="w-full text-left p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/50 flex items-center justify-between group">
+              <button onClick={() => router.push("/licence")} className="w-full text-left p-3 rounded-xl hover:bg-foreground/5 transition-colors border border-transparent hover:border-border/50 flex items-center justify-between group">
                 <span className="text-sm font-bold text-foreground/80">License & Copyright</span>
                 <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Read Policy</span>
               </button>
@@ -182,7 +182,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-border/10 mt-2">
                   <span className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] w-full text-center">
-                    © 2024-2025 FINKAR. All Rights Reserved.
+                    © 2024-2026 FINKAR. All Rights Reserved.
                   </span>
                 </div>
               </div>

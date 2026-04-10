@@ -25,4 +25,4 @@ You have the right to access, edit, or delete any of your data and information a
 This Privacy Policy may be updated from time to time to reflect changes in our practices or laws.
 
 ---
-Last Updated: April 2025
+Last Updated: April 2026

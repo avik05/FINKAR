@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     canonical: 'https://getfinkar.com',
   },
   other: {
-    copyright: "© 2024-2025 Finkar. All Rights Reserved.",
+    copyright: "© 2024-2026 Finkar. All Rights Reserved.",
   },
   appleWebApp: {
     capable: true,
@@ -110,6 +110,14 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('finkar-theme');if(t==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`,
+          }}
+        />
+        
+        <Script
+          id="sw-registration"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').then(function(reg){console.log('[SW] Service Worker Registered:',reg.scope)},function(err){console.error('[SW] Registration Failed:',err)})})}`,
           }}
         />
         

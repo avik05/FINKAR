@@ -26,4 +26,4 @@ Finkar shall not be liable for any financial losses, data inaccuracies, or damag
 We reserve the right to modify these terms at any time. Your continued use of the Service after changes are posted constitutes acceptance of the new terms.
 
 ---
-Last Updated: April 2025
+Last Updated: April 2026
