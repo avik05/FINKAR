@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { WifiOff, RotateCw, Landmark } from "lucide-react";
 import Link from "next/link";
