@@ -28,10 +28,13 @@ jobs:
         run: |
           # Skip telemetry to prevent interactive prompts
           echo "BUBBLEWRAP_SKIP_TELEMETRY=true" >> $GITHUB_ENV
-          # Use the pre-installed Android SDK on the GitHub runner
-          echo "BUBBLEWRAP_ANDROID_SDK_PATH=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          # Bubblewrap requires a specific command to set its internal paths
-          bubblewrap updateConfig --jdkPath $JAVA_HOME --androidSdkPath $ANDROID_SDK_ROOT
+          
+          # Manually create the config directory and file to bypass interactive setup
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          
+          # Verify the config
+          bubblewrap doctor
 
       - name: Create Keys (for First Build)
         run: |
