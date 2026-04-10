@@ -207,3 +207,53 @@ CREATE POLICY "Anyone can submit contact messages" ON public.contact_messages
 FOR INSERT WITH CHECK (true);
 
 -- Note: Select access is restricted to service_role/owner by default.
+
+
+--------------------------------------------------------------------------------
+-- 8. USER SETTINGS & STRATEGY (V2 ADDITIONS)
+--------------------------------------------------------------------------------
+-- This table stores non-auth metadata like the user's selected Risk Strategy.
+-- It is designed to be purely additive and does not touch existing tables.
+
+CREATE TABLE IF NOT EXISTS public.user_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  selected_strategy TEXT NOT NULL DEFAULT 'moderate' CHECK (selected_strategy IN ('conservative', 'moderate', 'aggressive')),
+  full_name TEXT,
+  avatar_url TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+DROP POLICY IF EXISTS "Users can view their own settings" ON public.user_settings;
+CREATE POLICY "Users can view their own settings" ON public.user_settings FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own settings" ON public.user_settings;
+CREATE POLICY "Users can update their own settings" ON public.user_settings FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own settings" ON public.user_settings;
+CREATE POLICY "Users can insert their own settings" ON public.user_settings FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Trigger for updated_at (Uses the existing function from Section 6)
+DROP TRIGGER IF EXISTS update_user_settings_modtime ON public.user_settings;
+CREATE TRIGGER update_user_settings_modtime BEFORE UPDATE ON public.user_settings FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+
+--------------------------------------------------------------------------------
+-- 9. RPC FUNCTIONS (V2 ADDITIONS)
+--------------------------------------------------------------------------------
+
+-- Helper for the frontend to check verification status safely without a session.
+-- Used by the auth-store.ts 'checkPublicVerification' method.
+CREATE OR REPLACE FUNCTION public.check_user_verification(target_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM auth.users 
+    WHERE id = target_id 
+    AND email_confirmed_at IS NOT NULL
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
