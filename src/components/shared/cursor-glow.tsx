@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { motion, useSpring, useMotionValue, useTransform } from "framer-motion";
 
 /**
- * CursorGlow — 'Emerald Silence' System (V11 - Synchronized)
+ * CursorGlow — 'Emerald Silence' System (V12 - Refined Physics)
  * 
  * Final Refinements:
- * 1. Synchronized Liquid Motion: Both the Dot and Ring now share the same 'smooth' 
- *    interpolated position. They stay perfectly locked together with the signature liquid lag.
- * 2. Ultra-Low Intensity Glow: Maintains the soothing emerald whisper for eye comfort.
- * 3. Interactive Grid: Background dots illuminate softly as the cursor passes.
+ * 1. Synchronized Liquid Motion: Dot and Ring share a single liquid trailing coordinate.
+ * 2. Refined Physics: Increased stiffness and reduced mass for a faster 'liquid' response.
+ *    It now follows the cursor more closely without losing the smooth inertia.
  */
 export function CursorGlow() {
   const [mounted, setMounted] = useState(false);
@@ -20,12 +19,13 @@ export function CursorGlow() {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Performance Spring: The shared 'liquid' coordinate for both Dot and Ring
-  const springConfig = { damping: 30, stiffness: 180, mass: 0.8 };
+  // Velocity-Tuned Spring: Balanced for a faster 'liquid' follow (stiffness up, mass down)
+  // Perfectly 'medium-fast' – responsive but still silky.
+  const springConfig = { damping: 25, stiffness: 250, mass: 0.5 };
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  // Dynamic mask position for the grid reaction (linked to smooth position)
+  // Dynamic mask position for the grid reaction
   const gridMask = useTransform(
     [smoothX, smoothY],
     ([x, y]) => `radial-gradient(400px circle at ${x}px ${y}px, black 0%, transparent 100%)`
@@ -79,7 +79,7 @@ export function CursorGlow() {
         }}
       />
 
-      {/* 3. LIQUID DOT (Synchronized - Now follows the Smooth position) */}
+      {/* 3. LIQUID DOT (Synchronized) */}
       <motion.div
         className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/80 shadow-[0_0_8px_rgba(0,255,156,0.3)]"
         style={{
