@@ -154,6 +154,9 @@ export default function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const deleteAccount = useAuthStore((s) => s.deleteAccount);
+  const updatePassword = useAuthStore((s) => s.updatePassword);
+  const resetPassword = useAuthStore((s) => s.resetPassword);
+
   const accounts = useAccountsStore((s) => s.accounts);
   const transactions = useTransactionsStore((s) => s.transactions);
   const holdings = useStocksStore((s) => s.holdings);
@@ -162,7 +165,15 @@ export default function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState<SectionId>("account");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
   const [exportSuccess, setExportSuccess] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -193,6 +204,44 @@ export default function SettingsPage() {
   }, []);
 
   // ─── Handlers ─────────────────────────────────────────
+  const handleUpdatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    setPasswordError("");
+    const { success, error } = await updatePassword(newPassword);
+    setIsUpdatingPassword(false);
+
+    if (success) {
+      setPasswordSuccess("Password updated successfully!");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => {
+        setPasswordDialogOpen(false);
+        setPasswordSuccess("");
+      }, 2000);
+    } else {
+      setPasswordError(error || "Failed to update password");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!user?.email) return;
+    const { success, error } = await resetPassword(user.email);
+    if (success) {
+      alert(`Password reset link sent to ${user.email}`);
+    } else {
+      alert(error || "Failed to send reset email");
+    }
+  };
+
   const handleExportJSON = () => {
     const data = {
       exportedAt: new Date().toISOString(),
@@ -270,8 +319,8 @@ export default function SettingsPage() {
     <motion.div initial="hidden" animate="show" variants={STAGGER} className="pb-6">
       {/* ─── Page Header ─── */}
       <motion.div variants={FADE_UP} className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-foreground flex items-center gap-2">
-          Settings<span className="text-xs font-bold text-muted-foreground/60 align-top relative -top-2">TM</span>
+        <h1 className="text-3xl font-heading font-bold text-foreground">
+          Settings
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">You&apos;re in control. Manage your account, data, and preferences.</p>
       </motion.div>
@@ -328,8 +377,26 @@ export default function SettingsPage() {
                 </div>
               </SettingsRow>
               <Divider />
-              <SettingsRow label="Password" description="Last changed: Unknown" icon={KeyRound}>
-                <span className="text-xs text-muted-foreground">••••••••</span>
+              <SettingsRow label="Security" description="Password and authentication" icon={KeyRound}>
+                <div className="flex flex-col items-end gap-1.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground font-mono">••••••••</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 text-[10px] uppercase font-bold px-3 border-foreground/10 hover:border-primary/30"
+                      onClick={() => setPasswordDialogOpen(true)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                  <button 
+                    onClick={handleForgotPassword}
+                    className="text-[10px] text-primary hover:underline font-bold uppercase tracking-wider"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </SettingsRow>
               <Divider />
               <SettingsRow label="Account Created" description={user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "—"} icon={Clock} />
@@ -565,6 +632,71 @@ export default function SettingsPage() {
               className="gap-2"
             >
               <Trash2 size={14} /> Delete Forever
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Password Change Dialog ─── */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound size={20} className="text-primary" /> Change Password
+            </DialogTitle>
+            <DialogDescription>
+              Enter your new password below. Make sure it&apos;s at least 6 characters long.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-2">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">New Password</p>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Confirm New Password</p>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-10"
+              />
+            </div>
+
+            {passwordError && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+                <XCircle size={14} className="text-destructive" />
+                <span className="text-xs font-bold text-destructive">{passwordError}</span>
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-primary" />
+                <span className="text-xs font-bold text-primary">{passwordSuccess}</span>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdatePassword}
+              disabled={isUpdatingPassword || !newPassword || !confirmPassword}
+              className="gap-2 min-w-[100px]"
+            >
+              {isUpdatingPassword ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+              Update Password
             </Button>
           </DialogFooter>
         </DialogContent>

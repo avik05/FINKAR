@@ -33,6 +33,9 @@ interface AuthState {
   resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>;
   // Check verification status via RPC (no session required)
   checkPublicVerification: (userId: string) => Promise<boolean>;
+  // Password management
+  updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -252,6 +255,22 @@ export const useAuthStore = create<AuthState>()(
           console.error('Unexpected error checking public verification:', err);
           return false;
         }
+      },
+
+      updatePassword: async (newPassword: string) => {
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+      },
+
+      resetPassword: async (email: string) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
       },
     }),
     { 

@@ -25,6 +25,8 @@ import {
   Download,
   Menu,
   X,
+  RefreshCw,
+  LogOut,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -388,11 +390,51 @@ export function Header() {
               <DropdownMenuSeparator className="bg-border/50" />
               <DropdownMenuGroup>
                 <DropdownMenuItem 
+                  onClick={() => router.push("/dashboard")}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5"
+                >
+                  <LayoutDashboard size={16} className="text-muted-foreground" />
+                  <span className="text-sm font-bold">Dashboard Home</span>
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  onClick={() => {
+                    // Trigger a refresh/sync if possible, or just tell the user
+                    window.location.reload();
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-primary/10 group"
+                >
+                  <RefreshCw size={16} className="text-muted-foreground group-hover:text-primary group-hover:rotate-180 transition-all duration-500" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold">Sync Account</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-tight">Last synced: Just now</span>
+                  </div>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
                   onClick={() => router.push("/settings")}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5"
                 >
                   <Settings size={16} className="text-muted-foreground" />
                   <span className="text-sm font-bold">Preferences</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
+                  onClick={() => router.push("/settings#data")}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5"
+                >
+                  <Download size={16} className="text-muted-foreground" />
+                  <span className="text-sm font-bold">Export Data</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-border/50" />
+
+                <DropdownMenuItem 
+                  onClick={() => router.push("/contact")}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-foreground/5"
+                >
+                  <Info size={16} className="text-muted-foreground" />
+                  <span className="text-sm font-bold">Support & Feedback</span>
                 </DropdownMenuItem>
                 
                 {user ? (
@@ -400,7 +442,7 @@ export function Header() {
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-destructive/10 text-destructive group"
                   >
-                    <Download size={16} className="group-hover:rotate-180 transition-transform" />
+                    <LogOut size={16} className="group-hover:translate-x-1 transition-transform" />
                     <span className="text-sm font-bold">Logout</span>
                   </DropdownMenuItem>
                 ) : (
