@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { Footer } from "@/components/layout/footer";
+import WordRotate from "@/components/ui/word-rotate";
+import { Spotlight } from "@/components/ui/spotlight";
+import RetroGrid from "@/components/ui/retro-grid";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import {
   Landmark,
   TrendingUp,
@@ -125,6 +129,8 @@ const features = [
   },
 ];
 
+import { LandingHeader } from "@/components/layout/landing-header";
+
 export default function HomePage() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll();
@@ -159,8 +165,13 @@ export default function HomePage() {
 
   return (
     <div ref={containerRef} className="relative bg-background">
-      {/* ── Fixed Hero Backdrop (Glassmorphic) ── */}
-      <div className="relative min-h-[200vh] pt-12 pb-24">
+      <LandingHeader />
+      {/* ── Fixed Hero Backdrop (Advanced) ── */}
+      <div className="relative min-h-[200vh] pt-32 pb-24 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="var(--primary)" />
+          <RetroGrid className="opacity-[0.15]" />
+        </div>
         
         {/* --- HERO SECTION --- */}
         <motion.section 
@@ -187,10 +198,21 @@ export default function HomePage() {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 leading-[0.9]"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-heading font-extrabold tracking-tighter mb-4 leading-[1.1] md:leading-[0.85] text-foreground"
             >
-              Finkar.<br />
-              <span className="text-primary italic">Finance, Simplified.</span>
+              <BrandLogo />
+              <br />
+              <span className="flex flex-wrap items-center justify-center gap-x-1 md:gap-x-2 lg:gap-x-3">
+                <WordRotate 
+                  words={["Finance", "Stocks", "Mutual Funds", "Expenses"]}
+                  className="text-primary italic h-fit"
+                  duration={3000}
+                />
+                <span className="text-foreground dark:text-white italic bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground/90 to-foreground dark:from-white dark:via-white/90 dark:to-white bg-[length:200%_100%] animate-shimmer">
+                  <span className="hidden md:inline">, </span>
+                  Simplified.
+                </span>
+              </span>
             </motion.h1>
 
             <motion.div
