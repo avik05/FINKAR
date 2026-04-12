@@ -13,7 +13,7 @@ interface MobileStockCardProps {
   onDelete: (id: string) => void;
 }
 
-const SNAPPY_SPRING = { type: "spring", stiffness: 500, damping: 35 };
+const SNAPPY_SPRING = { type: "spring", stiffness: 500, damping: 35 } as const;
 
 export const MobileStockCard = memo(function MobileStockCard({ holding, onDelete }: MobileStockCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);

@@ -23,7 +23,7 @@ interface MobileMutualFundCardProps {
   onDelete: (id: string) => void;
 }
 
-const SNAPPY_SPRING = { type: "spring", stiffness: 500, damping: 35 };
+const SNAPPY_SPRING = { type: "spring", stiffness: 500, damping: 35 } as const;
 
 export const MobileMutualFundCard = memo(function MobileMutualFundCard({ fund, onDelete }: MobileMutualFundCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
