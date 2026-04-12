@@ -76,8 +76,8 @@ export function generateInsightsFromData(data: {
       severity: data.monthlyExpense > data.totalCash * 0.5 ? "warning" : "info",
       timestamp: "This month",
       actionable: true,
-      actionLabel: "View Expenses",
-      actionHref: "/expenses",
+      actionLabel: "View Analysis",
+      actionHref: "/analytics",
     });
   }
 

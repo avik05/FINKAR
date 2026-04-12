@@ -13,14 +13,10 @@ import { useStocksStore } from "@/stores/stocks-store";
 import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 import { 
   getBurnRate, getRunway, calculateSavingsRate, 
-  getSpendingByCategory, getPortfolioPerformance, getForecast 
+  getSpendingByCategory, getPortfolioPerformance, getForecast,
+  getHistoricalPortfolioData, getAssetMix, getConcentrationRisk
 } from "@/lib/analytics-utils";
 
-// Dynamic imports for performance
-const InsightsTab = dynamic(() => import("@/components/analytics/insights-tab").then(m => m.InsightsTab), { 
-  ssr: false,
-  loading: () => <div className="h-[400px] w-full animate-pulse bg-foreground/[0.03] rounded-3xl" />
-});
 const SpendingTab = dynamic(() => import("@/components/analytics/spending-tab").then(m => m.SpendingTab), { ssr: false });
 const InvestmentsTab = dynamic(() => import("@/components/analytics/investments-tab").then(m => m.InvestmentsTab), { ssr: false });
 const StrategyTab = dynamic(() => import("@/components/analytics/strategy-tab").then(m => m.StrategyTab), { ssr: false });
@@ -34,7 +30,7 @@ const FADE_UP = {
 type TabId = 'insights' | 'spending' | 'investments' | 'strategy' | 'forecast';
 
 export default function AnalyticsPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('insights');
+  const [activeTab, setActiveTab] = useState<TabId>('spending');
   
   // Granular selectors to minimize re-renders
   const accounts = useAccountsStore((s) => s.accounts);
@@ -42,13 +38,19 @@ export default function AnalyticsPage() {
   const stocks = useStocksStore((s) => s.holdings);
   const funds = useMutualFundsStore((s) => s.funds);
 
-  // --- DATA CALCULATIONS ---
-  const stats = useMemo(() => {
+  // --- GRANULAR DATA CALCULATIONS ---
+  
+  // 1. General Metrics (Net Worth, Cash, Burn Rate, Runway, Savings Rate)
+  const generalStats = useMemo(() => {
     const cash = accounts.reduce((s, a) => s + a.balance, 0);
     const burn = getBurnRate(transactions);
-    const portfolio = getPortfolioPerformance(stocks, funds);
-    const netWorth = cash + portfolio.totalValue;
     
+    // Quick portfolio snapshot for net worth
+    const stockValue = stocks.reduce((sum, s) => sum + s.currentPrice * s.quantity, 0);
+    const fundsValue = funds.reduce((sum, f) => sum + f.current, 0);
+    const portfolioValue = stockValue + fundsValue;
+    const netWorth = cash + portfolioValue;
+
     const now = new Date();
     const thisMonthTx = transactions.filter(t => {
       const d = new Date(t.date);
@@ -57,25 +59,47 @@ export default function AnalyticsPage() {
     const monthlyIncome = thisMonthTx.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
     const monthlyExpense = thisMonthTx.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
-    const stocksValue = stocks.reduce((sum, s) => sum + s.currentPrice * s.quantity, 0);
-    const fundsValue = funds.reduce((sum, f) => sum + f.current, 0);
-
     return {
       netWorth,
       cash,
       burn,
       runway: getRunway(cash, burn.monthly),
       savingsRate: calculateSavingsRate(monthlyIncome, monthlyExpense),
-      portfolio,
-      stocksValue,
-      fundsValue,
-      spendingCategories: getSpendingByCategory(transactions),
-      forecasts: getForecast(netWorth, monthlyIncome - monthlyExpense)
+      monthlyIncome,
+      monthlyExpense
     };
   }, [accounts, transactions, stocks, funds]);
 
+  // 2. Spending-Specific Metrics (Categories)
+  const spendingStats = useMemo(() => ({
+    spendingCategories: getSpendingByCategory(transactions)
+  }), [transactions]);
+
+  // 3. Portfolio-Specific Metrics (Backtracking, Asset Mix, Risk)
+  const portfolioStats = useMemo(() => {
+    const portfolio = getPortfolioPerformance(stocks, funds);
+    return {
+      portfolio,
+      historicalData: getHistoricalPortfolioData(transactions, portfolio.totalValue),
+      assetMix: getAssetMix(stocks, funds, generalStats.cash),
+      concentrationRisk: getConcentrationRisk(stocks, funds)
+    };
+  }, [stocks, funds, transactions, generalStats.cash]);
+
+  // 4. Forecasts
+  const forecastStats = useMemo(() => ({
+    forecasts: getForecast(generalStats.netWorth, generalStats.monthlyIncome - generalStats.monthlyExpense)
+  }), [generalStats.netWorth, generalStats.monthlyIncome, generalStats.monthlyExpense]);
+
+  // Combine for components
+  const fullStats = {
+    ...generalStats,
+    ...spendingStats,
+    ...portfolioStats,
+    ...forecastStats
+  };
+
   const tabs = [
-    { id: 'insights', label: 'Insights', icon: Compass },
     { id: 'spending', label: 'Spending', icon: PieIcon },
     { id: 'investments', label: 'Portfolio', icon: BarChart3 },
     { id: 'strategy', label: 'Strategy', icon: Target },
@@ -120,13 +144,12 @@ export default function AnalyticsPage() {
           initial="hidden"
           animate="show"
           exit="hidden"
-          className="min-h-[400px] gpu-accelerated"
+          className="min-h-[400px] gpu-accelerated will-change-transform"
         >
-          {activeTab === 'insights' && <InsightsTab stats={stats} />}
-          {activeTab === 'spending' && <SpendingTab stats={stats} />}
-          {activeTab === 'investments' && <InvestmentsTab stats={stats} />}
-          {activeTab === 'strategy' && <StrategyTab stats={stats} />}
-          {activeTab === 'forecast' && <ForecastTab stats={stats} />}
+          {activeTab === 'spending' && <SpendingTab stats={fullStats} />}
+          {activeTab === 'investments' && <InvestmentsTab stats={fullStats} />}
+          {activeTab === 'strategy' && <StrategyTab stats={fullStats} />}
+          {activeTab === 'forecast' && <ForecastTab stats={fullStats} />}
         </motion.div>
       </AnimatePresence>
     </motion.div>

@@ -14,7 +14,7 @@ import { useMutualFundsStore } from "@/stores/mutualfunds-store";
 const AUTH_ROUTES = ["/login"];
 
 // Sensitive routes that require a VERIFIED account if logged in
-const SENSITIVE_ROUTES = ["/dashboard", "/banks", "/stocks", "/mutual-funds", "/expenses", "/goals", "/analytics", "/settings"];
+const SENSITIVE_ROUTES = ["/dashboard", "/banks", "/stocks", "/mutual-funds", "/goals", "/analytics", "/settings"];
 
 // Verification page
 const VERIFY_ROUTE = "/auth/verify";

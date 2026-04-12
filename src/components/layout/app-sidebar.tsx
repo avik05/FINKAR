@@ -43,7 +43,6 @@ const navItems = [
   { name: "Banks", url: "/banks", icon: Landmark },
   { name: "Stocks", url: "/stocks", icon: TrendingUp },
   { name: "Mutual Funds", url: "/mutual-funds", icon: PieChart },
-  { name: "Expenses", url: "/expenses", icon: CreditCard },
   { name: "Goals", url: "/goals", icon: Target },
   { name: "Settings", url: "/settings", icon: Settings },
   { name: "About", url: "/about", icon: Info },

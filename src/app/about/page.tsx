@@ -192,7 +192,7 @@ export default function AboutPage() {
               <br />
               <span className="flex flex-wrap items-center justify-center gap-x-1 md:gap-x-2 lg:gap-x-3">
                 <WordRotate 
-                  words={["Finance", "Stocks", "Mutual Funds", "Expenses"]}
+                  words={["Finance", "Stocks", "Funds", "Expenses"]}
                   className="text-primary italic h-fit"
                   duration={3000}
                 />
@@ -226,11 +226,11 @@ export default function AboutPage() {
             <motion.div className="flex flex-col items-center gap-12">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 shadow-lg active:scale-95 group transition-all"
+                className="inline-flex items-center gap-3 px-10 py-5 rounded-full bg-primary text-primary-foreground font-black text-base hover:brightness-110 shadow-[0_0_30px_rgba(0,255,156,0.3)] active:scale-95 group transition-all"
               >
-                <LayoutDashboard size={18} />
+                <LayoutDashboard size={20} />
                 EXPLORE DASHBOARD
-                <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                <ArrowUpRight size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
 
               <motion.div 
@@ -283,13 +283,13 @@ export default function AboutPage() {
                   <h2 className="text-5xl md:text-7xl font-heading font-black leading-[0.9] mb-8">The Story of <span className="text-primary">Finkar.</span></h2>
                   <div className="space-y-6 text-xl text-muted-foreground font-medium leading-relaxed">
                     <p>
-                      Finkar was born during my <strong className="text-foreground">second year of undergrad in 2022</strong>. I was tired of complicated spreadsheets and finance apps that were just billboards for credit cards.
+                      Finkar was born out of a simple but persistent frustration: managing personal wealth in the modern age is needlesly complex.
                     </p>
                     <p>
-                      Now, as I pursue my MBA at <strong className="text-primary tracking-tight font-black italic">Great Lakes, Chennai</strong>, the vision remains the same: to build a clean, powerful source of truth for your money.
+                      In 2022, we set out to build the &quot;anti-finance&quot; app. We were tired of cluttered spreadsheets and tools that felt more like billboards for credit cards than actual trackers. We wanted something different—a clinical, precise, and visually stunning source of truth for every rupee.
                     </p>
                     <p>
-                      We don&apos;t sell your data, and we don&apos;t push loans. We just give you the <em className="text-foreground font-bold italic underline decoration-primary/40 decoration-4 underline-offset-4">clarity you deserve.</em>
+                      Our vision is to empower the next generation of investors with <em className="text-foreground font-bold italic underline decoration-primary/40 decoration-4 underline-offset-4">radical financial clarity.</em> We don&apos;t sell your data, and we don&apos;t push loans. We just provide the insights you deserve to control your destiny.
                     </p>
                   </div>
                 </ScrollReveal>

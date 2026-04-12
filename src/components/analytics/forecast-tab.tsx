@@ -6,9 +6,9 @@ import { TrendingUp } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINRCompact } from "@/lib/format";
 
-export function ForecastTab({ stats }: { stats: any }) {
+export const ForecastTab = React.memo(function ForecastTab({ stats }: { stats: any }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 gpu-accelerated will-change-transform">
       <FinanceCard className="lg:col-span-2 p-6 min-h-[400px]">
         <h3 className="font-heading font-bold mb-8">Wealth Milestone Tracker</h3>
         <div className="space-y-8">
@@ -53,4 +53,4 @@ export function ForecastTab({ stats }: { stats: any }) {
       </FinanceCard>
     </div>
   );
-}
+});

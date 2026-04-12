@@ -18,7 +18,6 @@ export default function robots(): MetadataRoute.Robots {
         '/stocks/', 
         '/mutual-funds/', 
         '/banks/', 
-        '/expenses/', 
         '/goals/', 
         '/settings/'
       ],

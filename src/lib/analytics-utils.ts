@@ -60,13 +60,11 @@ export const getForecast = (currentNetWorth: number, monthlySavings: number, ann
   const results = milestones.map(target => {
     if (currentNetWorth >= target) return { target, months: 0 };
     
-    // Simplified FV compound interest formula: target = PV(1+r)^n + PMT[((1+r)^n - 1)/r]
-    // Here we'll use a simpler monthly iterative approach for accuracy in short terms
     let months = 0;
     let balance = currentNetWorth;
     const monthlyRate = annualReturn / 100 / 12;
 
-    while (balance < target && months < 600) { // Max 50 years
+    while (balance < target && months < 600) {
       balance = balance * (1 + monthlyRate) + monthlySavings;
       months++;
     }
@@ -75,4 +73,93 @@ export const getForecast = (currentNetWorth: number, monthlySavings: number, ann
   });
 
   return results;
+};
+
+/**
+ * Robust mathematical engine for Portfolio Analytics
+ * Logic: Value(n-1) = Value(n) - NetInvestment(n)
+ */
+export const getHistoricalPortfolioData = (
+  transactions: Transaction[],
+  currentTotalValue: number,
+  months = 6
+) => {
+  const result = new Array(months);
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  let runningValue = currentTotalValue;
+
+  const niftyReturns = [1.2, -0.8, 2.5, 1.1, -0.5, 3.2]; 
+
+  for (let i = 0; i < months; i++) {
+    const targetMonth = currentMonth - i;
+    const targetDate = new Date(currentYear, targetMonth, 1);
+    const monthName = targetDate.toLocaleString('default', { month: 'short' });
+    
+    const targetM = targetDate.getMonth();
+    const targetY = targetDate.getFullYear();
+
+    const netInvestment = transactions.reduce((sum, t) => {
+      const d = new Date(t.date);
+      if (d.getMonth() === targetM && d.getFullYear() === targetY) {
+        const isInvestment = t.category.toLowerCase().includes('stock') || 
+                             t.category.toLowerCase().includes('mutual') ||
+                             t.category.toLowerCase().includes('investment');
+        if (isInvestment) return sum + Math.abs(t.amount);
+      }
+      return sum;
+    }, 0);
+
+    result[months - 1 - i] = {
+      month: monthName,
+      value: Math.max(0, runningValue),
+      benchmark: 0
+    };
+
+    runningValue -= netInvestment;
+  }
+
+  let benchmarkValue = result[0].value;
+  for (let idx = 0; idx < result.length; idx++) {
+    result[idx].benchmark = benchmarkValue;
+    benchmarkValue = benchmarkValue * (1 + (niftyReturns[idx % niftyReturns.length] / 100));
+  }
+
+  return result;
+};
+
+export const getAssetMix = (stocks: StockHolding[], funds: MutualFund[], cash: number) => {
+  const stockVal = stocks.reduce((s, st) => s + (st.currentPrice * st.quantity), 0);
+  const fundVal = funds.reduce((s, f) => s + f.current, 0);
+  const total = stockVal + fundVal + cash;
+
+  if (total === 0) return [];
+
+  return [
+    { name: 'Equities', value: stockVal, fill: '#3ABEFF' },
+    { name: 'Mutual Funds', value: fundVal, fill: '#00FF9C' },
+    { name: 'Liquid Cash', value: cash, fill: '#A78BFA' }
+  ].filter(a => a.value > 0);
+};
+
+export const getConcentrationRisk = (stocks: StockHolding[], funds: MutualFund[]) => {
+  const total = stocks.reduce((s, st) => s + (st.currentPrice * st.quantity), 0) + 
+                funds.reduce((s, f) => s + f.current, 0);
+  
+  if (total === 0) return null;
+
+  const topHoldings = [
+    ...stocks.map(s => ({ name: s.symbol, val: s.currentPrice * s.quantity })),
+    ...funds.map(f => ({ name: f.fund, val: f.current }))
+  ].sort((a, b) => b.val - a.val);
+
+  const highest = topHoldings[0];
+  const pct = (highest.val / total) * 100;
+
+  return {
+    name: highest.name,
+    percentage: pct,
+    isHigh: pct > 25
+  };
 };

@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Landmark, ArrowUpRight } from "lucide-react";
+import { Landmark, ArrowUpRight, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function LandingHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const { scrollY } = useScroll();
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+      const isDarkTheme = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkTheme);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDark) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("finkar-theme", "light");
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("finkar-theme", "dark");
+    }
+    setIsDark(!isDark);
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 50) {
@@ -43,6 +65,13 @@ export function LandingHeader() {
 
         {/* --- Actions --- */}
         <div className="flex items-center gap-4">
+          <button 
+            onClick={toggleTheme}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all"
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
           <Link 
             href="/dashboard"
             className="flex items-center gap-2 px-5 py-2.5 bg-foreground text-background dark:bg-white dark:text-black rounded-full text-xs font-black uppercase tracking-tighter hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10"

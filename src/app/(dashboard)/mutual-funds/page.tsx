@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Target, Trash2 } from "lucide-react";
+import { Target, Trash2, Activity } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
@@ -12,7 +12,10 @@ import { AuthRequiredDialog } from "@/components/shared/auth-required-dialog";
 import { AddFundDialog } from "@/components/dialogs/add-fund-dialog";
 import { EditFundDialog } from "@/components/dialogs/edit-fund-dialog";
 import { FetchFundsDialog } from "@/components/dialogs/fetch-funds-dialog";
+import { MobileMutualFundCard } from "@/components/mutual-funds/mobile-fund-card";
+import { MobileMutualFundChartTabs } from "@/components/mutual-funds/mobile-fund-chart-tabs";
 import { MutualFund } from "@/types/finance";
+import { cn } from "@/lib/utils";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 10 },
@@ -84,7 +87,7 @@ export default function MutualFundsPage() {
 
   // Invested vs Current comparison
   const comparisonData = funds.map((f) => ({
-    name: f.fund.length > 15 ? f.fund.substring(0, 15) + "…" : f.fund,
+    name: (f.fund || "").length > 10 ? (f.fund || "").substring(0, 10) + "…" : (f.fund || ""),
     Invested: f.invested,
     Current: f.current,
   }));
@@ -117,7 +120,38 @@ export default function MutualFundsPage() {
         </motion.div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+          {/* Summary Cards - Mobile Optimized */}
+          <div className="md:hidden space-y-3">
+            <motion.div variants={FADE_UP}>
+              <FinanceCard className="p-4 border-border/40 bg-gradient-to-br from-card to-card/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Net Value</span>
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Activity size={16} className="text-primary" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-heading font-black mt-1 text-foreground tracking-tighter truncate">{formatINR(totalValue)}</h2>
+              </FinanceCard>
+            </motion.div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <motion.div variants={FADE_UP}>
+                <FinanceCard className="p-4 border-border/40">
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-black text-blue-500">Invested</span>
+                  <p className="text-sm font-black text-foreground mt-1">{formatINR(totalInvested)}</p>
+                </FinanceCard>
+              </motion.div>
+              <motion.div variants={FADE_UP}>
+                <FinanceCard className="p-4 border-border/40">
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-black text-primary">Monthly SIP</span>
+                  <p className="text-sm font-black text-foreground mt-1">{formatINR(totalSip)}</p>
+                </FinanceCard>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Summary Cards - Desktop */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             <motion.div variants={FADE_UP}>
               <FinanceCard className="p-3 md:p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 shadow-sm shadow-blue-500/5">
                 <span className="text-[8px] md:text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Invested</span>
@@ -153,7 +187,17 @@ export default function MutualFundsPage() {
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Charts Row - Switch to Tabs on Mobile */}
+          <div className="md:hidden">
+             <motion.div variants={FADE_UP}>
+               <MobileMutualFundChartTabs 
+                 categoryData={categoryData} 
+                 comparisonData={comparisonData} 
+               />
+             </motion.div>
+          </div>
+
+          <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div variants={FADE_UP}>
               <FinanceCard className="p-6">
                 <h2 className="text-lg font-heading font-semibold mb-4 text-foreground">Category Allocation</h2>
@@ -238,11 +282,15 @@ export default function MutualFundsPage() {
 
           <motion.div variants={FADE_UP}>
             <FinanceCard className="p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-lg font-heading font-semibold text-foreground">Fund Holdings</h2>
-              <AddFundDialog />
-            </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 className="text-lg font-heading font-semibold text-foreground">Fund Holdings</h2>
+                <div className="hidden md:block">
+                  <AddFundDialog />
+                </div>
+              </div>
+              
+              {/* Desktop Grid */}
+              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
                 {funds.map((mf) => {
                   const gain = mf.current - mf.invested;
                   return (
@@ -313,6 +361,17 @@ export default function MutualFundsPage() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Mobile Card List */}
+              <div className="md:hidden space-y-2 bg-foreground/[0.01]">
+                {funds.map((mf) => (
+                  <MobileMutualFundCard 
+                    key={mf.id} 
+                    fund={mf} 
+                    onDelete={handleDelete} 
+                  />
+                ))}
               </div>
             </FinanceCard>
           </motion.div>

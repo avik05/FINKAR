@@ -13,6 +13,8 @@ import { AddStockDialog } from "@/components/dialogs/add-stock-dialog";
 import { EditStockDialog } from "@/components/dialogs/edit-stock-dialog";
 import { SellStockDialog } from "@/components/dialogs/sell-stock-dialog";
 import { FetchStocksDialog } from "@/components/dialogs/fetch-stocks-dialog";
+import { MobileStockCard } from "@/components/stocks/mobile-stock-card";
+import { MobileChartCarousel } from "@/components/stocks/mobile-chart-carousel";
 import { cn } from "@/lib/utils";
 
 const FADE_UP = {
@@ -118,8 +120,38 @@ export default function StocksPage() {
         </motion.div>
       ) : (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+          {/* Summary Cards - Mobile Optimized */}
+          <div className="md:hidden space-y-3">
+            <motion.div variants={FADE_UP}>
+              <FinanceCard className="p-4 border-border/40 bg-gradient-to-br from-card to-card/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Net Portfolio Value</span>
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <TrendingUp size={16} className="text-primary" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-heading font-black mt-1 text-foreground tracking-tighter truncate">{formatINR(totalCurrent)}</h2>
+              </FinanceCard>
+            </motion.div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <motion.div variants={FADE_UP}>
+                <FinanceCard className="p-4 border-border/40">
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-black">Invested</span>
+                  <p className="text-sm font-black text-foreground mt-1">{formatINR(totalInvested)}</p>
+                </FinanceCard>
+              </motion.div>
+              <motion.div variants={FADE_UP}>
+                <FinanceCard className="p-4 border-border/40">
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-black">Active Stocks</span>
+                  <p className="text-sm font-black text-foreground mt-1">{holdings.length}</p>
+                </FinanceCard>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Summary Cards - Desktop */}
+          <div className="hidden md:grid grid-cols-3 gap-6">
             <motion.div variants={FADE_UP}>
               <FinanceCard className="p-3 md:p-6 border-border/50">
                 <span className="text-[9px] md:text-xs text-muted-foreground uppercase tracking-widest font-black">Portfolio Value</span>
@@ -132,7 +164,7 @@ export default function StocksPage() {
                 <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{formatINR(totalInvested)}</h2>
               </FinanceCard>
             </motion.div>
-            <motion.div variants={FADE_UP} className="col-span-2 md:col-span-1">
+            <motion.div variants={FADE_UP}>
               <FinanceCard className="p-3 md:p-6 border-border/50">
                 <span className="text-[9px] md:text-xs text-muted-foreground uppercase tracking-widest font-black">Holdings</span>
                 <h2 className="text-base md:text-2xl font-heading font-black mt-0.5 text-foreground tracking-tighter truncate">{holdings.length} stocks</h2>
@@ -140,8 +172,14 @@ export default function StocksPage() {
             </motion.div>
           </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Charts Row - Switch to Carousel on Mobile */}
+          <div className="md:hidden">
+             <motion.div variants={FADE_UP}>
+               <MobileChartCarousel allocationData={allocationData} plData={plData} />
+             </motion.div>
+          </div>
+
+          <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div variants={FADE_UP}>
               <FinanceCard className="p-6">
                 <h2 className="text-lg font-heading font-semibold mb-4 text-foreground">Portfolio Allocation</h2>
@@ -223,7 +261,9 @@ export default function StocksPage() {
             <FinanceCard className="w-full">
               <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg font-heading font-semibold text-foreground">Holdings</h2>
-                <AddStockDialog />
+                <div className="hidden md:block">
+                  <AddStockDialog />
+                </div>
               </div>
               <div className="overflow-x-auto h-full">
                 {/* Desktop Table */}
@@ -288,68 +328,19 @@ export default function StocksPage() {
                 </table>
 
                 {/* Mobile Card List */}
-                <div className="md:hidden divide-y divide-border/10">
+                <div className="md:hidden divide-y divide-border/5 bg-foreground/[0.01]">
                   {holdings.length === 0 ? (
                     <div className="p-12 text-center text-muted-foreground text-sm">
                       No holdings to display.
                     </div>
                   ) : (
-                    holdings.map((h) => {
-                      const pl = (h.currentPrice - h.avgBuyPrice) * h.quantity;
-                      const plPct = h.avgBuyPrice > 0 ? ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
-                      return (
-                        <div key={h.id} className="p-5 active:bg-primary/5 transition-all group">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-black text-foreground truncate transition-colors">
-                                  {h.symbol}
-                                </h4>
-                                <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                  {h.sector}
-                                </span>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">
-                                {h.name}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-base font-black tabular-nums text-foreground">
-                                {formatINR(h.currentPrice * h.quantity)}
-                              </div>
-                              <div className={cn(
-                                "text-[10px] font-black uppercase mt-1 px-2 py-0.5 rounded-lg inline-block",
-                                pl >= 0 ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"
-                              )}>
-                                {pl >= 0 ? "+" : ""}{plPct.toFixed(1)}%
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Qty</p>
-                              <p className="text-xs font-mono font-bold text-foreground">{h.quantity}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Avg Price</p>
-                              <p className="text-xs font-mono font-bold text-foreground">{formatINR(h.avgBuyPrice)}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex justify-end gap-3 pt-4 border-t border-border/5">
-                            <SellStockDialog holding={h} />
-                            <EditStockDialog holding={h} />
-                            <button 
-                              onClick={() => handleDelete(h.id)} 
-                              className="p-2 rounded-lg text-destructive/60 active:bg-destructive/10 transition-all active:scale-95"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
+                    holdings.map((h) => (
+                      <MobileStockCard 
+                        key={h.id} 
+                        holding={h} 
+                        onDelete={handleDelete} 
+                      />
+                    ))
                   )}
                 </div>
               </div>

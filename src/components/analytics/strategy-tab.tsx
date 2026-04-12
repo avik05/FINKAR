@@ -54,7 +54,7 @@ const PROFILE_META = {
   },
 } as const;
 
-export function StrategyTab({ stats }: { stats: any }) {
+export const StrategyTab = React.memo(function StrategyTab({ stats }: { stats: any }) {
   const [selectedProfile, setSelectedProfile] = useState<RiskProfile>("moderate");
 
   // Pull raw data from stores — these are the actual user holdings
@@ -295,4 +295,4 @@ export function StrategyTab({ stats }: { stats: any }) {
       </FinanceCard>
     </div>
   );
-}
+});
