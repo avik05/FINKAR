@@ -41,15 +41,15 @@ jobs:
 
       - name: Create Keys (for First Build)
         run: |
-          # Create a dummy keystore for the unsigned/debug build
-          # In a real production setup, these would be GitHub Secrets
-          keytool -genkey -v -keystore android.keystore -alias androidkey -keyalg RSA -keysize 2048 -validity 10000 -storepass "finkar123" -keypass "finkar123" -dname "CN=Finkar, OU=Engineering, O=Finkar, L=Unknown, S=Unknown, C=US"
+          # NOTE: In a production setup, use GitHub Secrets (e.g., ${{ secrets.KEYSTORE_PASSWORD }})
+          # This dummy step is for demonstration/debug only.
+          keytool -genkey -v -keystore android.keystore -alias androidkey -keyalg RSA -keysize 2048 -validity 10000 -storepass "temporary_password" -keypass "temporary_password" -dname "CN=Finkar, OU=Engineering, O=Finkar, L=Unknown, S=Unknown, C=US"
 
       - name: Build Android Bundle
         run: |
           # Use 'yes' pipe to handle any remaining interactive prompts automatically
-          export BUBBLEWRAP_KEYSTORE_PASSWORD="finkar123"
-          export BUBBLEWRAP_KEY_PASSWORD="finkar123"
+          export BUBBLEWRAP_KEYSTORE_PASSWORD="temporary_password"
+          export BUBBLEWRAP_KEY_PASSWORD="temporary_password"
           yes | bubblewrap build --skipSigning
 
       - name: Upload Android Bundle
