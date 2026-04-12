@@ -6,7 +6,7 @@ import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { SellStockDialog } from "@/components/dialogs/sell-stock-dialog";
 import { EditStockDialog } from "@/components/dialogs/edit-stock-dialog";
-import { StockHolding } from "@/stores/stocks-store";
+import { StockHolding } from "@/types/finance";
 
 interface MobileStockCardProps {
   holding: StockHolding;
