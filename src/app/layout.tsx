@@ -84,6 +84,7 @@ export const viewport = {
   viewportFit: "cover",
 };
 
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileBottomWrapper } from "@/components/layout/mobile-bottom-wrapper";
 import { StoreHydrator } from "@/components/shared/store-hydrator";
 import { AiChatbotPanel } from "@/components/shared/ai-chatbot-panel";
@@ -122,9 +123,9 @@ export default function RootLayout({
           }}
         />
         
-        <CursorGlow />
         <AuthGuard>
           <StoreHydrator />
+          <AppSidebar />
           <div className="relative min-h-screen flex flex-col">
             {children}
           </div>

@@ -27,6 +27,7 @@ import {
   X,
   RefreshCw,
   LogOut,
+  Palette
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -92,30 +93,36 @@ export function Header() {
   };
 
   // Theme state
-  const [isDark, setIsDark] = useState(true);
+  const [activeTheme, setActiveTheme] = useState("emerald");
 
   // Mounted state for hydration safety
   const [mounted, setMounted] = useState(false);
 
   // Check theme on mount
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setMounted(true);
-      const isDarkTheme = document.documentElement.classList.contains("dark");
-      setIsDark(isDarkTheme);
-    });
-    return () => cancelAnimationFrame(frame);
+    setMounted(true);
+    const savedTheme = localStorage.getItem("finkar-theme") || "emerald";
+    setTheme(savedTheme);
   }, []);
 
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("finkar-theme", "light");
+  const setTheme = (theme: string) => {
+    const root = document.documentElement;
+    
+    // Remove all theme classes and attributes
+    root.classList.remove("dark");
+    root.removeAttribute("data-theme");
+    
+    if (theme === "light") {
+      // Stay light
+    } else if (theme === "emerald") {
+      root.classList.add("dark");
     } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("finkar-theme", "dark");
+      root.classList.add("dark");
+      root.setAttribute("data-theme", theme);
     }
-    setIsDark(!isDark);
+    
+    localStorage.setItem("finkar-theme", theme);
+    setActiveTheme(theme);
   };
   
   const accounts = useAccountsStore((s) => s.accounts);
@@ -293,13 +300,43 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Theme Toggle */}
-        <button 
-          onClick={toggleTheme}
-          className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all"
-        >
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/* Theme Selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-all outline-none">
+                <Palette size={18} />
+              </button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-48 p-1 rounded-2xl border-border/50 backdrop-blur-xl">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-3 py-2">Visual Style</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
+              
+              {[
+                { id: 'emerald', label: 'Emerald', color: '#00FF9C' },
+                { id: 'light', label: 'Daylight', color: '#00C77B' },
+                { id: 'midnight', label: 'Midnight', color: '#FFFFFF' },
+                { id: 'rose', label: 'Rose Gold', color: '#E29578' },
+                { id: 'nord', label: 'Arctic', color: '#7AA2F7' },
+                { id: 'luxury', label: 'Obsidian', color: '#D4AF37' },
+              ].map((t) => (
+                <DropdownMenuItem 
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  className="flex items-center justify-between rounded-xl px-3 py-2.5 cursor-pointer focus:bg-primary/10 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: t.color }} />
+                    <span className={`text-sm font-medium ${activeTheme === t.id ? 'text-primary' : ''}`}>{t.label}</span>
+                  </div>
+                  {activeTheme === t.id && <CheckCircle2 size={14} className="text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="h-4 w-[1px] bg-border/50 mx-2 hidden sm:block" />
 

@@ -1,4 +1,5 @@
 import React from "react";
+import Script from "next/script";
 
 /**
  * SEO Structured Data (JSON-LD)
@@ -95,15 +96,18 @@ export function JsonLd() {
 
   return (
     <>
-      <script
+      <Script
+        id="schema-org"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <script
+      <Script
+        id="schema-software"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
-      <script
+      <Script
+        id="schema-faq"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />

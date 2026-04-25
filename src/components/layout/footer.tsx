@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Instagram, Linkedin, Heart, Eye } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export function Footer() {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
@@ -10,22 +11,34 @@ export function Footer() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setMounted(true);
-      // Simulate a realistic visitor counter using localStorage
-      const key = "finkar_visitor_count";
-      let count = parseInt(localStorage.getItem(key) || "1283");
-      
-      // Increment the count once per session
-      if (!sessionStorage.getItem("finkar_visited")) {
-        count += Math.floor(Math.random() * 3) + 1; // Add 1-3 new visitors
-        localStorage.setItem(key, count.toString());
-        sessionStorage.setItem("finkar_visited", "true");
+    const trackVisitor = async () => {
+      try {
+        // Only increment once per session
+        if (!sessionStorage.getItem("finkar_visited")) {
+          await supabase.rpc('increment_visitor_count');
+          sessionStorage.setItem("finkar_visited", "true");
+        }
+        
+        // Fetch the current count
+        const { data, error } = await supabase
+          .from('visitor_stats')
+          .select('count')
+          .eq('id', 1)
+          .single();
+          
+        if (data && !error) {
+          setVisitorCount(data.count);
+        } else {
+          // Fallback if table doesn't exist yet
+          setVisitorCount(1286);
+        }
+      } catch (err) {
+        console.error("Error tracking visitor:", err);
+        setVisitorCount(1286);
       }
-      
-      setVisitorCount(count);
-    });
-    return () => cancelAnimationFrame(frame);
+    };
+
+    trackVisitor();
   }, []);
 
   return (

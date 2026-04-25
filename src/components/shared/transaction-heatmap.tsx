@@ -231,34 +231,44 @@ export function TransactionHeatmap() {
       </div>
 
       {/* ── Floating Tooltip (Desktop Only) ── */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {hoveredDay && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              x: mousePos.x + (mousePos.x > totalW / 2 ? -220 : 20), // Smart flip
+              y: mousePos.y - 110
+            }}
+            exit={{ opacity: 0, scale: 0.95 }}
             style={{ 
-              position: 'fixed',
-              top: mousePos.y + 120, // Offset to avoid cursor
-              left: mousePos.x + 300, 
+              position: 'absolute',
+              left: 0,
+              top: 0,
               zIndex: 100,
               pointerEvents: 'none'
             }}
-            className="hidden md:block p-3 bg-card/90 backdrop-blur-2xl border border-primary/20 rounded-2xl shadow-2xl min-w-[160px] isolation-auto"
+            className="hidden md:block p-3 bg-card/95 backdrop-blur-2xl border border-primary/20 rounded-2xl shadow-2xl min-w-[180px] isolation-auto"
           >
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] leading-none mb-1.5">
-              {format(parseISO(hoveredDay.date), "EEEE")}
-            </p>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">
+                {format(parseISO(hoveredDay.date), "EEEE")}
+              </span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase opacity-50">
+                {format(parseISO(hoveredDay.date), "dd/MM")}
+              </span>
+            </div>
             <h4 className="text-sm font-black text-foreground mb-3 tracking-tight">
               {format(parseISO(hoveredDay.date), "dd MMM yyyy")}
             </h4>
-            <div className="flex justify-between items-center bg-foreground/5 rounded-xl p-2.5 border border-border/10">
+            <div className="grid grid-cols-2 gap-2 bg-foreground/5 rounded-xl p-2.5 border border-border/10">
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase">Activity</span>
-                <span className="text-xs font-black text-foreground">{hoveredDay.count} Txs</span>
+                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Activity</span>
+                <span className="text-xs font-black text-foreground">{hoveredDay.count} Tx</span>
               </div>
-              <div className="text-right">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase">Volume</span>
+              <div className="text-right border-l border-border/10 pl-2">
+                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Volume</span>
                 <span className="text-xs font-black text-foreground">{formatINRCompact(hoveredDay.total)}</span>
               </div>
             </div>

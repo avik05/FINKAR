@@ -14,10 +14,11 @@ import { AddTransactionDialog } from "@/components/dialogs/add-transaction-dialo
 import { TransactionHeatmap } from "@/components/shared/transaction-heatmap";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLayoutStore } from "@/stores/layout-store";
+import { cn } from "@/lib/utils";
 import { FinancialPulse } from "@/components/dashboard/financial-pulse";
 import { InstallCard } from "@/components/shared/install-card";
 import {
-  PieChart, Pie, Cell, Sector, ResponsiveContainer
+  PieChart, Pie, Cell, Sector, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from "recharts";
 
 const FADE_UP = {
@@ -88,7 +89,35 @@ export default function DashboardPage() {
     return { monthlyExpense: expense, monthlyIncome: income };
   }, [filteredTransactions]);
 
-  // Asset allocation for donut
+  // Radial Activity Rings data
+  const radialData = useMemo(() => {
+    if (netWorth === 0) return [];
+    return [
+      { 
+        name: "Cash", 
+        value: (cashBalance / netWorth) * 100, 
+        actualValue: cashBalance,
+        fill: "var(--primary)", 
+        gradient: "url(#cashGrad)" 
+      },
+      { 
+        name: "Stocks", 
+        value: (stockValue / netWorth) * 100, 
+        actualValue: stockValue,
+        fill: "#60A5FA", 
+        gradient: "url(#equityGrad)" 
+      },
+      { 
+        name: "Funds", 
+        value: (mfValue / netWorth) * 100, 
+        actualValue: mfValue,
+        fill: "#A855F7", 
+        gradient: "url(#mfGrad)" 
+      },
+    ].filter((a) => a.value > 0)
+     .sort((a, b) => b.value - a.value); // Outermost is largest
+  }, [cashBalance, stockValue, mfValue, netWorth]);
+
   const allocation = useMemo(() => [
     { name: "Cash (Banks)", value: Math.max(0, cashBalance), color: "var(--primary)", gradient: "url(#cashGrad)" },
     { name: "Stocks", value: stockValue, color: "#60A5FA", gradient: "url(#equityGrad)" },
@@ -144,16 +173,18 @@ export default function DashboardPage() {
           <h1 className="text-3xl lg:text-4xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
             Welcome back, {user?.name?.split(" ")[0] || "there"}
           </h1>
-          <p className="text-muted-foreground mt-2 font-medium tracking-wide">Here is your financial pulse for today.</p>
+
         </div>
-        <AddTransactionDialog>
-          <motion.button 
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm shadow-sm no-select tap-highlight-none"
-          >
-            <Plus size={16} /> Quick Add
-          </motion.button>
-        </AddTransactionDialog>
+        <div className="hidden md:block">
+          <AddTransactionDialog>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm shadow-sm no-select tap-highlight-none"
+            >
+              <Plus size={16} /> Quick Add
+            </motion.button>
+          </AddTransactionDialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
@@ -227,87 +258,101 @@ export default function DashboardPage() {
       {allocation.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-foreground perf-offscreen">
           <motion.div variants={FADE_UP} className="lg:col-span-2">
-            <FinanceCard className="p-6 h-[400px] flex flex-col items-center justify-center relative overflow-hidden group gpu-accelerated">
-              <div className="flex justify-between items-start w-full mb-4">
+            <FinanceCard className="p-6 h-[420px] flex flex-col relative overflow-hidden group glass-card gpu-accelerated border-primary/5">
+              {/* Technical Background Grid */}
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '24px 24px' }} 
+              />
+
+              <div className="flex justify-between items-start w-full mb-2 z-10">
                 <div>
-                  <h2 className="text-lg font-heading font-semibold">Asset Allocation</h2>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Portfolio Pulse</p>
+                  <h2 className="text-lg font-heading font-black tracking-tight text-foreground uppercase">Asset Allocation</h2>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold opacity-60">Portfolio Composition</p>
                 </div>
-                {activeIndex !== null && (
-                  <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-right">
-                    <p className="text-[10px] font-black text-primary uppercase">{allocation[activeIndex].name}</p>
-                    <p className="text-sm font-bold">{((allocation[activeIndex].value / netWorth) * 100).toFixed(1)}%</p>
-                  </motion.div>
-                )}
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">Net Worth</p>
+                  <p className="text-lg font-black text-foreground tracking-tighter">{formatINRCompact(netWorth)}</p>
+                </div>
               </div>
 
-              <div className="flex-1 w-full relative min-h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <defs>
-                      <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
-                      </linearGradient>
-                      <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#60A5FA" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#2563EB" stopOpacity={1}/>
-                      </linearGradient>
-                      <linearGradient id="mfGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#A855F7" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
-                      </linearGradient>
-                    </defs>
-                    <Pie
-                      {...({
-                        activeIndex: activeIndex !== null ? activeIndex : undefined,
-                        activeShape: renderActiveShape,
-                        data: allocation,
-                        cx: "50%",
-                        cy: "50%",
-                        innerRadius: 70,
-                        outerRadius: 95,
-                        paddingAngle: 5,
-                        dataKey: "value",
-                        stroke: "none",
-                        onMouseEnter: (_: unknown, index: number) => setActiveIndex(index),
-                        onMouseLeave: () => setActiveIndex(null),
-                        animationDuration: 1500
-                      } as Record<string, unknown>)}
+              <div className="flex-1 w-full relative min-h-[280px] z-10 flex items-center justify-center">
+                <div className="w-full h-full max-w-[320px] max-h-[320px] relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart 
+                      cx="50%" 
+                      cy="50%" 
+                      innerRadius="60%" 
+                      outerRadius="100%" 
+                      barSize={12} 
+                      data={radialData}
+                      startAngle={90}
+                      endAngle={450}
                     >
-                      {allocation.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.gradient} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                
-                {/* Central Content */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                  <motion.div
-                    animate={{ scale: activeIndex !== null ? 1.05 : 1 }}
-                    className="space-y-0.5"
-                  >
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                      {activeIndex !== null ? allocation[activeIndex].name : "Net Worth"}
-                    </p>
-                    <h4 className="text-xl md:text-2xl font-black text-foreground">
-                      {activeIndex !== null ? formatINRCompact(allocation[activeIndex].value) : formatINRCompact(netWorth)}
-                    </h4>
-                  </motion.div>
+                      <defs>
+                        <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--primary)" stopOpacity={1}/>
+                          <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                        </linearGradient>
+                        <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#60A5FA" stopOpacity={1}/>
+                          <stop offset="100%" stopColor="#2563EB" stopOpacity={1}/>
+                        </linearGradient>
+                        <linearGradient id="mfGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#A855F7" stopOpacity={1}/>
+                          <stop offset="100%" stopColor="#7C3AED" stopOpacity={1}/>
+                        </linearGradient>
+                      </defs>
+                      <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                      <RadialBar
+                        background={{ fill: 'var(--foreground)', opacity: 0.03 }}
+                        dataKey="value"
+                        cornerRadius={10}
+                        onMouseEnter={(_: any, index: number) => setActiveIndex(index)}
+                        onMouseLeave={() => setActiveIndex(null)}
+                        onClick={(_: any, index: number) => setActiveIndex(activeIndex === index ? null : index)}
+                      >
+                        {radialData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.gradient} />
+                        ))}
+                      </RadialBar>
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  
+                  {/* Central Content - Ultra Clean */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-20">
+                    <motion.div
+                      animate={{ scale: activeIndex !== null ? 1.05 : 1 }}
+                      className="space-y-0"
+                    >
+                      <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em] opacity-40 mb-1">
+                        {activeIndex !== null ? radialData[activeIndex].name : "Portfolio"}
+                      </p>
+                      <h4 className="text-3xl font-black text-foreground tracking-tighter">
+                        {activeIndex !== null ? `${radialData[activeIndex].value.toFixed(0)}%` : "Mix"}
+                      </h4>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-6 mt-4 w-full">
-                {allocation.map((item, i) => (
+              {/* Legend: Minimalist Pill Chips */}
+              <div className="flex flex-wrap justify-center gap-2 mt-2 w-full z-10 pb-4">
+                {radialData.map((item, i) => (
                   <div 
                     key={item.name} 
-                    className={`flex items-center gap-2 cursor-pointer transition-all ${activeIndex === i ? 'scale-110 opacity-100' : 'opacity-60 hover:opacity-100'}`}
+                    className={cn(
+                      "flex items-center gap-2.5 px-3 py-1.5 rounded-full border transition-all duration-300 cursor-pointer no-select tap-highlight-none",
+                      activeIndex === i 
+                        ? "bg-foreground/10 border-white/20 shadow-lg scale-105" 
+                        : "bg-foreground/[0.02] border-white/5 opacity-50 hover:opacity-100"
+                    )}
                     onMouseEnter={() => setActiveIndex(i)}
                     onMouseLeave={() => setActiveIndex(null)}
+                    onClick={() => setActiveIndex(activeIndex === i ? null : i)}
                   >
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">{item.name}</span>
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.fill }} />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-foreground">{item.name}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground">{formatINRCompact(item.actualValue)}</span>
                   </div>
                 ))}
               </div>

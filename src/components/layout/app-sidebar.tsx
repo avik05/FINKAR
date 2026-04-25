@@ -20,8 +20,25 @@ import {
   ExternalLink,
   HelpCircle,
   LifeBuoy,
-  MessageSquare
+  MessageSquare,
+  Newspaper,
+  Clock,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  addMonths, 
+  subMonths 
+} from "date-fns";
 
 import {
   Sidebar,
@@ -33,9 +50,17 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import { Menu, X } from "lucide-react";
 import { useLayoutStore } from "@/stores/layout-store";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
@@ -43,6 +68,7 @@ const navItems = [
   { name: "Banks", url: "/banks", icon: Landmark },
   { name: "Stocks", url: "/stocks", icon: TrendingUp },
   { name: "Mutual Funds", url: "/mutual-funds", icon: PieChart },
+  { name: "Loans", url: "/loans", icon: CreditCard },
   { name: "Goals", url: "/goals", icon: Target },
   { name: "Settings", url: "/settings", icon: Settings },
   { name: "About", url: "/about", icon: Info },
@@ -51,6 +77,14 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { isMobileMenuOpen, setMobileMenuOpen } = useLayoutStore();
+  const isDashboardRoute = pathname?.startsWith("/dashboard") || 
+                           pathname?.startsWith("/stocks") || 
+                           pathname?.startsWith("/banks") || 
+                           pathname?.startsWith("/mutual-funds") ||
+                           pathname?.startsWith("/analytics") ||
+                           pathname?.startsWith("/goals") ||
+                           pathname?.startsWith("/loans") ||
+                           pathname?.startsWith("/settings");
 
   return (
     <>
@@ -63,8 +97,11 @@ export function AppSidebar() {
       )}
 
       <aside 
-        className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-border/10 bg-sidebar flex flex-col transition-transform duration-500 ease-in-out
-        ${isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}>
+        className={cn(
+          "fixed left-0 top-0 z-50 h-screen w-64 border-r border-border/10 bg-sidebar flex flex-col transition-transform duration-500 ease-in-out",
+          isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
+          isDashboardRoute && "md:translate-x-0"
+        )}>
         
         {/* Branding Header */}
         <div className="md:h-24 h-20 flex items-center justify-between px-8 border-b border-border/10 shrink-0">
@@ -120,30 +157,59 @@ export function AppSidebar() {
 
       {/* Sidebar Footer */}
       <div className="p-4 md:pb-4 pb-20 border-t border-border/10 space-y-4 shrink-0 bg-sidebar/20 backdrop-blur-sm">
-        <Link 
-          href="https://finkar.substack.com/" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="block md:p-4 p-3 rounded-2xl bg-primary/5 border border-primary/10 md:hover:bg-primary/10 transition-[background-color] duration-300 group/newsletter overflow-hidden active:bg-primary/10"
-        >
-          <div className="flex items-center gap-3">
-            <LayoutDashboard className="h-5 w-5 text-primary shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="text-xs font-bold text-foreground block truncate">Finkar Newsletter</span>
-              <span className="text-[10px] text-muted-foreground block truncate uppercase tracking-tighter">on Substack</span>
+        {/* External Links Grid */}
+        <div className="grid grid-cols-2 gap-2">
+          <Link 
+            href="https://finkar.substack.com/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="flex flex-col gap-2 p-3 rounded-2xl bg-primary/5 border border-primary/10 md:hover:bg-primary/10 transition-all duration-300 group/newsletter active:bg-primary/10"
+          >
+            <div className="flex justify-between items-start w-full">
+              <LayoutDashboard className="h-4 w-4 text-primary" />
+              <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover/newsletter:text-primary transition-all" />
             </div>
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover/newsletter:text-primary group-hover/newsletter:translate-x-1 group-hover/newsletter:-translate-y-1 transition-all" />
-          </div>
-        </Link>
+            <div>
+              <span className="text-[10px] font-black text-foreground block uppercase tracking-tight">Newsletter</span>
+              <span className="text-[8px] text-muted-foreground block uppercase tracking-tighter opacity-70">Substack</span>
+            </div>
+          </Link>
+
+          <Link 
+            href="https://finkarnews.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="flex flex-col gap-2 p-3 rounded-2xl bg-blue-500/5 border border-blue-500/10 md:hover:bg-blue-500/10 transition-all duration-300 group/news active:bg-blue-500/10"
+          >
+            <div className="flex justify-between items-start w-full">
+              <Newspaper className="h-4 w-4 text-blue-500" />
+              <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover/news:text-blue-500 transition-all" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black text-foreground block uppercase tracking-tight">Finkar News</span>
+              <span className="text-[8px] text-muted-foreground block uppercase tracking-tighter opacity-70">Live Feed</span>
+            </div>
+          </Link>
+        </div>
 
         <div className="p-1 rounded-[24px] bg-sidebar-accent/5 border border-border/10 flex flex-col gap-1 overflow-hidden transition-all duration-500 md:hover:border-primary/20 active:border-primary/20">
-          {/* Top: Market Status (Full width) */}
-          <div className="md:p-4 p-3 bg-foreground/[0.02] rounded-t-[20px] rounded-b-[4px] flex flex-col gap-2 border-b border-border/5">
-             <div className="flex items-center gap-2 opacity-60">
-                <Globe size={12} className="text-muted-foreground" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-black text-muted-foreground">Market Pulse</span>
-             </div>
-             <MarketStatusIndicator />
+          {/* Unified System & Market Status */}
+          <div className="p-3 bg-foreground/[0.02] rounded-t-[20px] rounded-b-[4px] border-b border-border/5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Clock size={12} className="text-primary/70" />
+                <LiveClock />
+              </div>
+              <CalendarDialog>
+                <div className="text-[10px] font-black text-muted-foreground hover:text-primary transition-colors underline-offset-4 decoration-primary/30 cursor-pointer">
+                  <TodayDate />
+                </div>
+              </CalendarDialog>
+            </div>
+            
+            <div className="pt-3 border-t border-border/5">
+              <MarketStatusIndicator />
+            </div>
           </div>
           
           {/* Bottom: FAQ & Contact (Split) */}
@@ -171,6 +237,78 @@ export function AppSidebar() {
     </aside>
     </>
   );
+}
+
+function CalendarDialog({ children }: { children: React.ReactNode }) {
+  const [currentMonth, setCurrentMonth] = React.useState(new Date());
+
+  const days = React.useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth));
+    const end = endOfWeek(endOfMonth(currentMonth));
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <div className="text-[10px] font-black text-muted-foreground hover:text-primary transition-colors underline-offset-4 decoration-primary/30 cursor-pointer">
+            <TodayDate />
+          </div>
+        }
+      />
+      <DialogContent className="sm:max-w-[320px] bg-card border-border/50 p-6 rounded-[28px] backdrop-blur-2xl">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+          <DialogTitle className="text-xs font-black uppercase tracking-[0.2em] text-foreground">
+            {format(currentMonth, "MMMM yyyy")}
+          </DialogTitle>
+          <div className="flex items-center gap-2">
+             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 hover:bg-foreground/5 rounded-xl transition-all active:scale-90"><ChevronLeft size={16} /></button>
+             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 hover:bg-foreground/5 rounded-xl transition-all active:scale-90"><ChevronRight size={16} /></button>
+          </div>
+        </DialogHeader>
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+            <span key={d} className="text-[10px] font-black text-muted-foreground/40 uppercase pb-4">{d}</span>
+          ))}
+          {days.map((day, i) => {
+            const isToday = isSameDay(day, new Date());
+            const isCurrentMonth = isSameMonth(day, currentMonth);
+            return (
+              <div 
+                key={i} 
+                className={cn(
+                  "h-9 flex items-center justify-center text-[11px] rounded-xl transition-all duration-300",
+                  !isCurrentMonth && "text-muted-foreground/10",
+                  isToday ? "bg-primary text-primary-foreground font-black shadow-[0_0_20px_rgba(0,255,156,0.3)]" : isCurrentMonth ? "hover:bg-primary/10 text-foreground font-bold hover:text-primary" : ""
+                )}
+              >
+                {format(day, "d")}
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LiveClock() {
+  const [time, setTime] = React.useState(new Date());
+  React.useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return <span className="text-xs font-black text-foreground tabular-nums tracking-tighter">{format(time, "hh:mm:ss a")}</span>;
+}
+
+function TodayDate() {
+  const [time, setTime] = React.useState(new Date());
+  React.useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 60000);
+    return () => clearInterval(t);
+  }, []);
+  return <span>{format(time, "dd MMM")}</span>;
 }
 
 function MarketStatusIndicator() {

@@ -52,14 +52,16 @@ function AddGoalDialog() {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={
-          <motion.button 
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm no-select tap-highlight-none"
-          />
-        }>
-          <Plus size={16} /> Add Goal
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors font-black uppercase tracking-widest text-[10px] no-select tap-highlight-none"
+            >
+              <Plus size={14} /> Add Goal
+            </motion.button>
+          }
+        />
         <DialogContent className="bg-card border-border/50 backdrop-blur-2xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-foreground">Add Financial Goal</DialogTitle>
@@ -86,59 +88,6 @@ function AddGoalDialog() {
             </div>
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">
               {isLoggedIn ? "Create Goal" : "Sign Up to Create"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-      <AuthRequiredDialog open={authPromptOpen} setOpen={setAuthPromptOpen} />
-    </>
-  );
-}
-
-function ContributeDialog({ goalId, goalName }: { goalId: string; goalName: string }) {
-  const [open, setOpen] = useState(false);
-  const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const { isLoggedIn } = useAuthStore();
-  
-  const contributeToGoal = useGoalsStore((s) => s.contributeToGoal);
-  const [amount, setAmount] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount) return;
-
-    if (!isLoggedIn) {
-      setAuthPromptOpen(true);
-      return;
-    }
-
-    contributeToGoal(goalId, parseFloat(amount) || 0);
-    setAmount("");
-    setOpen(false);
-  };
-
-  return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={
-          <motion.button 
-            whileTap={{ scale: 0.95 }}
-            className="text-[10px] md:text-xs text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors font-black uppercase tracking-widest no-select tap-highlight-none"
-          />
-        }>
-          + Add Funds
-        </DialogTrigger>
-        <DialogContent className="bg-card border-border/50 backdrop-blur-2xl sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-lg text-foreground">Contribute to {goalName}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="contrib-amount">Amount (₹)</Label>
-              <Input id="contrib-amount" type="number" step="0.01" min="1" placeholder="5000" value={amount} onChange={(e) => setAmount(e.target.value)} className="bg-foreground/5 border-border/50" required />
-            </div>
-            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,255,156,0.2)]">
-              {isLoggedIn ? "Save" : "Sign Up to Save"}
             </Button>
           </form>
         </DialogContent>
@@ -210,55 +159,33 @@ export default function GoalsPage() {
           </FinanceCard>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {goals.map((goal) => {
             const pct = goal.targetAmount > 0 ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100) : 0;
             const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
             return (
-              <motion.div key={goal.id} variants={FADE_UP} className="aspect-square md:aspect-auto">
-                <FinanceCard className="p-3 md:p-6 group relative h-full border-border/50 overflow-hidden flex flex-col justify-between">
-                  <button onClick={() => handleDelete(goal.id)} className="absolute top-2 right-2 p-1 rounded-lg opacity-0 lg:group-hover:opacity-100 hover:bg-destructive/20 text-destructive transition-all" title="Delete goal">
-                    <Trash2 size={12} />
+              <motion.div key={goal.id} variants={FADE_UP}>
+                <FinanceCard className="p-6 group relative border-border/10 bg-card/40 backdrop-blur-xl">
+                  <button onClick={() => handleDelete(goal.id)} className="absolute top-4 right-4 p-2 rounded-xl opacity-0 lg:group-hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all">
+                    <Trash2 size={14} />
                   </button>
-
-                  <div className="flex justify-between items-start mb-2 md:mb-4 pr-6">
-                    <div>
-                      <h3 className="text-sm md:text-lg font-heading font-black text-foreground tracking-tight truncate leading-tight">{goal.name}</h3>
-                      {goal.deadline && (
-                        <p className="text-[8px] md:text-xs text-muted-foreground mt-0.5 font-bold uppercase tracking-tighter">
-                          {new Date(goal.deadline).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
-                        </p>
-                      )}
-                    </div>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-black text-foreground uppercase tracking-tight">{goal.name}</h3>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Target: {formatINR(goal.targetAmount)}</p>
                   </div>
-
-                  <div className="flex justify-between text-[10px] md:text-sm mb-1.5 font-black uppercase tracking-tighter">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="text-foreground">{pct.toFixed(0)}%</span>
-                  </div>
-                  <div className="h-2 md:h-3 w-full bg-foreground/5 rounded-full overflow-hidden mb-3 md:mb-4 border border-border/50">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: goal.color || '#00FF9C' }}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-1 md:gap-2 text-center pt-2 border-t border-border/5 mt-auto">
-                    <div>
-                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Saved</p>
-                      <p className="text-[10px] md:text-sm font-black text-primary truncate">{formatINR(goal.currentAmount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Target</p>
-                      <p className="text-[10px] md:text-sm font-black text-foreground truncate">{formatINR(goal.targetAmount)}</p>
-                    </div>
-                    <div className="hidden xs:block">
-                      <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-tight font-black">Rem.</p>
-                      <p className="text-[10px] md:text-sm font-black text-foreground truncate">{formatINR(remaining)}</p>
-                    </div>
+                  <div className="space-y-2">
+                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                       <span className="text-muted-foreground">{pct.toFixed(0)}% Complete</span>
+                       <span className="text-primary">{formatINR(goal.currentAmount)}</span>
+                     </div>
+                     <div className="h-2 w-full bg-foreground/5 rounded-full overflow-hidden border border-border/5">
+                       <motion.div
+                         initial={{ width: 0 }}
+                         animate={{ width: `${pct}%` }}
+                         transition={{ duration: 1, ease: "easeOut" }}
+                         className="h-full bg-primary"
+                       />
+                     </div>
                   </div>
                 </FinanceCard>
               </motion.div>

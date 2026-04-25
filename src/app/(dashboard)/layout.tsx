@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -16,18 +15,13 @@ export default function DashboardLayout({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background bg-repeat bg-fixed relative">
-        {/* Dot Grid Pattern — more visible in light mode */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0" 
+        {/* Unified Fixed Dot Grid Pattern — Subtle & Professional */}
+        <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04] z-0" 
           style={{ 
-            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, currentColor 1px, transparent 0)`,
-            backgroundSize: "24px 24px"
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--foreground) 0.5px, transparent 0)`,
+            backgroundSize: "40px 40px"
           }} 
         />
-        <BackgroundGlows />
-        
-        <AppSidebar />
-        
-        {/* Main content area - Shifted by sidebar width on desktop */}
         <div className="flex flex-col flex-1 z-10 w-full relative md:pl-64 transition-[padding] duration-300 group-has-data-[sidebar=sidebar-wrapper][data-state=collapsed]:md:pl-20">
           <Header />
           <main className="flex-1 p-4 md:p-6 lg:p-8 transition-[padding] duration-300 overflow-visible pb-24 md:pb-8">
