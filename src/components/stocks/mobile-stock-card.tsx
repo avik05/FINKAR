@@ -1,6 +1,6 @@
 import React, { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, ChevronDown, TrendingUp, TrendingDown, DollarSign, Layers } from "lucide-react";
+import { Trash2, ChevronDown, TrendingUp, TrendingDown, Layers } from "lucide-react";
 import { FinanceCard } from "@/components/ui/finance-card";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,6 @@ export const MobileStockCard = memo(function MobileStockCard({ holding, onDelete
               <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{holding.quantity} Shares</span>
             </div>
             <div className="flex items-center gap-1">
-              <DollarSign size={10} className="text-muted-foreground" />
               <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{formatINR(holding.currentPrice)}</span>
             </div>
             <div className="ml-auto">

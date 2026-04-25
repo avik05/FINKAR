@@ -80,14 +80,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Initial session loading state
   if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center z-[9999]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Syncing Engine</p>
+    // Do not block rendering for the public landing page to drastically improve LCP
+    const isPublicRoute = pathname === "/";
+    
+    if (!isPublicRoute) {
+      return (
+        <div className="fixed inset-0 bg-background flex items-center justify-center z-[9999]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Syncing Engine</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   // Prevent flash of protected content and redirect unverified users
